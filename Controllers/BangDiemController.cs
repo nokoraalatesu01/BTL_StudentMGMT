@@ -82,7 +82,6 @@ public class BangDiemController : Controller
         else
         {
             // Thêm mới
-            dbAddDiem:
             _db.Diems.Add(new Diem
             {
                 SinhVienId = model.SinhVienId,
