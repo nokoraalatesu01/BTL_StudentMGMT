@@ -1,0 +1,9 @@
+@{
+    ViewData["Title"] = "Trang Admin";
+}
+
+<h2>Xin chào Admin, @User.Identity?.Name</h2>
+
+<form asp-controller="Account" asp-action="Logout" method="post">
+    <button type="submit">Đăng xuất</button>
+</form>

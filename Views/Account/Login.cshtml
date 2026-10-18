@@ -1,0 +1,49 @@
+@model BTL_StudentMGMT.Models.LoginViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hệ thống quản lý sinh viên</title>
+    <link rel="stylesheet" href="~/css/login.css" />
+</head>
+<body>
+    <div class="split">
+        <section class="intro">
+            <h1>Hệ thống Quản lý Sinh viên</h1>
+            <p>Quản lý hồ sơ, lớp, học phần và kết quả học tập trên một nền tảng duy nhất.</p>
+            <ul>
+                <li><b>Admin:</b> quản lý toàn bộ dữ liệu và tài khoản</li>
+                <li><b>Giảng viên:</b> quản lý lớp học phần và điểm</li>
+                <li><b>Sinh viên:</b> tra cứu hồ sơ và kết quả học tập</li>
+            </ul>
+        </section>
+
+        <section class="login">
+            <form method="post" asp-action="Login" class="card">
+                <h2>Đăng nhập</h2>
+                <div asp-validation-summary="ModelOnly" class="error"></div>
+
+                <label asp-for="UserName">Tài khoản</label>
+                <input asp-for="UserName" placeholder="Nhập tài khoản" autofocus />
+                <span asp-validation-for="UserName" class="error"></span>
+
+                <label asp-for="Password">Mật khẩu</label>
+                <input asp-for="Password" placeholder="Nhập mật khẩu" />
+                <span asp-validation-for="Password" class="error"></span>
+
+                <label class="remember">
+                    <input asp-for="RememberMe" /> Ghi nhớ đăng nhập
+                </label>
+                <button type="submit">Đăng nhập</button>
+            </form>
+        </section>
+    </div>
+
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>

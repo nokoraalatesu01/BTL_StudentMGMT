@@ -1,0 +1,108 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+}
+
+.split {
+    display: flex;
+    min-height: 100vh;
+}
+
+.intro {
+    flex: 1;
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: #fff;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.intro h1 {
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+}
+
+.intro p {
+    opacity: .9;
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+
+.intro li {
+    margin: 10px 0 10px 18px;
+}
+
+.login {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+}
+
+.card {
+    background: #fff;
+    padding: 36px;
+    width: 360px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
+}
+
+.card h2 {
+    margin-bottom: 20px;
+    color: #1e3a8a;
+}
+
+.card label {
+    display: block;
+    margin: 14px 0 6px;
+    font-size: .9rem;
+    color: #374151;
+}
+
+.card input:not([type=checkbox]) {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.remember {
+    display: flex !important;
+    gap: 8px;
+    align-items: center;
+}
+
+.card button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    border: 0;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.card button:hover {
+    background: #1d4ed8;
+}
+
+.error {
+    color: #dc2626;
+    font-size: .85rem;
+}
+
+@media (max-width: 800px) {
+    .split {
+        flex-direction: column;
+    }
+
+    .intro {
+        padding: 30px;
+    }
+}
