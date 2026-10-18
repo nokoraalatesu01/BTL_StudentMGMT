@@ -1,0 +1,91 @@
+@{
+    var accountName = User.Identity?.Name ?? "";
+    var accountInitial = string.IsNullOrWhiteSpace(accountName) ? "G" : accountName.Trim()[0].ToString().ToUpperInvariant();
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f7fb" />
+    <title>@ViewData["Title"] - Cổng giảng viên</title>
+    <!-- Bootstrap CSS & Icons -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- SinhVien Design System & GiangVien Theme -->
+    <link rel="stylesheet" href="~/css/sinhvien.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/giangvien.css" asp-append-version="true" />
+</head>
+<body class="student-body">
+    <div class="student-app">
+        <!-- Sidebar trái y hệt Cổng sinh viên -->
+        <aside class="student-sidebar">
+            <a class="student-brand" asp-controller="GiangVien" asp-action="Index">
+                <span class="student-brand-mark" aria-hidden="true">GV</span>
+                <span>CỔNG GIẢNG VIÊN</span>
+            </a>
+
+            <p class="student-nav-label">KHÔNG GIAN CỦA BẠN</p>
+            <nav class="student-nav" aria-label="Điều hướng giảng viên">
+                <a asp-controller="GiangVien" asp-action="Index"
+                   class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "GiangVien" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">⌂</span>
+                    <span>Tổng quan</span>
+                </a>
+                <a asp-controller="GiangVien" asp-action="DanhSachSinhVien"
+                   class="@(ViewContext.RouteData.Values["action"]?.ToString() == "DanhSachSinhVien" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">👥</span>
+                    <span>Danh sách sinh viên</span>
+                </a>
+                <a asp-controller="BangDiem" asp-action="Index"
+                   class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "BangDiem" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">✦</span>
+                    <span>Bảng điểm sinh viên</span>
+                </a>
+                <a asp-controller="BangDiem" asp-action="NhapDiem"
+                   class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "BangDiem" && ViewContext.RouteData.Values["action"]?.ToString() == "NhapDiem" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">✎</span>
+                    <span>Nhập điểm học phần</span>
+                </a>
+                <a asp-controller="GiangVien" asp-action="CapNhatThongTin"
+                   class="@(ViewContext.RouteData.Values["action"]?.ToString() == "CapNhatThongTin" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">◎</span>
+                    <span>Hồ sơ của tôi</span>
+                </a>
+            </nav>
+
+            <div class="student-sidebar-bottom">
+                <div class="sidebar-help">
+                    <strong>Cần hỗ trợ?</strong>
+                    <span>Liên hệ bộ phận quản lý sinh viên khi thông tin chưa chính xác.</span>
+                </div>
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button class="student-logout" type="submit">
+                        <span aria-hidden="true" style="font-family: 'Segoe UI', Arial, sans-serif;">↪</span>
+                        <span>Đăng xuất</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Khung nội dung chính -->
+        <div class="student-main">
+            <header class="student-topbar">
+                <span class="topbar-title">Cổng thông tin giảng viên</span>
+                <div class="topbar-user">
+                    <span class="topbar-avatar" aria-hidden="true">@accountInitial</span>
+                    <span>@accountName</span>
+                </div>
+            </header>
+            <main class="student-content">
+                @RenderBody()
+            </main>
+            <footer class="student-footer">Cổng thông tin giảng viên &copy; @DateTime.Now.Year</footer>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

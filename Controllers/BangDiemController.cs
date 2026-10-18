@@ -17,7 +17,8 @@ public class BangDiemController : Controller
         _db = db;
     }
 
-    public async Task<IActionResult> Index(int? sinhVienId)
+    // 1. Xem danh sách bảng điểm sinh viên
+    public IActionResult Index(int? sinhVienId)
     {
         var query = _db.Diems
             .Include(d => d.SinhVien)
@@ -29,14 +30,14 @@ public class BangDiemController : Controller
             query = query.Where(d => d.SinhVienId == sinhVienId.Value);
         }
 
-        var list = await query
+        var list = query
             .OrderBy(d => d.SinhVien!.HoTen)
             .ThenBy(d => d.MonHoc!.TenMon)
-            .ToListAsync();
+            .ToList();
 
         ViewBag.SinhVienId = sinhVienId;
         ViewBag.DanhSachSinhVien = new SelectList(
-            await _db.SinhViens.OrderBy(s => s.HoTen).ToListAsync(),
+            _db.SinhViens.OrderBy(s => s.HoTen).ToList(),
             "Id",
             "HoTen",
             sinhVienId);
@@ -44,36 +45,39 @@ public class BangDiemController : Controller
         return View(list);
     }
 
+    // 2. Nhập điểm môn học (GET)
     [HttpGet]
-    public async Task<IActionResult> NhapDiem(int? sinhVienId)
+    public IActionResult NhapDiem(int? sinhVienId)
     {
-        await LoadDropdownsAsync(sinhVienId);
-        return View(new DiemFormViewModel
+        LoadDropdowns(sinhVienId);
+        var model = new DiemFormViewModel
         {
             SinhVienId = sinhVienId ?? 0,
             DiemChuyenCan = 10,
             DiemGiuaKy = 8,
             DiemCuoiKy = 8.5
-        });
+        };
+        return View(model);
     }
 
+    // 3. Nhập điểm môn học (POST)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> NhapDiem(DiemFormViewModel model)
+    public IActionResult NhapDiem(DiemFormViewModel model)
     {
         if (!ModelState.IsValid)
         {
-            await LoadDropdownsAsync(model.SinhVienId, model.MonHocId);
+            LoadDropdowns(model.SinhVienId, model.MonHocId);
             return View(model);
         }
 
         // Kiểm tra xem sinh viên đã có điểm môn này chưa
-        var diem = await _db.Diems.FirstOrDefaultAsync(d =>
+        var diem = _db.Diems.FirstOrDefault(d =>
             d.SinhVienId == model.SinhVienId && d.MonHocId == model.MonHocId);
 
         if (diem != null)
         {
-            // Cập nhật điểm
+            // Cập nhật lại điểm
             diem.DiemChuyenCan = model.DiemChuyenCan;
             diem.DiemGiuaKy = model.DiemGiuaKy;
             diem.DiemCuoiKy = model.DiemCuoiKy;
@@ -81,7 +85,7 @@ public class BangDiemController : Controller
         }
         else
         {
-            // Thêm mới
+            // Thêm mới kết quả điểm
             _db.Diems.Add(new Diem
             {
                 SinhVienId = model.SinhVienId,
@@ -93,20 +97,21 @@ public class BangDiemController : Controller
             TempData["Msg"] = "Đã ghi nhận điểm học phần thành công!";
         }
 
-        await _db.SaveChangesAsync();
+        _db.SaveChanges();
         return RedirectToAction(nameof(Index), new { sinhVienId = model.SinhVienId });
     }
 
-    private async Task LoadDropdownsAsync(int? selectedSinhVien = null, int? selectedMonHoc = null)
+    // Hàm phụ nạp dữ liệu DropDownList
+    private void LoadDropdowns(int? selectedSinhVien = null, int? selectedMonHoc = null)
     {
         ViewBag.DanhSachSinhVien = new SelectList(
-            await _db.SinhViens.OrderBy(s => s.HoTen).ToListAsync(),
+            _db.SinhViens.OrderBy(s => s.HoTen).ToList(),
             "Id",
             "HoTen",
             selectedSinhVien);
 
         ViewBag.DanhSachMonHoc = new SelectList(
-            await _db.MonHocs.OrderBy(m => m.TenMon).ToListAsync(),
+            _db.MonHocs.OrderBy(m => m.TenMon).ToList(),
             "Id",
             "TenMon",
             selectedMonHoc);

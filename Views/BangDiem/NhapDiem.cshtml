@@ -1,104 +1,147 @@
 @model BTL_StudentMGMT.Models.DiemFormViewModel
 @{
-    ViewData["Title"] = "Nhập điểm học phần - Ghi nhận kết quả học tập";
+    ViewData["Title"] = "Nhập điểm học phần";
+    Layout = "_GiangVienLayout";
 }
 
-<!-- Breadcrumb -->
-<div class="page-breadcrumb-title mb-3" style="font-size: 1.15rem;">
-    Đào tạo / Bảng điểm / <strong>Nhập điểm học phần</strong>
+<div class="student-page-heading">
+    <div>
+        <p class="student-eyebrow">QUẢN LÝ ĐÀO TẠO</p>
+        <h1>Nhập bảng điểm học phần</h1>
+        <p>Ghi nhận điểm chuyên cần, giữa kỳ và thi kết thúc môn cho sinh viên.</p>
+    </div>
+    <a class="student-back-link" asp-action="Index">← Về bảng điểm</a>
 </div>
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
-            <!-- Header Card -->
-            <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center bg-white">
-                <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2" style="font-size: 1.05rem;">
-                    <i class="bi bi-pencil-square text-primary" style="color: #2563eb !important;"></i>
-                    Ghi Nhận Kết Quả Học Tập
-                </h5>
-                <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                    <i class="bi bi-arrow-left"></i> Quay lại
-                </a>
+        <section class="student-panel p-4 mb-4">
+            <div class="student-panel-heading mb-4">
+                <div>
+                    <p class="student-eyebrow">BIỂU MẪU ĐIỂM SỐ</p>
+                    <h2>Ghi nhận kết quả học tập</h2>
+                </div>
+                <span class="student-cap-icon" aria-hidden="true">✎</span>
             </div>
 
-            <!-- Form Content -->
-            <div class="p-4">
-                <form method="post" asp-action="NhapDiem" class="row g-3">
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3" role="alert"></div>
+            <form method="post" asp-action="NhapDiem">
+                <div asp-validation-summary="ModelOnly" class="student-notice mb-3" style="background:#fee2e2; border-color:#fca5a5; color:#991b1b;"></div>
 
+                <div class="row g-3 mb-4">
                     <!-- Chọn sinh viên -->
                     <div class="col-12">
-                        <label asp-for="SinhVienId" class="form-label small fw-semibold text-secondary">Sinh viên *</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0 text-muted">
-                                <i class="bi bi-person"></i>
-                            </span>
-                            <select asp-for="SinhVienId" asp-items="ViewBag.DanhSachSinhVien" class="form-select border-start-0 ps-0">
-                                <option value="">-- Chọn Sinh Viên --</option>
+                        <div class="gv-form-group">
+                            <label asp-for="SinhVienId">Sinh viên *</label>
+                            <select asp-for="SinhVienId" asp-items="ViewBag.DanhSachSinhVien" class="gv-form-select">
+                                <option value="">-- Chọn Sinh Viên Cần Nhập Điểm --</option>
                             </select>
+                            <span asp-validation-for="SinhVienId" class="text-danger small"></span>
                         </div>
-                        <span asp-validation-for="SinhVienId" class="text-danger small"></span>
                     </div>
 
                     <!-- Chọn môn học -->
                     <div class="col-12">
-                        <label asp-for="MonHocId" class="form-label small fw-semibold text-secondary">Môn học *</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0 text-muted">
-                                <i class="bi bi-journal-text"></i>
-                            </span>
-                            <select asp-for="MonHocId" asp-items="ViewBag.DanhSachMonHoc" class="form-select border-start-0 ps-0">
+                        <div class="gv-form-group">
+                            <label asp-for="MonHocId">Môn học / Học phần *</label>
+                            <select asp-for="MonHocId" asp-items="ViewBag.DanhSachMonHoc" class="gv-form-select">
                                 <option value="">-- Chọn Môn Học / Học Phần --</option>
                             </select>
+                            <span asp-validation-for="MonHocId" class="text-danger small"></span>
                         </div>
-                        <span asp-validation-for="MonHocId" class="text-danger small"></span>
                     </div>
 
                     <!-- 3 Cột điểm -->
                     <div class="col-md-4">
-                        <label asp-for="DiemChuyenCan" class="form-label small fw-semibold text-secondary">Điểm chuyên cần (10%) *</label>
-                        <input asp-for="DiemChuyenCan" type="number" step="0.1" min="0" max="10" class="form-control" />
-                        <span asp-validation-for="DiemChuyenCan" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label asp-for="DiemGiuaKy" class="form-label small fw-semibold text-secondary">Điểm giữa kỳ (30%) *</label>
-                        <input asp-for="DiemGiuaKy" type="number" step="0.1" min="0" max="10" class="form-control" />
-                        <span asp-validation-for="DiemGiuaKy" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label asp-for="DiemCuoiKy" class="form-label small fw-semibold text-secondary">Điểm thi cuối kỳ (60%) *</label>
-                        <input asp-for="DiemCuoiKy" type="number" step="0.1" min="0" max="10" class="form-control" />
-                        <span asp-validation-for="DiemCuoiKy" class="text-danger small"></span>
-                    </div>
-
-                    <!-- Thông báo quy chế điểm -->
-                    <div class="col-12 mt-3">
-                        <div class="p-3 rounded-3 bg-light border text-muted small d-flex align-items-center gap-2">
-                            <i class="bi bi-info-circle-fill text-primary" style="color: #2563eb !important;"></i>
-                            <span>
-                                <strong>Quy chế tính điểm học phần:</strong> Tổng kết = <strong>CC × 10% + GK × 30% + CK × 60%</strong>. Điểm tổng kết ≥ 4.0 là Đạt (Qua môn).
-                            </span>
+                        <div class="gv-form-group">
+                            <label asp-for="DiemChuyenCan">Điểm chuyên cần (10%) *</label>
+                            <input asp-for="DiemChuyenCan" type="number" step="0.1" min="0" max="10" class="gv-form-control score-input" id="inpCC" placeholder="0 - 10" />
+                            <span asp-validation-for="DiemChuyenCan" class="text-danger small"></span>
                         </div>
                     </div>
 
-                    <!-- Nút hành động -->
-                    <div class="col-12 mt-4 pt-3 border-top d-flex justify-content-end align-items-center gap-3">
-                        <a asp-action="Index" class="text-decoration-none text-secondary">Hủy</a>
-                        <button type="submit" class="btn btn-primary-blue px-4 py-2 rounded-3 d-flex align-items-center gap-2"
-                                style="background: #4f46e5; border-color: #4f46e5;">
-                            <i class="bi bi-floppy"></i>
-                            Lưu kết quả điểm
-                        </button>
+                    <div class="col-md-4">
+                        <div class="gv-form-group">
+                            <label asp-for="DiemGiuaKy">Điểm giữa kỳ (30%) *</label>
+                            <input asp-for="DiemGiuaKy" type="number" step="0.1" min="0" max="10" class="gv-form-control score-input" id="inpGK" placeholder="0 - 10" />
+                            <span asp-validation-for="DiemGiuaKy" class="text-danger small"></span>
+                        </div>
                     </div>
-                </form>
-            </div>
-        </div>
+
+                    <div class="col-md-4">
+                        <div class="gv-form-group">
+                            <label asp-for="DiemCuoiKy">Thi hết môn (60%) *</label>
+                            <input asp-for="DiemCuoiKy" type="number" step="0.1" min="0" max="10" class="gv-form-control score-input" id="inpCK" placeholder="0 - 10" />
+                            <span asp-validation-for="DiemCuoiKy" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box xem trước tổng kết -->
+                <div class="p-3 mb-4 rounded-3 d-flex justify-content-between align-items-center" style="background: #f0f7fc; border: 1px solid #d4e7f5;">
+                    <div>
+                        <div style="font-size: .75rem; color: #507192; font-weight: 700; text-transform: uppercase;">Ước tính tổng kết (Hệ 10)</div>
+                        <div class="d-flex align-items-baseline gap-2 mt-1">
+                            <span id="txtTongKet" style="font-size: 1.6rem; font-weight: 800; color: #176da3;">0.0</span>
+                            <span id="txtDiemChu" class="gv-badge gv-badge-blue">F</span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span id="txtDanhGia" class="gv-badge gv-badge-red" style="font-size: .82rem; padding: 6px 14px;">Chưa đạt</span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="gv-btn gv-btn-primary px-4">
+                        <i class="bi bi-check-circle"></i> Lưu kết quả học phần
+                    </button>
+                    <a asp-action="Index" class="gv-btn gv-btn-secondary">
+                        Hủy bỏ
+                    </a>
+                </div>
+            </form>
+        </section>
     </div>
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function calculate() {
+            var cc = parseFloat(document.getElementById('inpCC').value) || 0;
+            var gk = parseFloat(document.getElementById('inpGK').value) || 0;
+            var ck = parseFloat(document.getElementById('inpCK').value) || 0;
+
+            var tk = (cc * 0.1) + (gk * 0.3) + (ck * 0.6);
+            tk = Math.round(tk * 10) / 10;
+            document.getElementById('txtTongKet').innerText = tk.toFixed(1);
+
+            var chu = "F";
+            var pass = false;
+            if (tk >= 8.5) { chu = "A"; pass = true; }
+            else if (tk >= 8.0) { chu = "B+"; pass = true; }
+            else if (tk >= 7.0) { chu = "B"; pass = true; }
+            else if (tk >= 6.5) { chu = "C+"; pass = true; }
+            else if (tk >= 5.5) { chu = "C"; pass = true; }
+            else if (tk >= 5.0) { chu = "D+"; pass = true; }
+            else if (tk >= 4.0) { chu = "D"; pass = true; }
+
+            var elChu = document.getElementById('txtDiemChu');
+            elChu.innerText = chu;
+            elChu.className = pass ? "gv-badge gv-badge-green" : "gv-badge gv-badge-red";
+
+            var elDg = document.getElementById('txtDanhGia');
+            if (pass) {
+                elDg.innerText = "✓ Đạt học phần";
+                elDg.className = "gv-badge gv-badge-green";
+            } else {
+                elDg.innerText = "✗ Cần học lại";
+                elDg.className = "gv-badge gv-badge-red";
+            }
+        }
+
+        document.querySelectorAll('.score-input').forEach(function(inp) {
+            inp.addEventListener('input', calculate);
+        });
+        calculate();
+    </script>
 }

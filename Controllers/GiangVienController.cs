@@ -20,75 +20,80 @@ public class GiangVienController : Controller
         _userManager = userManager;
     }
 
-    public async Task<IActionResult> Index()
+    // 1. Trang tổng quan giảng viên
+    public IActionResult Index()
     {
-        var user = await _userManager.GetUserAsync(User);
+        var user = _userManager.GetUserAsync(User).Result;
         GiangVien? giangVien = null;
 
         if (user != null)
         {
-            giangVien = await _db.GiangViens
+            giangVien = _db.GiangViens
                 .Include(g => g.User)
-                .FirstOrDefaultAsync(g => g.UserId == user.Id);
+                .FirstOrDefault(g => g.UserId == user.Id);
         }
 
-        ViewBag.TongSoSinhVien = await _db.SinhViens.CountAsync();
-        ViewBag.TongSoLop = await _db.Lops.CountAsync();
-        ViewBag.TongSoNganh = await _db.Nganhs.CountAsync();
+        ViewBag.TongSoSinhVien = _db.SinhViens.Count();
+        ViewBag.TongSoLop = _db.Lops.Count();
+        ViewBag.TongSoNganh = _db.Nganhs.Count();
 
         return View(giangVien);
     }
 
-    public async Task<IActionResult> DanhSachSinhVien(string? tuKhoa, int? lopId, int page = 1)
+    // 2. Danh sách sinh viên (tìm kiếm, lọc theo lớp, phân trang)
+    public IActionResult DanhSachSinhVien(string? tuKhoa, int? lopId, int page = 1)
     {
-        const int pageSize = 10;
+        int pageSize = 10;
 
         var query = _db.SinhViens
             .Include(s => s.Lop)
             .ThenInclude(l => l!.Nganh)
             .AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(tuKhoa))
+        if (!string.IsNullOrEmpty(tuKhoa))
         {
             var keyword = tuKhoa.Trim();
             query = query.Where(s => s.MaSinhVien.Contains(keyword) || s.HoTen.Contains(keyword));
         }
 
-        if (lopId.HasValue)
+        if (lopId.HasValue && lopId > 0)
         {
             query = query.Where(s => s.LopId == lopId.Value);
         }
 
-        var totalItems = await query.CountAsync();
-        var items = await query
+        var totalItems = query.Count();
+        var items = query
             .OrderBy(s => s.MaSinhVien)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync();
+            .ToList();
 
         ViewBag.TuKhoa = tuKhoa;
         ViewBag.LopId = lopId;
         ViewBag.DanhSachLop = new SelectList(
-            await _db.Lops.OrderBy(l => l.TenLop).ToListAsync(),
+            _db.Lops.OrderBy(l => l.TenLop).ToList(),
             "Id",
             "TenLop",
             lopId);
 
-        return View(new PagedResult<SinhVien>
+        var model = new PagedResult<SinhVien>
         {
             Items = items,
             Page = page,
             PageSize = pageSize,
             TotalItems = totalItems
-        });
+        };
+
+        return View(model);
     }
 
-    public async Task<IActionResult> ChiTietSinhVien(int id)
+    // 3. Chi tiết sinh viên
+    public IActionResult ChiTietSinhVien(int id)
     {
-        var sinhVien = await _db.SinhViens
+        var sinhVien = _db.SinhViens
             .Include(s => s.Lop)
             .ThenInclude(l => l!.Nganh)
-            .FirstOrDefaultAsync(s => s.Id == id);
+            .FirstOrDefault(s => s.Id == id);
 
         if (sinhVien == null)
         {
@@ -98,42 +103,46 @@ public class GiangVienController : Controller
         return View(sinhVien);
     }
 
+    // 4. Cập nhật thông tin giảng viên (GET)
     [HttpGet]
-    public async Task<IActionResult> CapNhatThongTin()
+    public IActionResult CapNhatThongTin()
     {
-        var user = await _userManager.GetUserAsync(User);
+        var user = _userManager.GetUserAsync(User).Result;
         if (user == null)
         {
             return RedirectToAction("Login", "Account");
         }
 
-        var giangVien = await _db.GiangViens.FirstOrDefaultAsync(g => g.UserId == user.Id);
+        var giangVien = _db.GiangViens.FirstOrDefault(g => g.UserId == user.Id);
         if (giangVien == null)
         {
             return NotFound("Không tìm thấy thông tin giảng viên");
         }
 
-        return View(new CapNhatGiangVienViewModel
+        var model = new CapNhatGiangVienViewModel
         {
             Id = giangVien.Id,
             MaGiangVien = giangVien.MaGiangVien,
             HoTen = giangVien.HoTen,
             Email = giangVien.Email,
             SoDienThoai = giangVien.SoDienThoai
-        });
+        };
+
+        return View(model);
     }
 
+    // 5. Cập nhật thông tin giảng viên (POST)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CapNhatThongTin(CapNhatGiangVienViewModel model)
+    public IActionResult CapNhatThongTin(CapNhatGiangVienViewModel model)
     {
-        var user = await _userManager.GetUserAsync(User);
+        var user = _userManager.GetUserAsync(User).Result;
         if (user == null)
         {
             return RedirectToAction("Login", "Account");
         }
 
-        var giangVien = await _db.GiangViens.FirstOrDefaultAsync(g => g.UserId == user.Id);
+        var giangVien = _db.GiangViens.FirstOrDefault(g => g.UserId == user.Id);
         if (giangVien == null)
         {
             return NotFound("Không tìm thấy thông tin giảng viên");
@@ -151,12 +160,12 @@ public class GiangVienController : Controller
         user.HoTen = giangVien.HoTen;
         user.Email = giangVien.Email;
         user.PhoneNumber = giangVien.SoDienThoai;
-        await _userManager.UpdateAsync(user);
+        _userManager.UpdateAsync(user).Wait();
 
-        if (!string.IsNullOrWhiteSpace(model.MatKhauMoi))
+        if (!string.IsNullOrEmpty(model.MatKhauMoi))
         {
-            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var passResult = await _userManager.ResetPasswordAsync(user, resetToken, model.MatKhauMoi);
+            var resetToken = _userManager.GeneratePasswordResetTokenAsync(user).Result;
+            var passResult = _userManager.ResetPasswordAsync(user, resetToken, model.MatKhauMoi).Result;
             if (!passResult.Succeeded)
             {
                 foreach (var err in passResult.Errors)
@@ -167,7 +176,7 @@ public class GiangVienController : Controller
             }
         }
 
-        await _db.SaveChangesAsync();
+        _db.SaveChanges();
         TempData["Msg"] = "Cập nhật thông tin cá nhân thành công!";
         return RedirectToAction(nameof(Index));
     }
