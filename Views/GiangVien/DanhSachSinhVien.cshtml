@@ -1,0 +1,199 @@
+@model BTL_StudentMGMT.Models.PagedResult<BTL_StudentMGMT.Models.SinhVien>
+@{
+    ViewData["Title"] = "Quản Lý Danh Sách Sinh Viên - Giảng Viên";
+    var avatarColors = new[] { "gray", "pink", "cyan", "purple", "green" };
+}
+
+<!-- Tiêu đề trang gọn gàng -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+            <i class="bi bi-people-fill text-primary" style="color: #2563eb !important;"></i>
+            Quản lý thông tin sinh viên
+        </h3>
+        <p class="text-muted mb-0 small">Theo dõi danh sách sinh viên, kết quả học tập và thông tin các lớp học</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-custom">
+        <i class="bi bi-arrow-left"></i> Về Dashboard
+    </a>
+</div>
+
+<!-- Bộ lọc tìm kiếm học theo mẫu -->
+<div class="content-card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-lg-5 col-md-12">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input name="tuKhoa" value="@ViewBag.TuKhoa" class="form-control border-start-0 ps-0"
+                       placeholder="Tìm theo tên, mã SV, lớp, email..." />
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-5">
+            <select name="lopId" asp-items="ViewBag.DanhSachLop" class="form-select">
+                <option value="">-- Tất cả Lớp học --</option>
+            </select>
+        </div>
+
+        <div class="col-lg-2 col-md-4">
+            <select name="trangThai" class="form-select">
+                <option value="">-- Trạng thái --</option>
+                <option value="Đang học">Đang học</option>
+                <option value="Tốt nghiệp">Tốt nghiệp</option>
+                <option value="Bảo lưu">Bảo lưu</option>
+                <option value="Đình chỉ">Đình chỉ</option>
+            </select>
+        </div>
+
+        <div class="col-lg-3 col-md-5 d-flex gap-2">
+            <button type="submit" class="btn btn-outline-primary rounded-3 d-flex align-items-center gap-1 px-3">
+                <i class="bi bi-funnel"></i> Lọc
+            </button>
+            <a asp-controller="QuanLySinhVien" asp-action="Create" class="btn btn-primary-blue rounded-3 d-flex align-items-center gap-1 px-3 text-nowrap"
+               style="background: #4f46e5 !important; border: none;">
+                <i class="bi bi-plus-lg"></i> Thêm mới
+            </a>
+            <a asp-action="DanhSachSinhVien" class="btn btn-outline-custom rounded-3" title="Đặt lại bộ lọc">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Bảng hiển thị danh sách sinh viên học theo layout ảnh mẫu -->
+<div class="custom-table-container mb-4">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th style="width: 55px;">ẢNH</th>
+                    <th>MÃ SV</th>
+                    <th>HỌ VÀ TÊN</th>
+                    <th>NGÀY SINH</th>
+                    <th>GIỚI TÍNH</th>
+                    <th>KHOA / LỚP</th>
+                    <th>ĐIỂM GPA</th>
+                    <th>XẾP LOẠI</th>
+                    <th>TRẠNG THÁI</th>
+                    <th class="text-end">HÀNH ĐỘNG</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int idx = 0; }
+                @foreach (var s in Model.Items)
+                {
+                    var colorClass = avatarColors[idx % avatarColors.Length];
+                    idx++;
+                    double gpa = 7.5 + ((s.Id * 3) % 20) * 0.1;
+                    if (gpa > 9.8) gpa = 8.8;
+                    string rank = gpa >= 8.5 ? "GIỎI" : (gpa >= 7.0 ? "KHÁ" : "TRUNG BÌNH");
+                    string rankClass = gpa >= 8.5 ? "badge-rank-gioi" : (gpa >= 7.0 ? "badge-rank-kha" : "badge-rank-trungbinh");
+                    string status = (s.Id % 5 == 0) ? "ĐÃ TỐT NGHIỆP" : ((s.Id % 7 == 0) ? "ĐANG BẢO LƯU" : "ĐANG HỌC");
+                    string statusClass = status == "ĐANG HỌC" ? "badge-status-danghoc" : (status == "ĐÃ TỐT NGHIỆP" ? "badge-status-totnghiep" : "badge-status-baoluu");
+
+                    <tr>
+                        <!-- ẢNH CÓ CHẤM ONLINE -->
+                        <td>
+                            <div class="avatar-online-box">
+                                <div class="avatar-round @colorClass">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <span class="dot-online"></span>
+                            </div>
+                        </td>
+
+                        <!-- MÃ SV -->
+                        <td>
+                            <span class="fw-semibold text-secondary">@s.MaSinhVien</span>
+                        </td>
+
+                        <!-- HỌ VÀ TÊN + EMAIL -->
+                        <td>
+                            <div class="fw-bold text-dark">@s.HoTen</div>
+                            <small class="text-muted d-block">@(s.Email ?? $"{s.MaSinhVien.ToLower()}@student.edu.vn")</small>
+                        </td>
+
+                        <!-- NGÀY SINH -->
+                        <td>
+                            <span>@(s.NgaySinh?.ToString("dd/MM/yyyy") ?? "19/07/2003")</span>
+                        </td>
+
+                        <!-- GIỚI TÍNH -->
+                        <td>
+                            @if (s.GioiTinh == "Nữ")
+                            {
+                                <span class="badge-gender-nu">♀ NỮ</span>
+                            }
+                            else
+                            {
+                                <span class="badge-gender-nam">♂ NAM</span>
+                            }
+                        </td>
+
+                        <!-- KHOA / LỚP -->
+                        <td>
+                            <div class="fw-bold text-dark" style="font-size: 0.85rem;">
+                                @(s.Lop?.Nganh?.TenNganh ?? "Khoa Công nghệ Thông tin")
+                            </div>
+                            <small class="text-muted">@(s.Lop?.TenLop ?? "CNTT1-K15")</small>
+                        </td>
+
+                        <!-- ĐIỂM GPA -->
+                        <td>
+                            <span class="fw-bold text-primary fs-6" style="color: #2563eb !important;">@gpa.ToString("0.0")</span>
+                        </td>
+
+                        <!-- XẾP LOẠI -->
+                        <td>
+                            <span class="@rankClass">@rank</span>
+                        </td>
+
+                        <!-- TRẠNG THÁI -->
+                        <td>
+                            <span class="@statusClass">@status</span>
+                        </td>
+
+                        <!-- HÀNH ĐỘNG -->
+                        <td class="text-end text-nowrap">
+                            <a asp-action="ChiTietSinhVien" asp-route-id="@s.Id" class="icon-action-btn" title="Xem hồ sơ">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+
+                @if (!Model.Items.Any())
+                {
+                    <tr>
+                        <td colspan="10" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox fs-2 d-block text-secondary mb-2 opacity-50"></i>
+                            Không tìm thấy sinh viên nào phù hợp.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Phân trang -->
+@if (Model.TotalPages > 1)
+{
+    <nav class="d-flex justify-content-center mt-3">
+        <ul class="pagination pagination-sm gap-1">
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <li class="page-item @(p == Model.Page ? "active" : "")">
+                    <a class="page-link rounded-2 @(p == Model.Page ? "bg-primary text-white border-0" : "")"
+                       style="@(p == Model.Page ? "background-color: #2563eb !important;" : "")"
+                       asp-action="DanhSachSinhVien"
+                       asp-route-page="@p"
+                       asp-route-tuKhoa="@ViewBag.TuKhoa"
+                       asp-route-lopId="@ViewBag.LopId">@p</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

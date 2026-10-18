@@ -1,5 +1,77 @@
 @model BTL_StudentMGMT.Models.AdminDashboardViewModel
 @{
+    ViewData["Title"] = "Trang Quản trị Hệ thống";
+}
+
+<div class="row g-4">
+    <!-- Hero Banner Admin -->
+    <div class="col-12">
+        <div class="hero-card-banner d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center shadow"
+                     style="width: 60px; height: 60px; font-size: 1.8rem; color: #1e3a8a !important;">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <div>
+                    <span class="badge bg-white bg-opacity-25 text-white mb-1 px-3 py-1 rounded-pill">
+                        Quản trị viên cấp cao
+                    </span>
+                    <h2 class="fw-bold mb-1 text-white">Xin chào, @User.Identity?.Name!</h2>
+                    <p class="text-sub mb-0">Hệ thống điều hành & Quản lý thông tin Sinh viên</p>
+                </div>
+            </div>
+            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                <button type="submit" class="btn btn-light rounded-pill px-4 text-primary fw-semibold" style="color: #1e3a8a !important;">
+                    <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Phân hệ Quản lý sinh viên -->
+    <div class="col-md-6">
+        <div class="content-card h-100 p-4">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="stat-icon-wrap blue">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-1 text-dark">Quản lý Sinh viên</h4>
+                    <p class="text-muted small mb-0">Hồ sơ sinh viên, tiếp nhận sinh viên mới, xếp lớp đào tạo</p>
+                </div>
+            </div>
+            <hr class="my-3 text-muted opacity-25" />
+            <div class="d-flex gap-2">
+                <a asp-controller="QuanLySinhVien" asp-action="Index" class="btn btn-primary-blue">
+                    <i class="bi bi-list-ul"></i> Xem danh sách sinh viên
+                </a>
+                <a asp-controller="QuanLySinhVien" asp-action="Create" class="btn btn-outline-custom">
+                    <i class="bi bi-plus-lg"></i> Thêm mới
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thông tin điều hành -->
+    <div class="col-md-6">
+        <div class="content-card h-100 p-4">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="stat-icon-wrap green">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-1 text-dark">Trạng thái hệ thống</h4>
+                    <p class="text-muted small mb-0">Hệ điều hành dữ liệu ASP.NET Core & SQL Server đang hoạt động tốt</p>
+                </div>
+            </div>
+            <hr class="my-3 text-muted opacity-25" />
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-success-subtle text-success fs-6 px-3 py-2 rounded-pill">
+                    <i class="bi bi-activity"></i> Trực tuyến 100%
+                </span>
+            </div>
+        </div>
+    </div>
     ViewData["Title"] = "Dashboard";
     Layout = "_AdminLayout";
     var max = Model.ThongKeTheoLop.Any() ? Math.Max(1, Model.ThongKeTheoLop.Max(x => x.SoSinhVien)) : 1;

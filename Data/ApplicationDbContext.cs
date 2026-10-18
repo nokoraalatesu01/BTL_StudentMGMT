@@ -14,6 +14,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Lop> Lops => Set<Lop>();
     public DbSet<SinhVien> SinhViens => Set<SinhVien>();
     public DbSet<GiangVien> GiangViens => Set<GiangVien>();
+    public DbSet<MonHoc> MonHocs => Set<MonHoc>();
+    public DbSet<Diem> Diems => Set<Diem>();
     public DbSet<ChuongTrinhDaoTao> ChuongTrinhDaoTaos => Set<ChuongTrinhDaoTao>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
