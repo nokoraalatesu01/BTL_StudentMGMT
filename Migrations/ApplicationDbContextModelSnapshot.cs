@@ -90,6 +90,68 @@ namespace BTL_StudentMGMT.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.ChuongTrinhDaoTao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ApDungTuKhoa")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GhiChu")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HinhThucLienKet")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("KhoaChuyenMon")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("KhoaQuanLy")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("LoaiChuongTrinh")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("MaChuongTrinh")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("MaNganhGoc")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int?>("NganhId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TenChuongTrinh")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("TichHopCuNhanKySu")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaChuongTrinh")
+                        .IsUnique()
+                        .HasFilter("[MaChuongTrinh] IS NOT NULL");
+
+                    b.HasIndex("NganhId");
+
+                    b.ToTable("ChuongTrinhDaoTaos");
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.GiangVien", b =>
                 {
                     b.Property<int>("Id")
@@ -135,11 +197,13 @@ namespace BTL_StudentMGMT.Migrations
 
                     b.Property<string>("TenLop")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NganhId");
+                    b.HasIndex("NganhId", "TenLop")
+                        .IsUnique();
 
                     b.ToTable("Lops");
                 });
@@ -154,13 +218,28 @@ namespace BTL_StudentMGMT.Migrations
 
                     b.Property<string>("MaNganh")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TenKhoa")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("TenNganh")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<bool>("TichHopCuNhanKySu")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MaNganh")
+                        .IsUnique();
 
                     b.ToTable("Nganhs");
                 });
@@ -344,6 +423,16 @@ namespace BTL_StudentMGMT.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.ChuongTrinhDaoTao", b =>
+                {
+                    b.HasOne("BTL_StudentMGMT.Models.Nganh", "Nganh")
+                        .WithMany("ChuongTrinhs")
+                        .HasForeignKey("NganhId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Nganh");
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.GiangVien", b =>
                 {
                     b.HasOne("BTL_StudentMGMT.Models.ApplicationUser", "User")
@@ -358,7 +447,7 @@ namespace BTL_StudentMGMT.Migrations
                     b.HasOne("BTL_StudentMGMT.Models.Nganh", "Nganh")
                         .WithMany("Lops")
                         .HasForeignKey("NganhId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Nganh");
@@ -368,7 +457,8 @@ namespace BTL_StudentMGMT.Migrations
                 {
                     b.HasOne("BTL_StudentMGMT.Models.Lop", "Lop")
                         .WithMany("SinhViens")
-                        .HasForeignKey("LopId");
+                        .HasForeignKey("LopId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("BTL_StudentMGMT.Models.ApplicationUser", "User")
                         .WithMany()
@@ -437,6 +527,8 @@ namespace BTL_StudentMGMT.Migrations
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.Nganh", b =>
                 {
+                    b.Navigation("ChuongTrinhs");
+
                     b.Navigation("Lops");
                 });
 #pragma warning restore 612, 618
