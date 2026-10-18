@@ -1,0 +1,86 @@
+.admin-wrap {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 240px;
+    background: #1e3a8a;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 14px;
+}
+
+.sidebar .brand {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+}
+
+.sidebar nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sidebar nav a {
+    color: #dbe4ff;
+    text-decoration: none;
+    padding: 10px 12px;
+    border-radius: 8px;
+}
+
+.sidebar nav a:hover {
+    background: rgba(255, 255, 255, .15);
+    color: #fff;
+}
+
+.content {
+    flex: 1;
+    padding: 28px;
+    background: #f3f4f6;
+}
+
+.stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+}
+
+.stat-card .num {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e3a8a;
+}
+
+.bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0;
+}
+
+.bar-row .label {
+    width: 110px;
+    font-size: .9rem;
+}
+
+.bar-row .bar {
+    height: 18px;
+    background: #2563eb;
+    border-radius: 4px;
+    min-width: 4px;
+}
+
+@media (max-width: 800px) {
+    .admin-wrap {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+    }
+}

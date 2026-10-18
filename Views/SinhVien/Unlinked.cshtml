@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "Hồ sơ chưa được liên kết";
+    Layout = "_SinhVienLayout";
+}
+
+<section class="student-panel unlinked-panel">
+    <span class="unlinked-icon" aria-hidden="true">!</span>
+    <p class="student-eyebrow">CHƯA CÓ HỒ SƠ SINH VIÊN</p>
+    <h1>Tài khoản chưa được liên kết</h1>
+    <p>
+        Tài khoản này chưa được liên kết với hồ sơ sinh viên trong hệ thống.
+        Vui lòng liên hệ quản trị viên hoặc bộ phận quản lý sinh viên để được hỗ trợ.
+    </p>
+    <form asp-controller="Account" asp-action="Logout" method="post">
+        <button class="student-primary-button" type="submit">Đăng xuất</button>
+    </form>
+</section>

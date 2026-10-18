@@ -1,3 +1,4 @@
+@model BTL_StudentMGMT.Models.AdminDashboardViewModel
 @{
     ViewData["Title"] = "Trang Quản trị Hệ thống";
 }
@@ -71,4 +72,59 @@
             </div>
         </div>
     </div>
+    ViewData["Title"] = "Dashboard";
+    Layout = "_AdminLayout";
+    var max = Model.ThongKeTheoLop.Any() ? Math.Max(1, Model.ThongKeTheoLop.Max(x => x.SoSinhVien)) : 1;
+}
+
+<h2 class="mb-4">Tổng quan</h2>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div>Sinh viên</div>
+            <div class="num">@Model.TongSinhVien</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div>Giảng viên</div>
+            <div class="num">@Model.TongGiangVien</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div>Ngành</div>
+            <div class="num">@Model.TongNganh</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div>Lớp</div>
+            <div class="num">@Model.TongLop</div>
+        </div>
+    </div>
+</div>
+
+@if (Model.SinhVienChuaCoLop > 0)
+{
+    <div class="alert alert-warning">Có @Model.SinhVienChuaCoLop sinh viên chưa được xếp lớp.</div>
+}
+
+<div class="stat-card">
+    <h5 class="mb-3">Số sinh viên theo lớp</h5>
+
+    @foreach (var x in Model.ThongKeTheoLop)
+    {
+        <div class="bar-row">
+            <div class="label">@x.TenLop</div>
+            <div class="bar" style="width:@((x.SoSinhVien * 100 / max))%"></div>
+            <div>@x.SoSinhVien</div>
+        </div>
+    }
+
+    @if (!Model.ThongKeTheoLop.Any())
+    {
+        <div class="text-muted">Chưa có dữ liệu lớp.</div>
+    }
 </div>

@@ -1,0 +1,78 @@
+@model BTL_StudentMGMT.Models.Nganh
+@{
+    ViewData["Title"] = "Chi tiết ngành";
+}
+
+<h2>Chi tiết ngành</h2>
+<dl class="row" style="max-width:720px">
+    <dt class="col-sm-3">Mã ngành</dt>
+    <dd class="col-sm-9">@Model.MaNganh</dd>
+    <dt class="col-sm-3">Tên ngành</dt>
+    <dd class="col-sm-9">@Model.TenNganh</dd>
+    <dt class="col-sm-3">Khoa</dt>
+    <dd class="col-sm-9">@Model.TenKhoa</dd>
+    <dt class="col-sm-3">Tích hợp CN-KS</dt>
+    <dd class="col-sm-9">@(Model.TichHopCuNhanKySu ? "Có" : "Không")</dd>
+</dl>
+
+<h4>Chương trình đào tạo</h4>
+@if (Model.ChuongTrinhs.Count > 0)
+{
+    <div class="table-responsive mb-4">
+        <table class="table table-sm table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Mã chương trình / mã nội bộ</th>
+                    <th>Tên chương trình</th>
+                    <th>Loại</th>
+                    <th>Khoa chuyên môn</th>
+                    <th>Đơn vị quản lý</th>
+                    <th>Áp dụng</th>
+                    <th>Tích hợp CN-KS</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var program in Model.ChuongTrinhs.OrderBy(item => item.MaChuongTrinh))
+                {
+                    <tr>
+                        <td>@program.MaChuongTrinh</td>
+                        <td>
+                            @program.TenChuongTrinh
+                            @if (!string.IsNullOrWhiteSpace(program.GhiChu))
+                            {
+                                <div class="small text-muted">@program.GhiChu</div>
+                            }
+                        </td>
+                        <td>@program.LoaiChuongTrinh</td>
+                        <td>@program.KhoaChuyenMon</td>
+                        <td>@program.KhoaQuanLy</td>
+                        <td>@(program.ApDungTuKhoa.HasValue ? $"Từ khóa {program.ApDungTuKhoa}" : program.HinhThucLienKet)</td>
+                        <td>@(program.TichHopCuNhanKySu ? "Có" : "Không")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p class="text-muted">Chưa có chương trình đặc thù được liên kết với ngành này.</p>
+}
+
+<h4>Lớp thuộc ngành</h4>
+@if (Model.Lops.Count > 0)
+{
+    <ul>
+        @foreach (var lop in Model.Lops.OrderBy(item => item.TenLop))
+        {
+            <li>@lop.TenLop (@lop.SinhViens.Count sinh viên)</li>
+        }
+    </ul>
+}
+else
+{
+    <p class="text-muted">Ngành này chưa có lớp.</p>
+}
+
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Sửa</a>
+<a asp-action="Index" class="btn btn-secondary">Quay lại</a>

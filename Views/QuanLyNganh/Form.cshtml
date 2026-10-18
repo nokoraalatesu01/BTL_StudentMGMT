@@ -1,0 +1,42 @@
+@model BTL_StudentMGMT.Models.NganhFormViewModel
+@{
+    var isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Sửa ngành" : "Thêm ngành";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form method="post" asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@Model.Id" class="row g-3" style="max-width:720px">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="col-md-6">
+        <label asp-for="MaNganh" class="form-label"></label>
+        <input asp-for="MaNganh" class="form-control" />
+        <span asp-validation-for="MaNganh" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="TenKhoa" class="form-label">Khoa chuyên môn</label>
+        <input asp-for="TenKhoa" class="form-control" />
+        <span asp-validation-for="TenKhoa" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <label asp-for="TenNganh" class="form-label"></label>
+        <input asp-for="TenNganh" class="form-control" />
+        <span asp-validation-for="TenNganh" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <div class="form-check">
+            <input asp-for="TichHopCuNhanKySu" class="form-check-input" />
+            <label asp-for="TichHopCuNhanKySu" class="form-check-label"></label>
+        </div>
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Quản trị</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" />
+</head>
+<body>
+    <div class="admin-wrap">
+        <aside class="sidebar">
+            <div class="brand">Quản trị hệ thống</div>
+            <nav>
+                <a asp-controller="Admin" asp-action="Index">Dashboard</a>
+                <a asp-controller="QuanLySinhVien" asp-action="Index">Quản lý sinh viên</a>
+                <a asp-controller="QuanLyNganh" asp-action="Index">Quản lý ngành</a>
+                <a asp-controller="QuanLyLop" asp-action="Index">Quản lý lớp</a>
+                @* Thêm dần khi làm xong:
+                <a asp-controller="QuanLyGiangVien" asp-action="Index">Quản lý giảng viên</a>
+                <a asp-controller="QuanLyTaiKhoan" asp-action="Index">Quản lý tài khoản</a>
+                *@
+            </nav>
+            <form asp-controller="Account" asp-action="Logout" method="post" class="logout">
+                <div class="small mb-2">@User.Identity?.Name</div>
+                <button type="submit" class="btn btn-sm btn-light w-100">Đăng xuất</button>
+            </form>
+        </aside>
+
+        <main class="content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
