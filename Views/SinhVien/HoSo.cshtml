@@ -1,0 +1,82 @@
+@model BTL_StudentMGMT.Models.SinhVienPortalViewModel
+@{
+    ViewData["Title"] = "Hồ sơ của tôi";
+    Layout = "_SinhVienLayout";
+    var displayName = string.IsNullOrWhiteSpace(Model.HoTen) ? "Sinh viên" : Model.HoTen.Trim();
+    var nameInitial = displayName[0].ToString().ToUpperInvariant();
+}
+
+<div class="student-page-heading">
+    <div>
+        <p class="student-eyebrow">TÀI KHOẢN SINH VIÊN</p>
+        <h1>Hồ sơ của tôi</h1>
+        <p>Thông tin cá nhân và đào tạo được ghi nhận trong hệ thống.</p>
+    </div>
+    <a class="student-back-link" asp-action="Index">← Về tổng quan</a>
+</div>
+
+<section class="student-panel profile-panel">
+    <div class="profile-banner">
+        <div class="student-avatar large" aria-hidden="true">@nameInitial</div>
+        <div>
+            <h2>@displayName</h2>
+            <p>Mã sinh viên: <strong>@Model.MaSinhVien</strong></p>
+        </div>
+    </div>
+
+    <div class="profile-section">
+        <h3>Thông tin cá nhân</h3>
+        <dl class="student-info-list">
+            <div>
+                <dt>Tài khoản đăng nhập</dt>
+                <dd>@Model.UserName</dd>
+            </div>
+            <div>
+                <dt>Ngày sinh</dt>
+                <dd>@(Model.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</dd>
+            </div>
+            <div>
+                <dt>Giới tính</dt>
+                <dd>@(Model.GioiTinh ?? "Chưa cập nhật")</dd>
+            </div>
+            <div>
+                <dt>Email</dt>
+                <dd>@(Model.Email ?? "Chưa cập nhật")</dd>
+            </div>
+            <div>
+                <dt>Số điện thoại</dt>
+                <dd>@(Model.SoDienThoai ?? "Chưa cập nhật")</dd>
+            </div>
+            <div>
+                <dt>Địa chỉ</dt>
+                <dd>@(Model.DiaChi ?? "Chưa cập nhật")</dd>
+            </div>
+        </dl>
+    </div>
+
+    <div class="profile-section">
+        <h3>Thông tin đào tạo</h3>
+        <dl class="student-info-list">
+            <div>
+                <dt>Lớp</dt>
+                <dd>@(Model.TenLop ?? "Chưa xếp lớp")</dd>
+            </div>
+            <div>
+                <dt>Ngành</dt>
+                <dd>@(Model.TenNganh ?? "Chưa cập nhật")</dd>
+            </div>
+            <div>
+                <dt>Mã ngành</dt>
+                <dd>@(Model.MaNganh ?? "Chưa cập nhật")</dd>
+            </div>
+            <div>
+                <dt>Khoa</dt>
+                <dd>@(Model.TenKhoa ?? "Chưa cập nhật")</dd>
+            </div>
+        </dl>
+    </div>
+
+    <p class="student-data-note">
+        Cần điều chỉnh hồ sơ? Vui lòng liên hệ bộ phận quản lý sinh viên để được hỗ trợ.
+    </p>
+</section>

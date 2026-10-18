@@ -8,42 +8,123 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Hệ thống quản lý sinh viên</title>
-    <link rel="stylesheet" href="~/css/login.css" />
+    <meta name="theme-color" content="#123b72" />
+    <title>Đăng nhập - Hệ thống quản lý sinh viên</title>
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
 </head>
 <body>
-    <div class="split">
-        <section class="intro">
-            <h1>Hệ thống Quản lý Sinh viên</h1>
-            <p>Quản lý hồ sơ, lớp, học phần và kết quả học tập trên một nền tảng duy nhất.</p>
-            <ul>
-                <li><b>Admin:</b> quản lý toàn bộ dữ liệu và tài khoản</li>
-                <li><b>Giảng viên:</b> quản lý lớp học phần và điểm</li>
-                <li><b>Sinh viên:</b> tra cứu hồ sơ và kết quả học tập</li>
-            </ul>
+    <main class="login-page">
+        <section class="welcome-panel" aria-labelledby="welcome-title">
+            <a class="brand" asp-controller="Account" asp-action="Login" aria-label="Hệ thống quản lý sinh viên">
+                <span class="brand-mark" aria-hidden="true">SV</span>
+                <span class="brand-name">CỔNG SINH VIÊN</span>
+            </a>
+
+            <div class="welcome-copy">
+                <p class="eyebrow">HỆ THỐNG QUẢN LÝ SINH VIÊN</p>
+                <h1 id="welcome-title">Chào mừng bạn<br />trở lại.</h1>
+                <p class="welcome-description">
+                    Đăng nhập bằng tài khoản được cấp để tiếp tục vào hệ thống.
+                </p>
+            </div>
+
+            <div class="welcome-note">
+                <span class="note-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M12 3 5 6v5c0 4.4 2.9 8.3 7 9.5 4.1-1.2 7-5.1 7-9.5V6l-7-3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+                        <path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </span>
+                <span>
+                    <strong>Đăng nhập an toàn</strong>
+                    <span>Thông tin tài khoản của bạn được bảo vệ.</span>
+                </span>
+            </div>
+
+            <span class="decor decor-one" aria-hidden="true"></span>
+            <span class="decor decor-two" aria-hidden="true"></span>
         </section>
 
-        <section class="login">
-            <form method="post" asp-action="Login" class="card">
-                <h2>Đăng nhập</h2>
-                <div asp-validation-summary="ModelOnly" class="error"></div>
+        <section class="form-panel" aria-labelledby="login-title">
+            <div class="login-card">
+                <div class="mobile-brand" aria-hidden="true">
+                    <span class="brand-mark">SV</span>
+                    <span class="brand-name">CỔNG SINH VIÊN</span>
+                </div>
 
-                <label asp-for="UserName">Tài khoản</label>
-                <input asp-for="UserName" placeholder="Nhập tài khoản" autofocus />
-                <span asp-validation-for="UserName" class="error"></span>
+                <p class="form-eyebrow">TÀI KHOẢN CỦA BẠN</p>
+                <h2 id="login-title">Đăng nhập</h2>
+                <p class="form-description">Nhập thông tin để truy cập hệ thống.</p>
 
-                <label asp-for="Password">Mật khẩu</label>
-                <input asp-for="Password" placeholder="Nhập mật khẩu" />
-                <span asp-validation-for="Password" class="error"></span>
+                <form method="post" asp-action="Login" class="login-form">
+                    <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div>
 
-                <label class="remember">
-                    <input asp-for="RememberMe" /> Ghi nhớ đăng nhập
-                </label>
-                <button type="submit">Đăng nhập</button>
-            </form>
+                    <div class="field">
+                        <label asp-for="UserName">Tài khoản</label>
+                        <div class="input-wrap">
+                            <span class="input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.7" />
+                                    <path d="M5 20c.4-3.4 3.2-5.5 7-5.5s6.6 2.1 7 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                </svg>
+                            </span>
+                            <input asp-for="UserName" placeholder="Nhập tài khoản của bạn" autocomplete="username" autofocus />
+                        </div>
+                        <span asp-validation-for="UserName" class="field-error"></span>
+                    </div>
+
+                    <div class="field">
+                        <label asp-for="Password">Mật khẩu</label>
+                        <div class="input-wrap">
+                            <span class="input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <rect x="5" y="10" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                    <path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                    <path d="M12 14v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                </svg>
+                            </span>
+                            <input asp-for="Password" placeholder="Nhập mật khẩu" autocomplete="current-password" />
+                            <button class="password-toggle" type="button" aria-label="Hiện mật khẩu" aria-pressed="false" aria-controls="Password">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M2.5 12s3.2-6 9.5-6 9.5 6 9.5 6-3.2 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+                                    <circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.7" />
+                                </svg>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="field-error"></span>
+                    </div>
+
+                    <label class="remember-option">
+                        <input asp-for="RememberMe" />
+                        <span class="custom-checkbox" aria-hidden="true"></span>
+                        <span>Ghi nhớ đăng nhập</span>
+                    </label>
+
+                    <button class="submit-button" type="submit">
+                        <span>Đăng nhập</span>
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </form>
+
+                <p class="login-footnote">Vui lòng sử dụng tài khoản do nhà trường cấp.</p>
+            </div>
         </section>
-    </div>
+    </main>
 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const passwordInput = document.getElementById("Password");
+        const passwordToggle = document.querySelector(".password-toggle");
+
+        passwordToggle.addEventListener("click", () => {
+            const isVisible = passwordInput.type === "text";
+            passwordInput.type = isVisible ? "password" : "text";
+            passwordToggle.setAttribute("aria-pressed", String(!isVisible));
+            passwordToggle.setAttribute("aria-label", isVisible ? "Hiện mật khẩu" : "Ẩn mật khẩu");
+        });
+    </script>
 </body>
 </html>

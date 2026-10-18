@@ -1,0 +1,65 @@
+@{
+    var accountName = User.Identity?.Name ?? "";
+    var accountInitial = string.IsNullOrWhiteSpace(accountName) ? "S" : accountName.Trim()[0].ToString().ToUpperInvariant();
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f7fb" />
+    <title>@ViewData["Title"] - Cổng sinh viên</title>
+    <link rel="stylesheet" href="~/css/sinhvien.css" asp-append-version="true" />
+</head>
+<body class="student-body">
+    <div class="student-app">
+        <aside class="student-sidebar">
+            <a class="student-brand" asp-controller="SinhVien" asp-action="Index">
+                <span class="student-brand-mark" aria-hidden="true">SV</span>
+                <span>CỔNG SINH VIÊN</span>
+            </a>
+
+            <p class="student-nav-label">KHÔNG GIAN CỦA BẠN</p>
+            <nav class="student-nav" aria-label="Điều hướng sinh viên">
+                <a asp-controller="SinhVien" asp-action="Index"
+                   class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">⌂</span>
+                    <span>Tổng quan</span>
+                </a>
+                <a asp-controller="SinhVien" asp-action="HoSo"
+                   class="@(ViewContext.RouteData.Values["action"]?.ToString() == "HoSo" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">◎</span>
+                    <span>Hồ sơ của tôi</span>
+                </a>
+            </nav>
+
+            <div class="student-sidebar-bottom">
+                <div class="sidebar-help">
+                    <strong>Cần hỗ trợ?</strong>
+                    <span>Liên hệ bộ phận quản lý sinh viên khi thông tin chưa chính xác.</span>
+                </div>
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button class="student-logout" type="submit">
+                        <span aria-hidden="true">↪</span>
+                        <span>Đăng xuất</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <div class="student-main">
+            <header class="student-topbar">
+                <span class="topbar-title">Cổng thông tin sinh viên</span>
+                <div class="topbar-user">
+                    <span class="topbar-avatar" aria-hidden="true">@accountInitial</span>
+                    <span>@accountName</span>
+                </div>
+            </header>
+            <main class="student-content">
+                @RenderBody()
+            </main>
+            <footer class="student-footer">Cổng thông tin sinh viên</footer>
+        </div>
+    </div>
+</body>
+</html>

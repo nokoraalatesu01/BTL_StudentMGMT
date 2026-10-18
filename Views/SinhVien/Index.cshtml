@@ -1,9 +1,119 @@
+@model BTL_StudentMGMT.Models.SinhVienPortalViewModel
 @{
-    ViewData["Title"] = "Trang Sinh viên";
+    ViewData["Title"] = "Tổng quan sinh viên";
+    Layout = "_SinhVienLayout";
+    var displayName = string.IsNullOrWhiteSpace(Model.HoTen) ? "Sinh viên" : Model.HoTen.Trim();
+    var nameInitial = displayName[0].ToString().ToUpperInvariant();
 }
 
-<h2>Xin chào Sinh viên, @User.Identity?.Name</h2>
+<section class="student-welcome">
+    <div>
+        <p class="student-eyebrow">CỔNG THÔNG TIN SINH VIÊN</p>
+        <h1>Xin chào, @displayName</h1>
+        <p>Đây là trang tổng quan hồ sơ học tập của bạn.</p>
+    </div>
+    <div class="student-avatar" aria-hidden="true">@nameInitial</div>
+</section>
 
-<form asp-controller="Account" asp-action="Logout" method="post">
-    <button type="submit">Đăng xuất</button>
-</form>
+<section class="student-stat-grid" aria-label="Thông tin học tập">
+    <article class="student-stat-card">
+        <span class="student-stat-icon student-icon-blue" aria-hidden="true">SV</span>
+        <div>
+            <p>Mã sinh viên</p>
+            <strong>@Model.MaSinhVien</strong>
+        </div>
+    </article>
+    <article class="student-stat-card">
+        <span class="student-stat-icon student-icon-green" aria-hidden="true">L</span>
+        <div>
+            <p>Lớp hành chính</p>
+            <strong>@(Model.TenLop ?? "Chưa xếp lớp")</strong>
+        </div>
+    </article>
+    <article class="student-stat-card">
+        <span class="student-stat-icon student-icon-violet" aria-hidden="true">N</span>
+        <div>
+            <p>Ngành đào tạo</p>
+            <strong>@(Model.TenNganh ?? "Chưa xác định")</strong>
+        </div>
+    </article>
+</section>
+
+<div class="student-content-grid">
+    <section class="student-panel">
+        <div class="student-panel-heading">
+            <div>
+                <p class="student-eyebrow">HỒ SƠ CÁ NHÂN</p>
+                <h2>Thông tin của tôi</h2>
+            </div>
+            <a class="student-text-link" asp-action="HoSo">Xem đầy đủ <span aria-hidden="true">→</span></a>
+        </div>
+
+        <dl class="student-info-list">
+            <div>
+                <dt>Họ và tên</dt>
+                <dd>@Model.HoTen</dd>
+            </div>
+            <div>
+                <dt>Mã sinh viên</dt>
+                <dd>@Model.MaSinhVien</dd>
+            </div>
+            <div>
+                <dt>Email</dt>
+                <dd>@(Model.Email ?? "Chưa cập nhật")</dd>
+            </div>
+            <div>
+                <dt>Số điện thoại</dt>
+                <dd>@(Model.SoDienThoai ?? "Chưa cập nhật")</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="student-panel class-panel">
+        <div class="student-panel-heading">
+            <div>
+                <p class="student-eyebrow">THÔNG TIN ĐÀO TẠO</p>
+                <h2>Lớp và ngành</h2>
+            </div>
+            <span class="student-cap-icon" aria-hidden="true">✦</span>
+        </div>
+
+        @if (Model.TenLop == null)
+        {
+            <div class="student-notice">
+                <strong>Bạn chưa được xếp lớp</strong>
+                <p>Thông tin lớp và ngành sẽ được hiển thị sau khi nhà trường cập nhật hồ sơ.</p>
+            </div>
+        }
+        else
+        {
+            <dl class="student-info-list compact">
+                <div>
+                    <dt>Lớp</dt>
+                    <dd>@Model.TenLop</dd>
+                </div>
+                <div>
+                    <dt>Ngành</dt>
+                    <dd>@(Model.TenNganh ?? "Chưa cập nhật")</dd>
+                </div>
+                <div>
+                    <dt>Mã ngành</dt>
+                    <dd>@(Model.MaNganh ?? "Chưa cập nhật")</dd>
+                </div>
+                <div>
+                    <dt>Khoa</dt>
+                    <dd>@(Model.TenKhoa ?? "Chưa cập nhật")</dd>
+                </div>
+                <div>
+                    <dt>Sĩ số lớp</dt>
+                    <dd>@(Model.SiSoLop?.ToString() ?? "Chưa có dữ liệu")</dd>
+                </div>
+            </dl>
+        }
+    </section>
+</div>
+
+<p class="student-data-note">
+    Dữ liệu trên trang được lấy từ hồ sơ hiện tại trong hệ thống. Nếu có thông tin chưa chính xác,
+    vui lòng liên hệ bộ phận quản lý sinh viên.
+</p>
