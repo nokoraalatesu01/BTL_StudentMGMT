@@ -1,0 +1,70 @@
+@model BTL_StudentMGMT.Models.SinhVienFormViewModel
+@{
+    var isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Sửa sinh viên" : "Thêm sinh viên";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form method="post" asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@Model.Id" class="row g-3" style="max-width:720px">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="col-md-6">
+        <label asp-for="MaSinhVien" class="form-label"></label>
+        <input asp-for="MaSinhVien" class="form-control" />
+        <span asp-validation-for="MaSinhVien" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="HoTen" class="form-label"></label>
+        <input asp-for="HoTen" class="form-control" />
+        <span asp-validation-for="HoTen" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="NgaySinh" class="form-label"></label>
+        <input asp-for="NgaySinh" class="form-control" type="date" />
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="GioiTinh" class="form-label"></label>
+        <select asp-for="GioiTinh" class="form-select">
+            <option value="">-- Chọn --</option>
+            <option>Nam</option>
+            <option>Nữ</option>
+        </select>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="SoDienThoai" class="form-label"></label>
+        <input asp-for="SoDienThoai" class="form-control" />
+    </div>
+
+    <div class="col-12">
+        <label asp-for="DiaChi" class="form-label"></label>
+        <input asp-for="DiaChi" class="form-control" />
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="LopId" class="form-label"></label>
+        <select asp-for="LopId" asp-items="ViewBag.DanhSachLop" class="form-select">
+            <option value="">-- Chưa xếp lớp --</option>
+        </select>
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

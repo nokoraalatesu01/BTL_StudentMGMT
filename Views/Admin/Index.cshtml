@@ -4,6 +4,10 @@
 
 <h2>Xin chào Admin, @User.Identity?.Name</h2>
 
+<div class="mb-3">
+    <a asp-controller="QuanLySinhVien" asp-action="Index" class="btn btn-primary">Quản lý sinh viên</a>
+</div>
+
 <form asp-controller="Account" asp-action="Logout" method="post">
-    <button type="submit">Đăng xuất</button>
+    <button type="submit" class="btn btn-outline-danger">Đăng xuất</button>
 </form>
