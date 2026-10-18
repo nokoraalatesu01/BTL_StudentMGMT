@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace BTL_StudentMGMT.Controllers;
 
@@ -11,10 +12,12 @@ namespace BTL_StudentMGMT.Controllers;
 public class QuanLySinhVienController : Controller
 {
     private readonly ApplicationDbContext _db;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public QuanLySinhVienController(ApplicationDbContext db)
+    public QuanLySinhVienController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
     {
         _db = db;
+        _userManager = userManager;
     }
 
     public async Task<IActionResult> Index(string? tuKhoa, int? lopId, int page = 1)
@@ -183,13 +186,39 @@ public class QuanLySinhVienController : Controller
     public async Task<IActionResult> Delete(int id)
     {
         var sinhVien = await _db.SinhViens.FindAsync(id);
-        if (sinhVien != null)
+        if (sinhVien == null)
         {
-            _db.SinhViens.Remove(sinhVien);
-            await _db.SaveChangesAsync();
-            TempData["Msg"] = "Đã xóa sinh viên";
+            return NotFound();
         }
 
+        if (sinhVien.UserId == _userManager.GetUserId(User))
+        {
+            TempData["Error"] = "Không thể xóa hồ sơ đang gắn với tài khoản Admin hiện tại.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+        await _db.Diems.Where(diem => diem.SinhVienId == id).ExecuteDeleteAsync();
+        _db.SinhViens.Remove(sinhVien);
+        await _db.SaveChangesAsync();
+
+        if (sinhVien.UserId != null)
+        {
+            var user = await _userManager.FindByIdAsync(sinhVien.UserId);
+            if (user != null)
+            {
+                var deleteResult = await _userManager.DeleteAsync(user);
+                if (!deleteResult.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+                    TempData["Error"] = $"Không thể xóa tài khoản sinh viên: {string.Join("; ", deleteResult.Errors.Select(error => error.Description))}";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+        }
+
+        await transaction.CommitAsync();
+        TempData["Msg"] = "Đã xóa sinh viên, điểm học phần và tài khoản liên kết (nếu có).";
         return RedirectToAction(nameof(Index));
     }
 

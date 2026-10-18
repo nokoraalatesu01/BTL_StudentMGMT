@@ -43,7 +43,7 @@ public class AccountController : Controller
             model.UserName,
             model.Password,
             model.RememberMe,
-            lockoutOnFailure: false);
+            lockoutOnFailure: true);
 
         if (result.Succeeded)
         {

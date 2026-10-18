@@ -1,35 +1,82 @@
+@{
+    var accountName = User.Identity?.Name ?? "";
+    var accountInitial = string.IsNullOrWhiteSpace(accountName) ? "A" : accountName.Trim()[0].ToString().ToUpperInvariant();
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f7fb" />
     <title>@ViewData["Title"] - Quản trị</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/admin.css" />
+    <link rel="stylesheet" href="~/css/sinhvien.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
 </head>
-<body>
-    <div class="admin-wrap">
-        <aside class="sidebar">
-            <div class="brand">Quản trị hệ thống</div>
-            <nav>
-                <a asp-controller="Admin" asp-action="Index">Dashboard</a>
-                <a asp-controller="QuanLySinhVien" asp-action="Index">Quản lý sinh viên</a>
-                <a asp-controller="QuanLyNganh" asp-action="Index">Quản lý ngành</a>
-                <a asp-controller="QuanLyLop" asp-action="Index">Quản lý lớp</a>
-                @* Thêm dần khi làm xong:
-                <a asp-controller="QuanLyGiangVien" asp-action="Index">Quản lý giảng viên</a>
-                <a asp-controller="QuanLyTaiKhoan" asp-action="Index">Quản lý tài khoản</a>
-                *@
+<body class="student-body admin-body">
+    <div class="student-app admin-app">
+        <aside class="student-sidebar admin-sidebar">
+            <a class="student-brand admin-brand" asp-controller="Admin" asp-action="Index">
+                <span class="student-brand-mark" aria-hidden="true">AD</span>
+                <span>QUẢN TRỊ HỆ THỐNG</span>
+            </a>
+
+            <p class="student-nav-label">KHÔNG GIAN QUẢN TRỊ</p>
+            <nav class="student-nav admin-nav" aria-label="Điều hướng quản trị">
+                <a asp-controller="Admin" asp-action="Index" class="@(currentController == "Admin" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">⌂</span>
+                    <span>Tổng quan</span>
+                </a>
+                <a asp-controller="QuanLySinhVien" asp-action="Index" class="@(currentController == "QuanLySinhVien" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">◎</span>
+                    <span>Quản lý sinh viên</span>
+                </a>
+                <a asp-controller="QuanLyGiangVien" asp-action="Index" class="@(currentController == "QuanLyGiangVien" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">♙</span>
+                    <span>Quản lý giảng viên</span>
+                </a>
+                <a asp-controller="QuanLyTaiKhoan" asp-action="Index" class="@(currentController == "QuanLyTaiKhoan" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">◈</span>
+                    <span>Quản lý tài khoản</span>
+                </a>
+                <a asp-controller="QuanLyNganh" asp-action="Index" class="@(currentController == "QuanLyNganh" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">▤</span>
+                    <span>Quản lý ngành</span>
+                </a>
+                <a asp-controller="QuanLyLop" asp-action="Index" class="@(currentController == "QuanLyLop" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">▦</span>
+                    <span>Quản lý lớp</span>
+                </a>
             </nav>
-            <form asp-controller="Account" asp-action="Logout" method="post" class="logout">
-                <div class="small mb-2">@User.Identity?.Name</div>
-                <button type="submit" class="btn btn-sm btn-light w-100">Đăng xuất</button>
-            </form>
+
+            <div class="student-sidebar-bottom">
+                <div class="sidebar-help">
+                    <strong>Quản trị hệ thống</strong>
+                    <span>Quản lý hồ sơ, chương trình đào tạo và tài khoản người dùng.</span>
+                </div>
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button class="student-logout" type="submit">
+                        <span aria-hidden="true">↪</span>
+                        <span>Đăng xuất</span>
+                    </button>
+                </form>
+            </div>
         </aside>
 
-        <main class="content">
-            @RenderBody()
-        </main>
+        <div class="student-main admin-main">
+            <header class="student-topbar">
+                <span class="topbar-title">Cổng quản trị hệ thống</span>
+                <div class="topbar-user">
+                    <span class="topbar-avatar" aria-hidden="true">@accountInitial</span>
+                    <span>@accountName</span>
+                </div>
+            </header>
+            <main class="student-content admin-content">
+                @RenderBody()
+            </main>
+            <footer class="student-footer">Cổng quản trị hệ thống &copy; @DateTime.Now.Year</footer>
+        </div>
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

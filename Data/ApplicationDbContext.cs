@@ -85,5 +85,46 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany(nganh => nganh.ChuongTrinhs)
             .HasForeignKey(chuongTrinh => chuongTrinh.NganhId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<GiangVien>()
+            .Property(giangVien => giangVien.MaGiangVien)
+            .HasMaxLength(30);
+        modelBuilder.Entity<GiangVien>()
+            .Property(giangVien => giangVien.HoTen)
+            .HasMaxLength(150);
+        modelBuilder.Entity<GiangVien>()
+            .Property(giangVien => giangVien.Email)
+            .HasMaxLength(256);
+        modelBuilder.Entity<GiangVien>()
+            .Property(giangVien => giangVien.SoDienThoai)
+            .HasMaxLength(30);
+        modelBuilder.Entity<GiangVien>()
+            .HasIndex(giangVien => giangVien.MaGiangVien)
+            .IsUnique();
+        modelBuilder.Entity<GiangVien>()
+            .HasIndex(giangVien => giangVien.UserId)
+            .IsUnique()
+            .HasFilter("[UserId] IS NOT NULL");
+        modelBuilder.Entity<SinhVien>()
+            .HasIndex(sinhVien => sinhVien.UserId)
+            .IsUnique()
+            .HasFilter("[UserId] IS NOT NULL");
+
+        modelBuilder.Entity<MonHoc>()
+            .Property(monHoc => monHoc.MaMon)
+            .HasMaxLength(50);
+        modelBuilder.Entity<MonHoc>()
+            .Property(monHoc => monHoc.TenMon)
+            .HasMaxLength(255);
+        modelBuilder.Entity<Diem>()
+            .HasOne(diem => diem.SinhVien)
+            .WithMany()
+            .HasForeignKey(diem => diem.SinhVienId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Diem>()
+            .HasOne(diem => diem.MonHoc)
+            .WithMany()
+            .HasForeignKey(diem => diem.MonHocId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

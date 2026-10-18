@@ -14,31 +14,6 @@ public static class DbSeeder
 
         await db.Database.MigrateAsync();
 
-        // Đảm bảo tạo bảng MonHocs và Diems nếu chưa tồn tại
-        await db.Database.ExecuteSqlRawAsync(@"
-            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='MonHocs' and xtype='U')
-            BEGIN
-                CREATE TABLE MonHocs (
-                    Id INT IDENTITY(1,1) PRIMARY KEY,
-                    MaMon NVARCHAR(50) NOT NULL,
-                    TenMon NVARCHAR(255) NOT NULL,
-                    SoTinChi INT NOT NULL
-                );
-            END;
-
-            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Diems' and xtype='U')
-            BEGIN
-                CREATE TABLE Diems (
-                    Id INT IDENTITY(1,1) PRIMARY KEY,
-                    SinhVienId INT NOT NULL,
-                    MonHocId INT NOT NULL,
-                    DiemChuyenCan FLOAT NOT NULL,
-                    DiemGiuaKy FLOAT NOT NULL,
-                    DiemCuoiKy FLOAT NOT NULL
-                );
-            END;
-        ");
-
         // Seed Roles
         foreach (var role in new[] { "Admin", "GiangVien", "SinhVien" })
         {
@@ -178,6 +153,18 @@ public static class DbSeeder
         var user = await userManager.FindByNameAsync(userName);
         if (user != null)
         {
+            if (!user.LockoutEnabled)
+            {
+                user.LockoutEnabled = true;
+                var updateResult = await userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    throw new InvalidOperationException(
+                        $"Không thể bật khóa đăng nhập cho tài khoản mẫu {userName}: " +
+                        string.Join("; ", updateResult.Errors.Select(error => error.Description)));
+                }
+            }
+
             return user;
         }
 
@@ -185,7 +172,8 @@ public static class DbSeeder
         {
             UserName = userName,
             HoTen = hoTen,
-            EmailConfirmed = true
+            EmailConfirmed = true,
+            LockoutEnabled = true
         };
 
         var result = await userManager.CreateAsync(user, password);

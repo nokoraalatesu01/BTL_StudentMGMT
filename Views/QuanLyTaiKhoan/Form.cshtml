@@ -1,0 +1,78 @@
+@model BTL_StudentMGMT.Models.TaoTaiKhoanViewModel
+@{
+    ViewData["Title"] = "Tạo tài khoản";
+}
+
+<div class="mb-4">
+    <h2>Tạo tài khoản hồ sơ</h2>
+    <p class="text-muted mb-0">Chỉ các hồ sơ chưa được liên kết mới xuất hiện trong danh sách.</p>
+</div>
+
+<div class="stat-card" style="max-width:760px">
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+        <div class="mb-3">
+            <label asp-for="LoaiHoSo" class="form-label"></label>
+            <select asp-for="LoaiHoSo" asp-items="Model.LoaiHoSoOptions" class="form-select" id="LoaiHoSo">
+                <option value="">-- Chọn loại hồ sơ --</option>
+            </select>
+            <span asp-validation-for="LoaiHoSo" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="HoSoId" class="form-label"></label>
+            <select asp-for="HoSoId" asp-items="Model.HoSoOptions" class="form-select" id="HoSoId">
+                <option value="0">-- Chọn hồ sơ --</option>
+            </select>
+            <span asp-validation-for="HoSoId" class="text-danger"></span>
+            @if (Model.HoSoOptions.Count == 0)
+            {
+                <div class="form-text">Chọn loại hồ sơ để tải các hồ sơ chưa có tài khoản.</div>
+            }
+        </div>
+        <div class="mb-3">
+            <label asp-for="UserName" class="form-label"></label>
+            <input asp-for="UserName" class="form-control" autocomplete="username" />
+            <div class="form-text">Có thể dùng mã sinh viên hoặc mã giảng viên làm tên đăng nhập.</div>
+            <span asp-validation-for="UserName" class="text-danger"></span>
+        </div>
+        <div class="mb-4">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control" autocomplete="new-password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Tạo và liên kết tài khoản</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        const typeSelect = document.getElementById("LoaiHoSo");
+        const profileSelect = document.getElementById("HoSoId");
+        const profileUrl = '@Url.Action("Profiles", "QuanLyTaiKhoan")';
+
+        typeSelect.addEventListener("change", async () => {
+            profileSelect.replaceChildren(new Option("-- Đang tải hồ sơ --", "0"));
+            profileSelect.disabled = true;
+
+            if (!typeSelect.value) {
+                profileSelect.replaceChildren(new Option("-- Chọn loại hồ sơ trước --", "0"));
+                return;
+            }
+
+            const response = await fetch(`${profileUrl}?loaiHoSo=${encodeURIComponent(typeSelect.value)}`);
+            if (!response.ok) {
+                profileSelect.replaceChildren(new Option("-- Không tải được hồ sơ --", "0"));
+                return;
+            }
+
+            const profiles = await response.json();
+            profileSelect.replaceChildren(new Option("-- Chọn hồ sơ --", "0"));
+            for (const profile of profiles) {
+                profileSelect.add(new Option(profile.text, profile.value));
+            }
+            profileSelect.disabled = false;
+        });
+    </script>
+}

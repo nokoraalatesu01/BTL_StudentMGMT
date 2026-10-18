@@ -1,0 +1,74 @@
+@model BTL_StudentMGMT.Models.TaiKhoanListViewModel
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h2 class="mb-1">Quản lý tài khoản</h2>
+        <p class="text-muted mb-0">Tạo tài khoản Identity, quản lý trạng thái và đặt lại mật khẩu.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">Tạo tài khoản hồ sơ</a>
+</div>
+
+@if (TempData["Msg"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<div class="stat-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Tên đăng nhập</th>
+                    <th>Họ tên</th>
+                    <th>Vai trò</th>
+                    <th>Hồ sơ liên kết</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var account in Model.TaiKhoans)
+                {
+                    <tr>
+                        <td class="fw-semibold">@account.UserName @(account.IsCurrentUser ? "(bạn)" : "")</td>
+                        <td>@(account.HoTen ?? "—")</td>
+                        <td>@account.VaiTro</td>
+                        <td>@(account.HoSoLienKet ?? "Chưa liên kết hồ sơ")</td>
+                        <td>
+                            @if (account.IsLocked)
+                            {
+                                <span class="badge text-bg-danger">Đã khóa</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-success">Đang hoạt động</span>
+                            }
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <a asp-action="ResetPassword" asp-route-id="@account.UserId" class="btn btn-sm btn-outline-primary">Đặt lại mật khẩu</a>
+                            @if (!account.IsCurrentUser)
+                            {
+                                <form asp-action="@(account.IsLocked ? "Unlock" : "Lock")" asp-route-id="@account.UserId" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm @(account.IsLocked ? "btn-outline-success" : "btn-outline-danger")">
+                                        @(account.IsLocked ? "Mở khóa" : "Khóa")
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (Model.TaiKhoans.Count == 0)
+                {
+                    <tr><td colspan="6" class="py-4 text-center text-muted">Chưa có tài khoản.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
