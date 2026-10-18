@@ -1,31 +1,453 @@
-html {
-  font-size: 14px;
-}
+/* ========================================================
+   STUDENT MANAGEMENT SYSTEM - MODERN TOP-NAV DESIGN
+   Tông màu Xanh Navy/Blue đồng bộ với màn hình Login
+======================================================== */
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
+:root {
+  --font-family-base: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --bg-app: #f4f6fa;
+  --bg-card: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  
+  /* Tông màu xanh đồng bộ hoàn toàn với màn hình Login (#1e3a8a - #2563eb) */
+  --primary-blue: #2563eb;
+  --primary-navy: #1e3a8a;
+  --primary-gradient: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  --primary-light: #eff6ff;
 
-html {
-  position: relative;
-  min-height: 100%;
+  --success: #16a34a;
+  --success-light: #dcfce7;
+  --warning: #d97706;
+  --warning-light: #fef3c7;
+  --info: #0284c7;
+  --info-light: #e0f2fe;
+  --danger: #dc2626;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
 }
 
 body {
-  margin-bottom: 60px;
+  font-family: var(--font-family-base);
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+/* ================= Top Navbar Ngang Hiện Đại ================= */
+.main-navbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  padding: 0.75rem 0;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+.navbar-brand {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--primary-navy) !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-badge-icon {
+  width: 38px;
+  height: 38px;
+  background: var(--primary-gradient);
+  color: #ffffff;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+.nav-link {
+  font-weight: 600;
+  color: #4b5563 !important;
+  padding: 0.5rem 0.9rem !important;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  font-size: 0.92rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-link:hover {
+  color: var(--primary-blue) !important;
+  background-color: var(--primary-light);
+}
+
+.nav-link.active {
+  color: var(--primary-blue) !important;
+  background-color: var(--primary-light);
+}
+
+/* User Pill góc phải */
+.user-profile-pill {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 30px;
+  padding: 4px 12px 4px 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar-circle-sm {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* ================= Hero Banner ================= */
+.hero-card-banner {
+  background: var(--primary-gradient);
+  color: #ffffff !important;
+  border-radius: var(--radius-lg);
+  padding: 2.2rem 2.5rem;
+  box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-card-banner * {
+  color: #ffffff;
+}
+
+.hero-card-banner .text-sub {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* ================= Modern Cards & Hover ================= */
+.content-card {
+  background: var(--bg-card);
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease;
+}
+
+.hover-effect:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+/* Thống kê Stat Card */
+.stat-box {
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease;
+}
+
+.stat-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+.stat-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.stat-icon-wrap.blue { background: var(--primary-light); color: var(--primary-blue); }
+.stat-icon-wrap.green { background: var(--success-light); color: var(--success); }
+.stat-icon-wrap.amber { background: var(--warning-light); color: var(--warning); }
+
+.stat-big-number {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+/* Action Link */
+.quick-action-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.4rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-main);
+  transition: all 0.2s ease;
+}
+
+.quick-action-item:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-blue);
+  color: var(--primary-blue);
+  transform: translateX(4px);
+}
+
+/* ================= Tables ================= */
+.custom-table-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.custom-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: collapse;
+}
+
+.custom-table thead th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.custom-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.15s ease;
+}
+
+.custom-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.custom-table tbody td {
+  padding: 0.9rem 1.1rem;
+  vertical-align: middle;
+  font-size: 0.88rem;
+}
+
+/* Avatar nhiều màu có chấm online như ảnh */
+.avatar-online-box {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: inline-block;
+}
+
+.avatar-round {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.avatar-round.gray { background: #f1f5f9; color: #64748b; }
+.avatar-round.pink { background: #ffe4e6; color: #e11d48; }
+.avatar-round.cyan { background: #cffafe; color: #0891b2; }
+.avatar-round.purple { background: #ede9fe; color: #7c3aed; }
+.avatar-round.green { background: #dcfce7; color: #16a34a; }
+
+.dot-online {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 9px;
+  height: 9px;
+  background: #22c55e;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+}
+
+/* Badges */
+.badge-gender-nam {
+  background: #e0f2fe;
+  color: #0284c7;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.badge-gender-nu {
+  background: #ffe4e6;
+  color: #e11d48;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.badge-status-danghoc {
+  background: #dcfce7;
+  color: #16a34a;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.badge-status-totnghiep {
+  background: #ede9fe;
+  color: #7c3aed;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.badge-status-baoluu {
+  background: #fef3c7;
+  color: #d97706;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.badge-rank-gioi {
+  background: #dcfce7;
+  color: #16a34a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.badge-rank-kha {
+  background: #e0f2fe;
+  color: #0284c7;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.badge-rank-trungbinh {
+  background: #fef3c7;
+  color: #d97706;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* ================= Forms (Focus viền tối như login, không màu tím) ================= */
+.form-control, .form-select {
+  border-radius: var(--radius-sm);
+  border: 1px solid #d1d5db;
+  padding: 0.65rem 0.95rem;
+  font-size: 0.92rem;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #111827 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.input-group:focus-within .input-group-text,
+.input-group:focus-within .form-control,
+.input-group:focus-within .form-select {
+  border-color: #111827 !important;
+}
+
+/* Buttons */
+.btn-primary-blue {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 1.3rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary-blue:hover {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.btn-outline-custom {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 1.2rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-outline-custom:hover {
+  background: #f8fafc;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+/* Action Icon Buttons */
+.icon-action-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 1.05rem;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-action-btn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.icon-action-btn.delete:hover {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+/* Footer */
+footer {
+  margin-top: auto;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  padding: 1.25rem 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }

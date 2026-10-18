@@ -1,47 +1,165 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - BTL_StudentMGMT</title>
-    <script type="importmap"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Custom Style -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/BTL_StudentMGMT.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">BTL_StudentMGMT</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+    <!-- ================= TOP NAVBAR NGANG SẠCH SẼ ================= -->
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg main-navbar">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="brand-badge-icon">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </span>
+                    <span>BTL_StudentMGMT</span>
+                </a>
+
+                <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                        aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="bi bi-list fs-2 text-dark"></i>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-1">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" ? "active" : "")"
+                                       asp-controller="Admin" asp-action="Index">
+                                        <i class="bi bi-speedometer2"></i> Dashboard
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "QuanLySinhVien" ? "active" : "")"
+                                       asp-controller="QuanLySinhVien" asp-action="Index">
+                                        <i class="bi bi-people-fill"></i> Quản lý sinh viên
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "BangDiem" ? "active" : "")"
+                                       asp-controller="BangDiem" asp-action="Index">
+                                        <i class="bi bi-award-fill"></i> Bảng điểm & Học phần
+                                    </a>
+                                </li>
+                            }
+                            else if (User.IsInRole("GiangVien"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "GiangVien" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
+                                       asp-controller="GiangVien" asp-action="Index">
+                                        <i class="bi bi-house-door-fill"></i> Trang giảng viên
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "DanhSachSinhVien" ? "active" : "")"
+                                       asp-controller="GiangVien" asp-action="DanhSachSinhVien">
+                                        <i class="bi bi-person-vcard-fill"></i> Danh sách sinh viên
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "BangDiem" ? "active" : "")"
+                                       asp-controller="BangDiem" asp-action="Index">
+                                        <i class="bi bi-award-fill"></i> Bảng điểm & Học phần
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "CapNhatThongTin" ? "active" : "")"
+                                       asp-controller="GiangVien" asp-action="CapNhatThongTin">
+                                        <i class="bi bi-person-gear"></i> Cập nhật hồ sơ
+                                    </a>
+                                </li>
+                            }
+                            else if (User.IsInRole("SinhVien"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link active" asp-controller="SinhVien" asp-action="Index">
+                                        <i class="bi bi-person-circle"></i> Trang sinh viên
+                                    </a>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                            </li>
+                        }
                     </ul>
+
+                    <!-- Khu vực người dùng góc phải -->
+                    <div class="d-flex align-items-center gap-3">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <div class="user-profile-pill">
+                                <span class="avatar-circle-sm">
+                                    @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
+                                </span>
+                                <div class="d-flex flex-column text-start">
+                                    <span class="fw-bold text-dark lh-sm" style="font-size: 0.85rem;">@User.Identity?.Name</span>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <span class="badge bg-danger text-white rounded-pill" style="font-size: 0.65rem;">Admin</span>
+                                    }
+                                    else if (User.IsInRole("GiangVien"))
+                                    {
+                                        <span class="badge bg-success text-white rounded-pill" style="font-size: 0.65rem;">Giảng viên</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-primary text-white rounded-pill" style="font-size: 0.65rem;">Sinh viên</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline m-0">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 d-flex align-items-center gap-1">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    <span>Đăng xuất</span>
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a class="btn btn-primary-blue rounded-pill px-4" asp-controller="Account" asp-action="Login">
+                                Đăng nhập
+                            </a>
+                        }
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+    <!-- Nội dung chính căn giữa rộng rãi -->
+    <div class="container py-4 flex-grow-1">
+        <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - BTL_StudentMGMT - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <!-- Footer -->
+    <footer>
+        <div class="container text-center">
+            <span>&copy; @DateTime.Now.Year - BTL_StudentMGMT - Hệ Thống Quản Lý Sinh Viên</span>
         </div>
     </footer>
+
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
