@@ -1,105 +1,92 @@
 @model BTL_StudentMGMT.Models.SinhVien
 @{
-    ViewData["Title"] = "Chi tiết hồ sơ sinh viên";
+    ViewData["Title"] = "Chi tiết sinh viên - " + Model.HoTen;
+    Layout = "_GiangVienLayout";
+    var displayName = string.IsNullOrWhiteSpace(Model.HoTen) ? "Sinh viên" : Model.HoTen.Trim();
+    var nameInitial = displayName[0].ToString().ToUpperInvariant();
 }
 
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="content-card">
-            <div class="p-4 border-bottom bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="avatar-round blue" style="width: 48px; height: 48px; font-size: 1.3rem; background: #eff6ff; color: #2563eb;">
-                        <i class="bi bi-person-fill"></i>
-                    </div>
-                    <div>
-                        <h4 class="fw-bold mb-0 text-dark">@Model.HoTen</h4>
-                        <span class="text-muted small">Mã SV: <strong class="text-primary" style="color: #2563eb !important;">@Model.MaSinhVien</strong></span>
-                    </div>
-                </div>
-                <span class="badge bg-primary-subtle text-primary fs-6 px-3 py-2">
-                    @(Model.Lop?.TenLop ?? "Chưa xếp lớp")
-                </span>
-            </div>
-
-            <div class="p-4">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="p-3 rounded-2 bg-light d-flex align-items-center gap-3">
-                            <i class="bi bi-calendar-event fs-4 text-primary" style="color: #2563eb !important;"></i>
-                            <div>
-                                <small class="text-muted d-block">Ngày sinh</small>
-                                <span class="fw-bold text-dark">@(Model.NgaySinh?.ToString("dd/MM/yyyy") ?? "—")</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="p-3 rounded-2 bg-light d-flex align-items-center gap-3">
-                            <i class="bi bi-gender-ambiguous fs-4 text-info"></i>
-                            <div>
-                                <small class="text-muted d-block">Giới tính</small>
-                                <span class="fw-bold text-dark">@(Model.GioiTinh ?? "—")</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="p-3 rounded-2 bg-light d-flex align-items-center gap-3">
-                            <i class="bi bi-envelope fs-4 text-success"></i>
-                            <div>
-                                <small class="text-muted d-block">Email liên lạc</small>
-                                <span class="fw-bold text-dark">@(Model.Email ?? "—")</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="p-3 rounded-2 bg-light d-flex align-items-center gap-3">
-                            <i class="bi bi-telephone fs-4 text-warning"></i>
-                            <div>
-                                <small class="text-muted d-block">Số điện thoại</small>
-                                <span class="fw-bold text-dark">@(Model.SoDienThoai ?? "—")</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="p-3 rounded-2 bg-light d-flex align-items-center gap-3">
-                            <i class="bi bi-geo-alt fs-4 text-danger"></i>
-                            <div>
-                                <small class="text-muted d-block">Địa chỉ thường trú</small>
-                                <span class="fw-bold text-dark">@(Model.DiaChi ?? "—")</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="p-3 rounded-2 bg-light d-flex align-items-center gap-3">
-                            <i class="bi bi-mortarboard fs-4 text-primary" style="color: #2563eb !important;"></i>
-                            <div>
-                                <small class="text-muted d-block">Lớp sinh hoạt</small>
-                                <span class="fw-bold text-dark">@(Model.Lop?.TenLop ?? "Chưa xếp lớp")</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="p-3 rounded-2 bg-light d-flex align-items-center gap-3">
-                            <i class="bi bi-journal-bookmark fs-4 text-primary" style="color: #2563eb !important;"></i>
-                            <div>
-                                <small class="text-muted d-block">Chuyên ngành đào tạo</small>
-                                <span class="fw-bold text-dark">@(Model.Lop?.Nganh?.TenNganh ?? "—")</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-4 border-top bg-light text-end">
-                <a asp-action="DanhSachSinhVien" class="btn btn-outline-custom">
-                    <i class="bi bi-arrow-left"></i> Quay lại danh sách
-                </a>
-            </div>
-        </div>
+<div class="student-page-heading">
+    <div>
+        <p class="student-eyebrow">HỒ SƠ SINH VIÊN</p>
+        <h1>Chi tiết sinh viên</h1>
+        <p>Hồ sơ cá nhân và thông tin đào tạo được lưu trữ trên hệ thống.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="student-back-link" asp-action="DanhSachSinhVien">← Về danh sách</a>
     </div>
 </div>
+
+<section class="student-panel profile-panel mb-4">
+    <div class="profile-banner">
+        <div class="student-avatar large" aria-hidden="true">@nameInitial</div>
+        <div>
+            <h2>@displayName</h2>
+            <p>Mã sinh viên: <strong>@Model.MaSinhVien</strong></p>
+        </div>
+        <div class="ms-auto d-flex gap-2">
+            <a asp-controller="BangDiem" asp-action="Index" asp-route-sinhVienId="@Model.Id" class="gv-btn gv-btn-primary gv-btn-sm">
+                <i class="bi bi-award"></i> Bảng điểm
+            </a>
+            <a asp-controller="BangDiem" asp-action="NhapDiem" class="gv-btn gv-btn-secondary gv-btn-sm">
+                <i class="bi bi-pencil-square"></i> Nhập điểm
+            </a>
+        </div>
+    </div>
+
+    <div class="profile-section">
+        <h3>Thông tin cá nhân</h3>
+        <dl class="student-info-list">
+            <div>
+                <dt>Mã sinh viên</dt>
+                <dd>@Model.MaSinhVien</dd>
+            </div>
+            <div>
+                <dt>Họ và tên</dt>
+                <dd>@Model.HoTen</dd>
+            </div>
+            <div>
+                <dt>Ngày sinh</dt>
+                <dd>@(Model.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</dd>
+            </div>
+            <div>
+                <dt>Giới tính</dt>
+                <dd>@(Model.GioiTinh ?? "Chưa cập nhật")</dd>
+            </div>
+            <div>
+                <dt>Email</dt>
+                <dd>@(Model.Email ?? $"{Model.MaSinhVien.ToLower()}@student.edu.vn")</dd>
+            </div>
+            <div>
+                <dt>Số điện thoại</dt>
+                <dd>@(Model.SoDienThoai ?? "Chưa cập nhật")</dd>
+            </div>
+            <div>
+                <dt>Địa chỉ</dt>
+                <dd>@(Model.DiaChi ?? "Chưa cập nhật")</dd>
+            </div>
+        </dl>
+    </div>
+
+    <div class="profile-section">
+        <h3>Thông tin đào tạo</h3>
+        <dl class="student-info-list">
+            <div>
+                <dt>Lớp</dt>
+                <dd>@(Model.Lop?.TenLop ?? "Chưa xếp lớp")</dd>
+            </div>
+            <div>
+                <dt>Ngành</dt>
+                <dd>@(Model.Lop?.Nganh?.TenNganh ?? "Chưa xác định")</dd>
+            </div>
+            <div>
+                <dt>Mã ngành</dt>
+                <dd>@(Model.Lop?.Nganh?.MaNganh ?? "Chưa xác định")</dd>
+            </div>
+            <div>
+                <dt>Khoa</dt>
+                <dd>@(Model.Lop?.Nganh?.TenNganh ?? "Công nghệ thông tin")</dd>
+            </div>
+        </dl>
+    </div>
+</section>

@@ -1,135 +1,127 @@
 @model List<BTL_StudentMGMT.Models.Diem>
 @{
     ViewData["Title"] = "Quản lý bảng điểm & học phần";
+    Layout = "_GiangVienLayout";
 }
 
-<!-- Header & Nút Nhập điểm môn học chuẩn Ảnh 3 -->
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+<div class="student-page-heading">
     <div>
-        <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-            Đào tạo / <strong class="text-primary" style="color: #2563eb !important;">Quản lý bảng điểm & học phần</strong>
-        </h3>
-        <p class="text-muted mb-0 small">Theo dõi kết quả học tập chi tiết từng học phần của sinh viên</p>
+        <p class="student-eyebrow">QUẢN LÝ ĐÀO TẠO</p>
+        <h1>Bảng điểm sinh viên</h1>
+        <p>Theo dõi và quản lý kết quả học tập chi tiết từng môn học của sinh viên.</p>
     </div>
-    <a asp-action="NhapDiem" class="btn btn-primary-blue rounded-3 px-3 py-2 d-flex align-items-center gap-2 shadow-sm">
-        <i class="bi bi-plus-lg"></i> Nhập điểm môn học
-    </a>
+    <div class="d-flex gap-2">
+        <a asp-action="NhapDiem" class="gv-btn gv-btn-primary">
+            <i class="bi bi-plus-lg"></i> Nhập điểm môn học
+        </a>
+    </div>
 </div>
 
 @if (TempData["Msg"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
-        <i class="bi bi-check-circle-fill text-success fs-5"></i>
-        <div>@TempData["Msg"]</div>
-        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="student-notice mb-3" style="background: #eaf6f0; border-color: #badccf; color: #205c47;">
+        <strong>Thông báo:</strong> @TempData["Msg"]
     </div>
 }
 
-<!-- Khung lọc điểm theo sinh viên -->
-<div class="content-card p-3 mb-4">
+<!-- Bộ lọc điểm theo sinh viên -->
+<div class="student-panel p-3 mb-4">
     <form method="get" class="row g-2 align-items-center">
         <div class="col-md-7 col-lg-6">
-            <select name="sinhVienId" asp-items="ViewBag.DanhSachSinhVien" class="form-select">
+            <select name="sinhVienId" asp-items="ViewBag.DanhSachSinhVien" class="gv-form-select">
                 <option value="">-- Xem bảng điểm của tất cả sinh viên --</option>
             </select>
         </div>
         <div class="col-md-5 col-lg-4 d-flex align-items-center gap-2">
-            <button type="submit" class="btn btn-primary-blue rounded-3 px-3 d-flex align-items-center gap-2"
-                    style="background: #4f46e5 !important; border: none;">
+            <button type="submit" class="gv-btn gv-btn-primary">
                 <i class="bi bi-funnel"></i> Lọc điểm
             </button>
-            <a asp-action="Index" class="btn btn-outline-custom rounded-3 d-flex align-items-center gap-1">
+            <a asp-action="Index" class="gv-btn gv-btn-secondary">
                 <i class="bi bi-arrow-clockwise"></i> Tất cả
             </a>
         </div>
     </form>
 </div>
 
-<!-- Bảng hiển thị kết quả học phần chuẩn ảnh 3 -->
-<div class="custom-table-container mb-4">
-    <div class="p-3 px-4 border-bottom bg-white d-flex align-items-center gap-2">
-        <i class="bi bi-table text-primary" style="color: #2563eb !important;"></i>
-        <span class="fw-bold text-dark fs-6">Danh Sách Kết Quả Học Phần (@Model.Count bản ghi)</span>
+<!-- Bảng hiển thị kết quả học phần -->
+<div class="student-panel p-0 overflow-hidden mb-4">
+    <div class="student-panel-heading p-3 border-bottom">
+        <div>
+            <p class="student-eyebrow mb-1">KẾT QUẢ HỌC TẬP</p>
+            <h2 style="font-size: 1rem;">Danh sách điểm học phần (@Model.Count bản ghi)</h2>
+        </div>
     </div>
 
-    <div class="table-responsive">
-        <table class="custom-table">
+    <div class="gv-table-responsive">
+        <table class="gv-table">
             <thead>
                 <tr>
                     <th>MÃ SV</th>
                     <th>HỌ VÀ TÊN SV</th>
-                    <th>MÃ MÔN</th>
-                    <th>TÊN MÔN HỌC</th>
-                    <th>SỐ TC</th>
-                    <th>CC (10%)</th>
-                    <th>GK (30%)</th>
-                    <th>CK (60%)</th>
-                    <th>TỔNG KẾT</th>
-                    <th>ĐIỂM CHỮ</th>
+                    <th>TÊN HỌC PHẦN</th>
+                    <th style="text-align: center;">SỐ TC</th>
+                    <th style="text-align: center;">CC (10%)</th>
+                    <th style="text-align: center;">GK (30%)</th>
+                    <th style="text-align: center;">CK (60%)</th>
+                    <th style="text-align: center;">TỔNG KẾT</th>
+                    <th style="text-align: center;">ĐIỂM CHỮ</th>
+                    <th style="text-align: center;">ĐÁNH GIÁ</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var d in Model)
                 {
+                    var isPass = d.DiemTongKet >= 4.0;
+                    var badgeClass = d.DiemChu switch
+                    {
+                        "A" => "gv-badge-green",
+                        "B+" or "B" => "gv-badge-blue",
+                        "C+" or "C" => "gv-badge-amber",
+                        "D+" or "D" => "gv-badge-gray",
+                        _ => "gv-badge-red"
+                    };
+
                     <tr>
-                        <!-- MÃ SV -->
                         <td>
-                            <span class="fw-semibold text-secondary">@(d.SinhVien?.MaSinhVien ?? "—")</span>
+                            <strong style="color: #176da3;">@d.SinhVien?.MaSinhVien</strong>
                         </td>
-
-                        <!-- HỌ VÀ TÊN SV -->
                         <td>
-                            <div class="fw-bold text-dark">@(d.SinhVien?.HoTen ?? "—")</div>
+                            <span style="font-weight: 600; color: #1b2e45;">@d.SinhVien?.HoTen</span>
                         </td>
-
-                        <!-- MÃ MÔN -->
                         <td>
-                            <span class="badge bg-light text-secondary border px-2 py-1 fw-bold">@(d.MonHoc?.MaMon ?? "INT000")</span>
+                            <div style="font-weight: 600;">@d.MonHoc?.TenMon</div>
+                            <small style="color: #7a899a;">Mã HP: @d.MonHoc?.MaMon</small>
                         </td>
-
-                        <!-- TÊN MÔN HỌC -->
-                        <td>
-                            <span class="fw-semibold text-dark">@(d.MonHoc?.TenMon ?? "—")</span>
+                        <td style="text-align: center; font-weight: 600;">
+                            @d.MonHoc?.SoTinChi
                         </td>
-
-                        <!-- SỐ TC -->
-                        <td>
-                            <span>@(d.MonHoc?.SoTinChi ?? 3)</span>
+                        <td style="text-align: center;">
+                            @d.DiemChuyenCan.ToString("0.0")
                         </td>
-
-                        <!-- ĐIỂM CHUYÊN CẦN -->
-                        <td>
-                            <span>@d.DiemChuyenCan</span>
+                        <td style="text-align: center;">
+                            @d.DiemGiuaKy.ToString("0.0")
                         </td>
-
-                        <!-- ĐIỂM GIỮA KỲ -->
-                        <td>
-                            <span>@d.DiemGiuaKy</span>
+                        <td style="text-align: center;">
+                            @d.DiemCuoiKy.ToString("0.0")
                         </td>
-
-                        <!-- ĐIỂM CUỐI KỲ -->
-                        <td>
-                            <span>@d.DiemCuoiKy</span>
+                        <td style="text-align: center;">
+                            <strong style="color: #176da3; font-size: 1rem;">@d.DiemTongKet.ToString("0.0")</strong>
                         </td>
-
-                        <!-- TỔNG KẾT -->
-                        <td>
-                            <span class="fw-bold text-primary fs-6" style="color: #2563eb !important;">@d.DiemTongKet.ToString("0.00")</span>
+                        <td style="text-align: center;">
+                            <span class="gv-badge @badgeClass" style="font-weight: 700; font-size: .8rem;">@d.DiemChu</span>
                         </td>
-
-                        <!-- ĐIỂM CHỮ -->
-                        <td>
-                            @if (d.DiemChu.StartsWith("A"))
+                        <td style="text-align: center;">
+                            @if (isPass)
                             {
-                                <span class="badge bg-danger-subtle text-danger px-2 py-1 fw-bold">@d.DiemChu</span>
-                            }
-                            else if (d.DiemChu.StartsWith("B"))
-                            {
-                                <span class="badge bg-success-subtle text-success px-2 py-1 fw-bold">@d.DiemChu</span>
+                                <span class="gv-badge gv-badge-green">
+                                    <i class="bi bi-check-circle-fill"></i> Đạt
+                                </span>
                             }
                             else
                             {
-                                <span class="badge bg-warning-subtle text-warning px-2 py-1 fw-bold">@d.DiemChu</span>
+                                <span class="gv-badge gv-badge-red">
+                                    <i class="bi bi-x-circle-fill"></i> Học lại
+                                </span>
                             }
                         </td>
                     </tr>
@@ -138,9 +130,8 @@
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="10" class="text-center text-muted py-5">
-                            <i class="bi bi-inbox fs-2 d-block text-secondary mb-2 opacity-50"></i>
-                            Chưa có dữ liệu điểm học phần nào cho sinh viên này.
+                        <td colspan="10" style="text-align: center; padding: 40px; color: #8290a0;">
+                            Chưa có dữ liệu bảng điểm nào. Bấm <strong>"Nhập điểm môn học"</strong> để thêm kết quả học tập.
                         </td>
                     </tr>
                 }

@@ -1,113 +1,96 @@
 @model BTL_StudentMGMT.Models.CapNhatGiangVienViewModel
 @{
-    ViewData["Title"] = "Cập nhật hồ sơ cá nhân";
+    ViewData["Title"] = "Cập nhật hồ sơ giảng viên";
+    Layout = "_GiangVienLayout";
+    var displayName = string.IsNullOrWhiteSpace(Model.HoTen) ? (User.Identity?.Name ?? "Giảng viên") : Model.HoTen.Trim();
+    var nameInitial = displayName[0].ToString().ToUpperInvariant();
 }
 
-<div class="row justify-content-center">
-    <div class="col-lg-7">
-        <div class="content-card">
-            <div class="p-4 border-bottom bg-light d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
-                    <i class="bi bi-person-gear text-primary" style="color: #2563eb !important;"></i>
-                    Cập nhật hồ sơ giảng viên
-                </h5>
-                <a asp-action="Index" class="btn btn-sm btn-outline-custom">
-                    <i class="bi bi-x-lg"></i>
-                </a>
-            </div>
-
-            <div class="p-4">
-                <form method="post" asp-action="CapNhatThongTin" class="row g-3">
-                    <input type="hidden" asp-for="Id" />
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3" role="alert"></div>
-
-                    <div class="col-md-6">
-                        <label asp-for="MaGiangVien" class="form-label text-muted small fw-semibold"></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light text-muted border-end-0">
-                                <i class="bi bi-lock-fill"></i>
-                            </span>
-                            <input asp-for="MaGiangVien" class="form-control bg-light border-start-0" readonly disabled />
-                        </div>
-                        <small class="text-muted" style="font-size: 0.75rem;">Mã giảng viên do nhà trường cấp cố định</small>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="HoTen" class="form-label small fw-semibold"></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 text-muted">
-                                <i class="bi bi-person"></i>
-                            </span>
-                            <input asp-for="HoTen" class="form-control border-start-0 ps-0" placeholder="Nhập họ và tên..." />
-                        </div>
-                        <span asp-validation-for="HoTen" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="Email" class="form-label small fw-semibold"></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 text-muted">
-                                <i class="bi bi-envelope"></i>
-                            </span>
-                            <input asp-for="Email" class="form-control border-start-0 ps-0" placeholder="email@domain.com" />
-                        </div>
-                        <span asp-validation-for="Email" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label asp-for="SoDienThoai" class="form-label small fw-semibold"></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 text-muted">
-                                <i class="bi bi-telephone"></i>
-                            </span>
-                            <input asp-for="SoDienThoai" class="form-control border-start-0 ps-0" placeholder="09xxxxxxxx" />
-                        </div>
-                        <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-12 mt-4 pt-3 border-top">
-                        <h6 class="fw-bold text-dark d-flex align-items-center gap-2 mb-1">
-                            <i class="bi bi-shield-lock text-warning"></i> Đổi mật khẩu tài khoản (Tùy chọn)
-                        </h6>
-                        <p class="text-muted small mb-3">Nếu không muốn đổi mật khẩu, vui lòng để trống 2 ô bên dưới.</p>
-
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label asp-for="MatKhauMoi" class="form-label small fw-semibold"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0 text-muted">
-                                        <i class="bi bi-key"></i>
-                                    </span>
-                                    <input asp-for="MatKhauMoi" type="password" class="form-control border-start-0 ps-0" placeholder="Mật khẩu mới..." />
-                                </div>
-                                <span asp-validation-for="MatKhauMoi" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label asp-for="XacNhanMatKhau" class="form-label small fw-semibold"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0 text-muted">
-                                        <i class="bi bi-shield-check"></i>
-                                    </span>
-                                    <input asp-for="XacNhanMatKhau" type="password" class="form-control border-start-0 ps-0" placeholder="Nhập lại mật khẩu..." />
-                                </div>
-                                <span asp-validation-for="XacNhanMatKhau" class="text-danger small"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 mt-4 pt-3 border-top d-flex gap-2">
-                        <button type="submit" class="btn btn-primary-blue px-4">
-                            <i class="bi bi-check2-circle"></i> Lưu thông tin
-                        </button>
-                        <a asp-action="Index" class="btn btn-outline-custom px-4">Hủy bỏ</a>
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="student-page-heading">
+    <div>
+        <p class="student-eyebrow">HỒ SƠ CÁ NHÂN</p>
+        <h1>Cập nhật hồ sơ</h1>
+        <p>Thay đổi thông tin liên lạc hoặc đổi mật khẩu tài khoản của bạn.</p>
     </div>
+    <a class="student-back-link" asp-action="Index">← Về tổng quan</a>
 </div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+<section class="student-panel profile-panel mb-4">
+    <div class="profile-banner">
+        <div class="student-avatar large" aria-hidden="true">@nameInitial</div>
+        <div>
+            <h2>@displayName</h2>
+            <p>Mã giảng viên: <strong>@Model.MaGiangVien</strong></p>
+        </div>
+    </div>
+
+    <div class="profile-section">
+        <form method="post" asp-action="CapNhatThongTin">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="student-notice mb-3" style="background:#fee2e2; border-color:#fca5a5; color:#991b1b;"></div>
+
+            <h3>Thông tin liên hệ</h3>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="gv-form-group">
+                        <label asp-for="MaGiangVien">Mã giảng viên (Cố định)</label>
+                        <input asp-for="MaGiangVien" class="gv-form-control" style="background: #f1f5f9;" readonly />
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="gv-form-group">
+                        <label asp-for="HoTen">Họ và tên *</label>
+                        <input asp-for="HoTen" class="gv-form-control" placeholder="Nhập họ và tên..." />
+                        <span asp-validation-for="HoTen" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="gv-form-group">
+                        <label asp-for="Email">Email liên lạc</label>
+                        <input asp-for="Email" class="gv-form-control" placeholder="example@domain.com" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="gv-form-group">
+                        <label asp-for="SoDienThoai">Số điện thoại</label>
+                        <input asp-for="SoDienThoai" class="gv-form-control" placeholder="09xxxxxxxx" />
+                        <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="mt-4 pt-3 border-top">Đổi mật khẩu tài khoản (Tùy chọn)</h3>
+            <p class="text-muted small mb-3">Nếu không đổi mật khẩu, vui lòng để trống 2 ô bên dưới.</p>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="gv-form-group">
+                        <label asp-for="MatKhauMoi">Mật khẩu mới</label>
+                        <input asp-for="MatKhauMoi" type="password" class="gv-form-control" placeholder="Nhập mật khẩu mới..." />
+                        <span asp-validation-for="MatKhauMoi" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="gv-form-group">
+                        <label asp-for="XacNhanMatKhau">Xác nhận mật khẩu mới</label>
+                        <input asp-for="XacNhanMatKhau" type="password" class="gv-form-control" placeholder="Nhập lại mật khẩu mới..." />
+                        <span asp-validation-for="XacNhanMatKhau" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 pt-3 border-top">
+                <button type="submit" class="gv-btn gv-btn-primary">
+                    <i class="bi bi-check-lg"></i> Lưu thay đổi
+                </button>
+                <a asp-action="Index" class="gv-btn gv-btn-secondary">
+                    Hủy bỏ
+                </a>
+            </div>
+        </form>
+    </div>
+</section>

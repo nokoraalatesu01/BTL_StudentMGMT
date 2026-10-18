@@ -1,0 +1,307 @@
+/* =========================================================
+   GIẢNG VIÊN THEME - ĐỒNG BỘ VỚI SINHVIEN.CSS
+   ========================================================= */
+
+/* Action Row trên trang Tổng quan */
+.gv-action-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.gv-action-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    background: #ffffff;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.gv-action-row:hover {
+    border-color: #cbdbe9;
+    background: #f8fbfe;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(18, 55, 95, 0.05);
+}
+
+.gv-action-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 11px;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.gv-icon-blue {
+    color: #176da3;
+    background: #eaf3fb;
+}
+
+.gv-icon-green {
+    color: #2b7d63;
+    background: #eaf6f0;
+}
+
+.gv-icon-violet {
+    color: #685aa7;
+    background: #f1edfb;
+}
+
+.gv-icon-amber {
+    color: #b45309;
+    background: #fef3c7;
+}
+
+.gv-action-info {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.gv-action-info strong {
+    display: block;
+    color: #1b2e45;
+    font-size: .88rem;
+    font-weight: 650;
+    margin-bottom: 3px;
+}
+
+.gv-action-info span {
+    display: block;
+    color: #7a899a;
+    font-size: .78rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gv-action-arrow {
+    color: #9ab4cb;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: transform .2s ease, color .2s ease;
+}
+
+.gv-action-row:hover .gv-action-arrow {
+    color: #176da3;
+    transform: translateX(4px);
+}
+
+/* ================= BẢNG DỮ LIỆU ĐỒNG NHẤT ================= */
+.gv-table-responsive {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.gv-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: .86rem;
+    color: #243b53;
+}
+
+.gv-table th {
+    background: #f8fafc;
+    color: #627d98;
+    font-size: .72rem;
+    font-weight: 750;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 13px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.gv-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #edf2f7;
+    vertical-align: middle;
+}
+
+.gv-table tbody tr {
+    transition: background-color .15s ease;
+}
+
+.gv-table tbody tr:hover {
+    background-color: #f7fafc;
+}
+
+.gv-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+/* ================= BADGES ĐỒNG NHẤT ================= */
+.gv-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: .74rem;
+    font-weight: 650;
+    letter-spacing: .02em;
+    white-space: nowrap;
+}
+
+.gv-badge-blue {
+    background: #eaf3fb;
+    color: #176da3;
+}
+
+.gv-badge-green {
+    background: #eaf6f0;
+    color: #2b7d63;
+}
+
+.gv-badge-violet {
+    background: #f1edfb;
+    color: #685aa7;
+}
+
+.gv-badge-amber {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.gv-badge-gray {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.gv-badge-red {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* ================= NÚT BẤM ================= */
+.gv-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 0 16px;
+    border-radius: 9px;
+    font-size: .84rem;
+    font-weight: 650;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all .15s ease;
+}
+
+.gv-btn-primary {
+    background: #176da3;
+    color: #ffffff !important;
+}
+
+.gv-btn-primary:hover {
+    background: #135985;
+}
+
+.gv-btn-secondary {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #334e68 !important;
+}
+
+.gv-btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+}
+
+.gv-btn-sm {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: .78rem;
+    border-radius: 7px;
+}
+
+/* ================= FORM CONTROLS ================= */
+.gv-form-group {
+    margin-bottom: 16px;
+}
+
+.gv-form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: .78rem;
+    font-weight: 600;
+    color: #486581;
+}
+
+.gv-form-control,
+.gv-form-select {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: .86rem;
+    color: #102a43;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.gv-form-control:focus,
+.gv-form-select:focus {
+    outline: none;
+    border-color: #176da3;
+    box-shadow: 0 0 0 3px rgba(23, 109, 163, 0.15);
+}
+
+/* Bộ lọc tìm kiếm nhanh */
+.gv-filter-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #e8edf3;
+    border-radius: 12px;
+    background: #ffffff;
+    margin-bottom: 20px;
+}
+
+.gv-filter-input {
+    flex: 1 1 240px;
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: .86rem;
+}
+
+.gv-filter-select {
+    flex: 0 1 200px;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: .86rem;
+    background: #ffffff;
+}
+
+/* Avatar chữ cái nhỏ trong bảng */
+.gv-table-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: .75rem;
+    background: #e3f0f8;
+    color: #23699a;
+}
+
+
