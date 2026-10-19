@@ -67,6 +67,7 @@ public class QuanLyNganhController : Controller
     {
         Normalize(model);
         await ValidateUniqueCodeAsync(model);
+        ValidateFaculty(model);
 
         if (!ModelState.IsValid)
         {
@@ -122,6 +123,7 @@ public class QuanLyNganhController : Controller
 
         Normalize(model);
         await ValidateUniqueCodeAsync(model, id);
+        ValidateFaculty(model);
 
         if (!ModelState.IsValid)
         {
@@ -246,10 +248,18 @@ public class QuanLyNganhController : Controller
         }
     }
 
+    private void ValidateFaculty(NganhFormViewModel model)
+    {
+        if (!NganhCatalog.Faculties.Contains(model.TenKhoa, StringComparer.OrdinalIgnoreCase))
+        {
+            ModelState.AddModelError(nameof(model.TenKhoa), "Vui lòng chọn một trong 7 khoa hiện hành.");
+        }
+    }
+
     private static void Normalize(NganhFormViewModel model)
     {
-        model.MaNganh = model.MaNganh.Trim();
-        model.TenNganh = model.TenNganh.Trim();
-        model.TenKhoa = model.TenKhoa.Trim();
+        model.MaNganh = model.MaNganh?.Trim() ?? "";
+        model.TenNganh = model.TenNganh?.Trim() ?? "";
+        model.TenKhoa = model.TenKhoa?.Trim() ?? "";
     }
 }

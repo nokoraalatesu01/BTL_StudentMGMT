@@ -1,4 +1,5 @@
 @model BTL_StudentMGMT.Models.NganhFormViewModel
+@using BTL_StudentMGMT.Data
 @{
     var isEdit = Model.Id > 0;
     ViewData["Title"] = isEdit ? "Sửa ngành" : "Thêm ngành";
@@ -17,7 +18,13 @@
     </div>
     <div class="col-md-6">
         <label asp-for="TenKhoa" class="form-label">Khoa chuyên môn</label>
-        <input asp-for="TenKhoa" class="form-control" />
+        <select asp-for="TenKhoa" class="form-select">
+            <option value="">-- Chọn khoa --</option>
+            @foreach (var faculty in NganhCatalog.Faculties)
+            {
+                <option value="@faculty">@faculty</option>
+            }
+        </select>
         <span asp-validation-for="TenKhoa" class="text-danger"></span>
     </div>
     <div class="col-12">
