@@ -114,13 +114,19 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .Property(monHoc => monHoc.MaMon)
             .HasMaxLength(50);
         modelBuilder.Entity<MonHoc>()
+            .HasIndex(monHoc => monHoc.MaMon)
+            .IsUnique();
+        modelBuilder.Entity<MonHoc>()
             .Property(monHoc => monHoc.TenMon)
             .HasMaxLength(255);
+        modelBuilder.Entity<Diem>()
+            .HasIndex(diem => new { diem.SinhVienId, diem.MonHocId })
+            .IsUnique();
         modelBuilder.Entity<Diem>()
             .HasOne(diem => diem.SinhVien)
             .WithMany()
             .HasForeignKey(diem => diem.SinhVienId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<Diem>()
             .HasOne(diem => diem.MonHoc)
             .WithMany()

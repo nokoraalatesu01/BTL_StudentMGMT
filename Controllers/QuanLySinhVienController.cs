@@ -198,7 +198,6 @@ public class QuanLySinhVienController : Controller
         }
 
         await using var transaction = await _db.Database.BeginTransactionAsync();
-        await _db.Diems.Where(diem => diem.SinhVienId == id).ExecuteDeleteAsync();
         _db.SinhViens.Remove(sinhVien);
         await _db.SaveChangesAsync();
 

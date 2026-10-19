@@ -179,7 +179,8 @@ namespace BTL_StudentMGMT.Migrations
 
                     b.HasIndex("MonHocId");
 
-                    b.HasIndex("SinhVienId");
+                    b.HasIndex("SinhVienId", "MonHocId")
+                        .IsUnique();
 
                     b.ToTable("Diems");
                 });
@@ -271,6 +272,9 @@ namespace BTL_StudentMGMT.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MaMon")
+                        .IsUnique();
 
                     b.ToTable("MonHocs");
                 });
@@ -513,7 +517,7 @@ namespace BTL_StudentMGMT.Migrations
                     b.HasOne("BTL_StudentMGMT.Models.SinhVien", "SinhVien")
                         .WithMany()
                         .HasForeignKey("SinhVienId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("MonHoc");
