@@ -32,6 +32,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .Property(nganh => nganh.TenKhoa)
             .HasMaxLength(150);
         modelBuilder.Entity<Nganh>()
+            .HasOne(nganh => nganh.DonVi)
+            .WithMany(donVi => donVi.Nganhs)
+            .HasForeignKey(nganh => nganh.DonViId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Nganh>()
             .Property(nganh => nganh.TichHopCuNhanKySu)
             .HasDefaultValue(false);
         modelBuilder.Entity<Nganh>()
@@ -48,6 +53,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(lop => lop.Nganh)
             .WithMany(nganh => nganh.Lops)
             .HasForeignKey(lop => lop.NganhId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Lop>()
+            .HasOne(lop => lop.ChuongTrinhDaoTao)
+            .WithMany()
+            .HasForeignKey(lop => lop.ChuongTrinhDaoTaoId)
             .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<SinhVien>()
             .HasOne(sinhVien => sinhVien.Lop)
@@ -80,6 +90,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasIndex(chuongTrinh => chuongTrinh.MaChuongTrinh)
             .IsUnique()
             .HasFilter("[MaChuongTrinh] IS NOT NULL");
+        modelBuilder.Entity<ChuongTrinhDaoTao>()
+            .HasOne(chuongTrinh => chuongTrinh.DonViQuanLy)
+            .WithMany(donVi => donVi.ChuongTrinhQuanLy)
+            .HasForeignKey(chuongTrinh => chuongTrinh.DonViQuanLyId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<ChuongTrinhDaoTao>()
+            .HasOne(chuongTrinh => chuongTrinh.DonViChuyenMon)
+            .WithMany(donVi => donVi.ChuongTrinhChuyenMon)
+            .HasForeignKey(chuongTrinh => chuongTrinh.DonViChuyenMonId)
+            .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<ChuongTrinhDaoTao>()
             .HasOne(chuongTrinh => chuongTrinh.Nganh)
             .WithMany(nganh => nganh.ChuongTrinhs)
@@ -134,3 +154,4 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
+

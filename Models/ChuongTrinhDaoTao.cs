@@ -8,6 +8,10 @@ public class ChuongTrinhDaoTao
     public string LoaiChuongTrinh { get; set; } = "";
     public string KhoaQuanLy { get; set; } = "";
     public string? KhoaChuyenMon { get; set; }
+    public int? DonViQuanLyId { get; set; }
+    public DonVi? DonViQuanLy { get; set; }
+    public int? DonViChuyenMonId { get; set; }
+    public DonVi? DonViChuyenMon { get; set; }
     public string? MaNganhGoc { get; set; }
     public string? HinhThucLienKet { get; set; }
     public int? ApDungTuKhoa { get; set; }
