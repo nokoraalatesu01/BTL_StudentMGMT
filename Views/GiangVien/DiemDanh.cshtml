@@ -1,0 +1,146 @@
+@model BTL_StudentMGMT.Models.DiemDanhFormViewModel
+@{
+    ViewData["Title"] = "Điểm danh sinh viên";
+    Layout = "_GiangVienLayout";
+}
+
+<div class="student-page-heading">
+    <div>
+        <p class="student-eyebrow">QUẢN LÝ CHUYÊN CẦN</p>
+        <h1>Điểm danh sinh viên theo buổi học</h1>
+        <p>Ghi nhận chuyên cần, vắng mặt hoặc nghỉ có phép của sinh viên theo từng lớp và môn học.</p>
+    </div>
+    <a class="student-back-link" asp-action="Index">← Về tổng quan</a>
+</div>
+
+@if (TempData["Msg"] != null)
+{
+    <div class="student-notice mb-3" style="background: #eaf6f0; border-color: #badccf; color: #205c47;">
+        <strong>Thông báo:</strong> @TempData["Msg"]
+    </div>
+}
+
+<!-- Bộ chọn Lớp, Môn và Ngày học -->
+<div class="student-panel mb-4 p-3">
+    <form method="get" asp-action="DiemDanh" class="row g-2 align-items-center">
+        <div class="col-lg-4 col-md-4">
+            <label class="form-label small fw-semibold text-muted mb-1">Lớp học</label>
+            <select name="lopId" asp-items="ViewBag.DanhSachLop" class="gv-form-select" onchange="this.form.submit()">
+            </select>
+        </div>
+
+        <div class="col-lg-5 col-md-5">
+            <label class="form-label small fw-semibold text-muted mb-1">Môn học / Học phần</label>
+            <select name="monHocId" asp-items="ViewBag.DanhSachMonHoc" class="gv-form-select" onchange="this.form.submit()">
+            </select>
+        </div>
+
+        <div class="col-lg-3 col-md-3">
+            <label class="form-label small fw-semibold text-muted mb-1">Ngày điểm danh</label>
+            <input type="date" name="ngay" value="@ViewBag.NgayChon" class="gv-form-control" onchange="this.form.submit()" />
+        </div>
+    </form>
+</div>
+
+<!-- Bảng nhập điểm danh -->
+<div class="student-panel p-0 overflow-hidden mb-4">
+    <div class="student-panel-heading p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <p class="student-eyebrow mb-1">DANH SÁCH LỚP HỌC</p>
+            <h2 style="font-size: 1rem;">Sĩ số: @Model.DanhSachSinhVien.Count sinh viên</h2>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="gv-btn gv-btn-secondary gv-btn-sm" onclick="setAll('Có mặt')">
+                <i class="bi bi-check-all text-success"></i> Chọn tất cả Có mặt
+            </button>
+            <button type="button" class="gv-btn gv-btn-secondary gv-btn-sm" onclick="setAll('Vắng')">
+                <i class="bi bi-x-circle text-danger"></i> Chọn tất cả Vắng
+            </button>
+        </div>
+    </div>
+
+    @if (Model.DanhSachSinhVien.Any())
+    {
+        <form method="post" asp-action="LuuDiemDanh">
+            <input type="hidden" asp-for="LopId" />
+            <input type="hidden" asp-for="MonHocId" />
+            <input type="hidden" asp-for="NgayDiemDanh" />
+
+            <div class="gv-table-responsive">
+                <table class="gv-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">STT</th>
+                            <th>MÃ SV</th>
+                            <th>HỌ VÀ TÊN</th>
+                            <th style="text-align: center;">TRẠNG THÁI ĐIỂM DANH</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.DanhSachSinhVien.Count; i++)
+                        {
+                            var sv = Model.DanhSachSinhVien[i];
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td>
+                                    <strong style="color: #176da3;">@sv.MaSinhVien</strong>
+                                    <input type="hidden" name="DanhSachSinhVien[@i].SinhVienId" value="@sv.SinhVienId" />
+                                    <input type="hidden" name="DanhSachSinhVien[@i].MaSinhVien" value="@sv.MaSinhVien" />
+                                    <input type="hidden" name="DanhSachSinhVien[@i].HoTen" value="@sv.HoTen" />
+                                </td>
+                                <td>
+                                    <span style="font-weight: 600; color: #1b2e45;">@sv.HoTen</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <div class="d-inline-flex gap-2 align-items-center">
+                                        <label class="gv-status-radio gv-status-comat">
+                                            <input type="radio" name="DanhSachSinhVien[@i].TrangThai" value="Có mặt" @(sv.TrangThai == "Có mặt" ? "checked" : "") />
+                                            <span>✓ Có mặt</span>
+                                        </label>
+
+                                        <label class="gv-status-radio gv-status-vang">
+                                            <input type="radio" name="DanhSachSinhVien[@i].TrangThai" value="Vắng" @(sv.TrangThai == "Vắng" ? "checked" : "") />
+                                            <span>✗ Vắng</span>
+                                        </label>
+
+                                        <label class="gv-status-radio gv-status-phep">
+                                            <input type="radio" name="DanhSachSinhVien[@i].TrangThai" value="Có phép" @(sv.TrangThai == "Có phép" ? "checked" : "") />
+                                            <span>△ Có phép</span>
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="p-3 border-top bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="text-muted small">
+                    <i class="bi bi-info-circle"></i> Điểm danh sẽ tự động lưu và dùng làm căn cứ tính điểm chuyên cần (10%).
+                </span>
+                <button type="submit" class="gv-btn gv-btn-primary px-4">
+                    <i class="bi bi-check-circle-fill"></i> Lưu kết quả điểm danh
+                </button>
+            </div>
+        </form>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 40px; color: #8290a0;">
+            Lớp học này hiện chưa có sinh viên nào. Vui lòng chọn lớp học khác.
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function setAll(status) {
+            document.querySelectorAll('input[type="radio"]').forEach(function(radio) {
+                if (radio.value === status) {
+                    radio.checked = true;
+                }
+            });
+        }
+    </script>
+}

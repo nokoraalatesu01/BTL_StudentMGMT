@@ -14,6 +14,38 @@ public static class DbSeeder
 
         await db.Database.MigrateAsync();
 
+        // Tự động đảm bảo tạo bảng DiemDanhs và LichGiangDays nếu chưa tồn tại
+        await db.Database.ExecuteSqlRawAsync(@"
+            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='DiemDanhs' and xtype='U')
+            BEGIN
+                CREATE TABLE DiemDanhs (
+                    Id INT IDENTITY(1,1) PRIMARY KEY,
+                    SinhVienId INT NOT NULL,
+                    LopId INT NOT NULL,
+                    MonHocId INT NOT NULL,
+                    NgayDiemDanh DATETIME2 NOT NULL,
+                    TrangThai NVARCHAR(50) NOT NULL,
+                    GhiChu NVARCHAR(255) NULL
+                );
+            END;
+
+            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='LichGiangDays' and xtype='U')
+            BEGIN
+                CREATE TABLE LichGiangDays (
+                    Id INT IDENTITY(1,1) PRIMARY KEY,
+                    GiangVienId INT NULL,
+                    MonHocId INT NOT NULL,
+                    LopId INT NOT NULL,
+                    Thu NVARCHAR(20) NOT NULL,
+                    TietBatDau INT NOT NULL,
+                    SoTiet INT NOT NULL,
+                    PhongHoc NVARCHAR(50) NOT NULL,
+                    GhiChu NVARCHAR(255) NULL,
+                    HocKy NVARCHAR(100) NOT NULL
+                );
+            END;
+        ");
+
         // Seed Roles
         foreach (var role in new[] { "Admin", "GiangVien", "SinhVien" })
         {
@@ -140,6 +172,98 @@ public static class DbSeeder
             }
 
             await db.SaveChangesAsync();
+        }
+
+        // Seed Thời khóa biểu / Lịch giảng dạy của giảng viên
+        if (!db.LichGiangDays.Any())
+        {
+            var gv = db.GiangViens.FirstOrDefault();
+            var lop1 = db.Lops.FirstOrDefault(l => l.TenLop.Contains("CNTT1")) ?? db.Lops.FirstOrDefault();
+            var lop2 = db.Lops.FirstOrDefault(l => l.TenLop.Contains("CNTT2")) ?? lop1;
+            var mWeb = db.MonHocs.FirstOrDefault(m => m.MaMon == "INT301") ?? db.MonHocs.FirstOrDefault();
+            var mCtdl = db.MonHocs.FirstOrDefault(m => m.MaMon == "INT201") ?? mWeb;
+            var mSql = db.MonHocs.FirstOrDefault(m => m.MaMon == "INT205") ?? mWeb;
+
+            if (mWeb != null && lop1 != null)
+            {
+                db.LichGiangDays.AddRange(
+                    new LichGiangDay
+                    {
+                        GiangVienId = gv?.Id,
+                        MonHocId = mWeb.Id,
+                        LopId = lop1.Id,
+                        Thu = "Thứ 2",
+                        TietBatDau = 1,
+                        SoTiet = 3,
+                        PhongHoc = "P.302-A1",
+                        GhiChu = "Lý thuyết & Thảo luận",
+                        HocKy = "Học kỳ 1 (2026 - 2027)"
+                    },
+                    new LichGiangDay
+                    {
+                        GiangVienId = gv?.Id,
+                        MonHocId = mCtdl != null ? mCtdl.Id : mWeb.Id,
+                        LopId = lop2 != null ? lop2.Id : lop1.Id,
+                        Thu = "Thứ 3",
+                        TietBatDau = 7,
+                        SoTiet = 4,
+                        PhongHoc = "Lab 4-B2",
+                        GhiChu = "Thực hành trên máy tính",
+                        HocKy = "Học kỳ 1 (2026 - 2027)"
+                    },
+                    new LichGiangDay
+                    {
+                        GiangVienId = gv?.Id,
+                        MonHocId = mSql != null ? mSql.Id : mWeb.Id,
+                        LopId = lop1.Id,
+                        Thu = "Thứ 5",
+                        TietBatDau = 2,
+                        SoTiet = 3,
+                        PhongHoc = "P.205-A2",
+                        GhiChu = "Bài giảng môn chuyên ngành",
+                        HocKy = "Học kỳ 1 (2026 - 2027)"
+                    },
+                    new LichGiangDay
+                    {
+                        GiangVienId = gv?.Id,
+                        MonHocId = mWeb.Id,
+                        LopId = lop2 != null ? lop2.Id : lop1.Id,
+                        Thu = "Thứ 6",
+                        TietBatDau = 6,
+                        SoTiet = 3,
+                        PhongHoc = "P.401-A1",
+                        GhiChu = "Kiểm tra định kỳ & Báo cáo BTL",
+                        HocKy = "Học kỳ 1 (2026 - 2027)"
+                    }
+                );
+                await db.SaveChangesAsync();
+            }
+        }
+
+        // Seed Mẫu dữ liệu điểm danh
+        if (!db.DiemDanhs.Any())
+        {
+            var lop1 = db.Lops.FirstOrDefault(l => l.TenLop.Contains("CNTT1")) ?? db.Lops.FirstOrDefault();
+            var mWeb = db.MonHocs.FirstOrDefault(m => m.MaMon == "INT301") ?? db.MonHocs.FirstOrDefault();
+            if (lop1 != null && mWeb != null)
+            {
+                var svs = db.SinhViens.Where(s => s.LopId == lop1.Id).Take(5).ToList();
+                int idx = 0;
+                foreach (var sv in svs)
+                {
+                    idx++;
+                    db.DiemDanhs.Add(new DiemDanh
+                    {
+                        SinhVienId = sv.Id,
+                        LopId = lop1.Id,
+                        MonHocId = mWeb.Id,
+                        NgayDiemDanh = DateTime.Today,
+                        TrangThai = (idx == 3) ? "Vắng" : (idx == 4 ? "Có phép" : "Có mặt"),
+                        GhiChu = (idx == 4) ? "Có đơn xin phép nghỉ ốm" : null
+                    });
+                }
+                await db.SaveChangesAsync();
+            }
         }
     }
 
