@@ -20,13 +20,16 @@ public class QuanLySinhVienController : Controller
         _userManager = userManager;
     }
 
-    public async Task<IActionResult> Index(string? tuKhoa, int? lopId, int page = 1)
+    public async Task<IActionResult> Index(string? tuKhoa, int? lopId, string? trangThai, int page = 1)
     {
         const int pageSize = 10;
+        page = Math.Max(page, 1);
 
         var query = _db.SinhViens
             .Include(s => s.Lop)
-            .ThenInclude(l => l!.Nganh)
+                .ThenInclude(l => l!.Nganh)
+            .Include(s => s.Diems)
+                .ThenInclude(d => d.MonHoc)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(tuKhoa))
@@ -40,7 +43,18 @@ public class QuanLySinhVienController : Controller
             query = query.Where(s => s.LopId == lopId.Value);
         }
 
+        if (!string.IsNullOrWhiteSpace(trangThai))
+        {
+            query = query.Where(s => s.TrangThai == trangThai);
+        }
+
         var totalItems = await query.CountAsync();
+        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+        if (page > Math.Max(totalPages, 1))
+        {
+            page = Math.Max(totalPages, 1);
+        }
+
         var items = await query
             .OrderBy(s => s.MaSinhVien)
             .Skip((page - 1) * pageSize)
@@ -49,6 +63,7 @@ public class QuanLySinhVienController : Controller
 
         ViewBag.TuKhoa = tuKhoa;
         ViewBag.LopId = lopId;
+        ViewBag.TrangThai = trangThai;
         ViewBag.DanhSachLop = new SelectList(
             await _db.Lops.OrderBy(l => l.TenLop).ToListAsync(),
             "Id",
@@ -68,7 +83,9 @@ public class QuanLySinhVienController : Controller
     {
         var sinhVien = await _db.SinhViens
             .Include(s => s.Lop)
-            .ThenInclude(l => l!.Nganh)
+                .ThenInclude(l => l!.Nganh)
+            .Include(s => s.Diems)
+                .ThenInclude(d => d.MonHoc)
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (sinhVien == null)
@@ -83,7 +100,7 @@ public class QuanLySinhVienController : Controller
     public async Task<IActionResult> Create()
     {
         await LoadLopAsync();
-        return View("Form", new SinhVienFormViewModel());
+        return View("Form", new SinhVienFormViewModel { TrangThai = "Đang học" });
     }
 
     [HttpPost]
@@ -110,7 +127,9 @@ public class QuanLySinhVienController : Controller
             Email = model.Email,
             SoDienThoai = model.SoDienThoai,
             DiaChi = model.DiaChi,
-            LopId = model.LopId
+            LopId = model.LopId,
+            NienKhoa = model.NienKhoa,
+            TrangThai = model.TrangThai
         };
 
         _db.SinhViens.Add(sinhVien);
@@ -123,7 +142,11 @@ public class QuanLySinhVienController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
-        var sinhVien = await _db.SinhViens.FindAsync(id);
+        var sinhVien = await _db.SinhViens
+            .Include(s => s.Diems)
+                .ThenInclude(d => d.MonHoc)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
         if (sinhVien == null)
         {
             return NotFound();
@@ -141,7 +164,11 @@ public class QuanLySinhVienController : Controller
             Email = sinhVien.Email,
             SoDienThoai = sinhVien.SoDienThoai,
             DiaChi = sinhVien.DiaChi,
-            LopId = sinhVien.LopId
+            LopId = sinhVien.LopId,
+            NienKhoa = sinhVien.NienKhoa,
+            TrangThai = sinhVien.TrangThai,
+            Gpa = sinhVien.Gpa,
+            XepLoai = sinhVien.XepLoai
         });
     }
 
@@ -174,6 +201,8 @@ public class QuanLySinhVienController : Controller
         sinhVien.SoDienThoai = model.SoDienThoai;
         sinhVien.DiaChi = model.DiaChi;
         sinhVien.LopId = model.LopId;
+        sinhVien.NienKhoa = model.NienKhoa;
+        sinhVien.TrangThai = model.TrangThai;
 
         await _db.SaveChangesAsync();
 
@@ -223,10 +252,20 @@ public class QuanLySinhVienController : Controller
 
     private async Task LoadLopAsync(int? selected = null)
     {
-        ViewBag.DanhSachLop = new SelectList(
-            await _db.Lops.OrderBy(l => l.TenLop).ToListAsync(),
-            "Id",
-            "TenLop",
-            selected);
+        var lops = await _db.Lops
+            .Include(lop => lop.Nganh)
+            .ThenInclude(nganh => nganh!.DonVi)
+            .OrderBy(lop => lop.TenLop)
+            .ToListAsync();
+
+        ViewBag.DanhSachLop = new SelectList(lops, "Id", "TenLop", selected);
+        ViewBag.KhoaTheoLop = lops.ToDictionary(
+            lop => lop.Id.ToString(),
+            lop => lop.Nganh?.DonVi?.TenDonVi ?? lop.Nganh?.TenKhoa ?? "");
+        ViewBag.KhoaHienTai = selected.HasValue
+            ? lops.FirstOrDefault(lop => lop.Id == selected.Value)?.Nganh?.DonVi?.TenDonVi
+                ?? lops.FirstOrDefault(lop => lop.Id == selected.Value)?.Nganh?.TenKhoa
+                ?? ""
+            : "";
     }
 }

@@ -333,6 +333,24 @@ body {
   border-radius: 6px;
 }
 
+.badge-status-dinhchi {
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.badge-rank-chuadiem {
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
 .badge-rank-gioi {
   background: #dcfce7;
   color: #16a34a;

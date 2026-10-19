@@ -44,10 +44,10 @@
         <div class="col-lg-2 col-md-3">
             <select name="trangThai" class="form-select">
                 <option value="">-- Trạng thái --</option>
-                <option value="Đang học">Đang học</option>
-                <option value="Tốt nghiệp">Tốt nghiệp</option>
-                <option value="Bảo lưu">Bảo lưu</option>
-                <option value="Đình chỉ">Đình chỉ</option>
+                @foreach (var trangThai in BTL_StudentMGMT.Models.SinhVien.TrangThaiOptions)
+                {
+                    <option value="@trangThai" selected="@(ViewBag.TrangThai == trangThai)">@trangThai</option>
+                }
             </select>
         </div>
 
@@ -91,12 +91,19 @@
                 {
                     var colorClass = avatarColors[idx % avatarColors.Length];
                     idx++;
-                    double gpa = 7.5 + ((s.Id * 3) % 20) * 0.1;
-                    if (gpa > 9.8) gpa = 8.8;
-                    string rank = gpa >= 8.5 ? "GIỎI" : (gpa >= 7.0 ? "KHÁ" : "TRUNG BÌNH");
-                    string rankClass = gpa >= 8.5 ? "badge-rank-gioi" : (gpa >= 7.0 ? "badge-rank-kha" : "badge-rank-trungbinh");
-                    string status = (s.Id % 5 == 0) ? "ĐÃ TỐT NGHIỆP" : ((s.Id % 7 == 0) ? "ĐANG BẢO LƯU" : "ĐANG HỌC");
-                    string statusClass = status == "ĐANG HỌC" ? "badge-status-danghoc" : (status == "ĐÃ TỐT NGHIỆP" ? "badge-status-totnghiep" : "badge-status-baoluu");
+                    var gpa = s.Gpa;
+                    string rank = s.XepLoai;
+                    string rankClass = gpa == null
+                        ? "badge-rank-chuadiem"
+                        : (gpa >= 8.5 ? "badge-rank-gioi" : (gpa >= 7.0 ? "badge-rank-kha" : "badge-rank-trungbinh"));
+                    string status = s.TrangThai ?? "Đang học";
+                    string statusClass = status switch
+                    {
+                        "Đang học" => "badge-status-danghoc",
+                        "Tốt nghiệp" => "badge-status-totnghiep",
+                        "Bảo lưu" => "badge-status-baoluu",
+                        _ => "badge-status-dinhchi"
+                    };
 
                     <tr>
                         <!-- ẢNH CÓ CHẤM ONLINE -->
@@ -117,12 +124,12 @@
                         <!-- HỌ VÀ TÊN + EMAIL -->
                         <td>
                             <div class="fw-bold text-dark">@s.HoTen</div>
-                            <small class="text-muted d-block">@(s.Email ?? $"{s.MaSinhVien.ToLower()}@student.edu.vn")</small>
+                            <small class="text-muted d-block">@(s.Email ?? "Chưa cập nhật")</small>
                         </td>
 
                         <!-- NGÀY SINH -->
                         <td>
-                            <span>@(s.NgaySinh?.ToString("dd/MM/yyyy") ?? "19/07/2003")</span>
+                            <span>@(s.NgaySinh?.ToString("dd/MM/yyyy") ?? "—")</span>
                         </td>
 
                         <!-- GIỚI TÍNH -->
@@ -131,23 +138,34 @@
                             {
                                 <span class="badge-gender-nu">♀ NỮ</span>
                             }
-                            else
+                            else if (s.GioiTinh == "Nam")
                             {
                                 <span class="badge-gender-nam">♂ NAM</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">—</span>
                             }
                         </td>
 
                         <!-- KHOA / LỚP -->
                         <td>
                             <div class="fw-bold text-dark" style="font-size: 0.85rem;">
-                                @(s.Lop?.Nganh?.TenNganh ?? "Khoa Công nghệ Thông tin")
+                                @(s.Lop?.Nganh?.TenNganh ?? "Chưa có ngành")
                             </div>
-                            <small class="text-muted">@(s.Lop?.TenLop ?? "CNTT1-K15")</small>
+                            <small class="text-muted">@(s.Lop?.TenLop ?? "Chưa xếp lớp")</small>
                         </td>
 
                         <!-- ĐIỂM GPA -->
                         <td>
-                            <span class="fw-bold text-primary fs-6" style="color: #2563eb !important;">@gpa.ToString("0.0")</span>
+                            @if (gpa == null)
+                            {
+                                <span class="text-muted small">Chưa có điểm</span>
+                            }
+                            else
+                            {
+                                <span class="fw-bold text-primary fs-6" style="color: #2563eb !important;">@gpa.Value.ToString("0.00")</span>
+                            }
                         </td>
 
                         <!-- XẾP LOẠI -->
@@ -205,7 +223,8 @@
                        asp-action="Index"
                        asp-route-page="@p"
                        asp-route-tuKhoa="@ViewBag.TuKhoa"
-                       asp-route-lopId="@ViewBag.LopId">@p</a>
+                       asp-route-lopId="@ViewBag.LopId"
+                       asp-route-trangThai="@ViewBag.TrangThai">@p</a>
                 </li>
             }
         </ul>

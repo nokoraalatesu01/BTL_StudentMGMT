@@ -32,4 +32,17 @@ public class SinhVienFormViewModel
 
     [Display(Name = "Lớp")]
     public int? LopId { get; set; }
+
+    [Display(Name = "Khóa / Năm nhập học")]
+    [StringLength(50, ErrorMessage = "Khóa / năm nhập học không được vượt quá 50 ký tự")]
+    public string? NienKhoa { get; set; }
+
+    [Display(Name = "Trạng thái học tập")]
+    [StringLength(50, ErrorMessage = "Trạng thái học tập không được vượt quá 50 ký tự")]
+    public string? TrangThai { get; set; }
+
+    [Display(Name = "Điểm GPA (Hệ 10)")]
+    public double? Gpa { get; set; }
+
+    public string? XepLoai { get; set; }
 }

@@ -17,15 +17,15 @@ public class DiemFormViewModel
     [Required(ErrorMessage = "Vui lòng nhập điểm chuyên cần")]
     [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
     [Display(Name = "Điểm chuyên cần (10%)")]
-    public double DiemChuyenCan { get; set; } = 10;
+    public double? DiemChuyenCan { get; set; }
 
     [Required(ErrorMessage = "Vui lòng nhập điểm giữa kỳ")]
     [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
     [Display(Name = "Điểm giữa kỳ (30%)")]
-    public double DiemGiuaKy { get; set; } = 8;
+    public double? DiemGiuaKy { get; set; }
 
     [Required(ErrorMessage = "Vui lòng nhập điểm thi cuối kỳ")]
     [Range(0, 10, ErrorMessage = "Điểm phải từ 0 đến 10")]
     [Display(Name = "Điểm thi cuối kỳ (60%)")]
-    public double DiemCuoiKy { get; set; } = 8.5;
+    public double? DiemCuoiKy { get; set; }
 }

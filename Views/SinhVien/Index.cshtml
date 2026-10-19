@@ -37,6 +37,13 @@
             <strong>@(Model.TenNganh ?? "Chưa xác định")</strong>
         </div>
     </article>
+    <article class="student-stat-card">
+        <span class="student-stat-icon student-icon-green" aria-hidden="true">G</span>
+        <div>
+            <p>GPA (Hệ 10)</p>
+            <strong>@(Model.Gpa.HasValue ? Model.Gpa.Value.ToString("0.00") : "Chưa có điểm")</strong>
+        </div>
+    </article>
 </section>
 
 <div class="student-content-grid">
@@ -66,6 +73,14 @@
                 <dt>Số điện thoại</dt>
                 <dd>@(Model.SoDienThoai ?? "Chưa cập nhật")</dd>
             </div>
+            <div>
+                <dt>Xếp loại</dt>
+                <dd>@(Model.XepLoai ?? "Chưa có điểm")</dd>
+            </div>
+            <div>
+                <dt>Học phần đã đạt</dt>
+                <dd>@Model.SoMonDaDat/@Model.SoMon</dd>
+            </div>
         </dl>
     </section>
 
@@ -75,7 +90,7 @@
                 <p class="student-eyebrow">THÔNG TIN ĐÀO TẠO</p>
                 <h2>Lớp và ngành</h2>
             </div>
-            <span class="student-cap-icon" aria-hidden="true">✦</span>
+            <a class="student-text-link" asp-action="BangDiem">Xem bảng điểm <span aria-hidden="true">→</span></a>
         </div>
 
         @if (Model.TenLop == null)

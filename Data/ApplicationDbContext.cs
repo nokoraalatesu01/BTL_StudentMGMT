@@ -126,6 +126,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .IsUnique()
             .HasFilter("[UserId] IS NOT NULL");
         modelBuilder.Entity<SinhVien>()
+            .Property(sinhVien => sinhVien.NienKhoa)
+            .HasMaxLength(50);
+        modelBuilder.Entity<SinhVien>()
+            .Property(sinhVien => sinhVien.TrangThai)
+            .HasMaxLength(50);
+        modelBuilder.Entity<SinhVien>()
             .HasIndex(sinhVien => sinhVien.UserId)
             .IsUnique()
             .HasFilter("[UserId] IS NOT NULL");
@@ -144,7 +150,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .IsUnique();
         modelBuilder.Entity<Diem>()
             .HasOne(diem => diem.SinhVien)
-            .WithMany()
+            .WithMany(sinhVien => sinhVien.Diems)
             .HasForeignKey(diem => diem.SinhVienId)
             .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<Diem>()

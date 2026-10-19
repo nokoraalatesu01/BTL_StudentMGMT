@@ -73,12 +73,19 @@
                 {
                     idx++;
                     var initial = string.IsNullOrWhiteSpace(s.HoTen) ? "S" : s.HoTen.Trim()[0].ToString().ToUpperInvariant();
-                    double gpa = 7.5 + ((s.Id * 3) % 20) * 0.1;
-                    if (gpa > 9.8) gpa = 8.8;
-                    string rank = gpa >= 8.5 ? "Giỏi" : (gpa >= 7.0 ? "Khá" : "Trung bình");
-                    string rankBadge = gpa >= 8.5 ? "gv-badge-green" : (gpa >= 7.0 ? "gv-badge-blue" : "gv-badge-amber");
-                    string status = (s.Id % 5 == 0) ? "Đã tốt nghiệp" : ((s.Id % 7 == 0) ? "Bảo lưu" : "Đang học");
-                    string statusBadge = status == "Đang học" ? "gv-badge-green" : (status == "Đã tốt nghiệp" ? "gv-badge-gray" : "gv-badge-amber");
+                    var gpa = s.Gpa;
+                    string rank = s.XepLoai;
+                    string rankBadge = gpa == null
+                        ? "gv-badge-gray"
+                        : (gpa >= 8.5 ? "gv-badge-green" : (gpa >= 7.0 ? "gv-badge-blue" : "gv-badge-amber"));
+                    string status = s.TrangThai ?? "Đang học";
+                    string statusBadge = status switch
+                    {
+                        "Đang học" => "gv-badge-green",
+                        "Tốt nghiệp" => "gv-badge-gray",
+                        "Bảo lưu" => "gv-badge-amber",
+                        _ => "gv-badge-red"
+                    };
 
                     <tr>
                         <td>
@@ -89,20 +96,27 @@
                         </td>
                         <td>
                             <div style="font-weight: 600; color: #1b2e45;">@s.HoTen</div>
-                            <span style="font-size: .75rem; color: #7a899a;">@(s.Email ?? $"{s.MaSinhVien.ToLower()}@student.edu.vn")</span>
+                            <span style="font-size: .75rem; color: #7a899a;">@(s.Email ?? "Chưa cập nhật")</span>
                         </td>
                         <td>
-                            @(s.NgaySinh?.ToString("dd/MM/yyyy") ?? "19/07/2003")
+                            @(s.NgaySinh?.ToString("dd/MM/yyyy") ?? "—")
                         </td>
                         <td>
-                            @(s.GioiTinh ?? "Nam")
+                            @(s.GioiTinh ?? "—")
                         </td>
                         <td>
-                            <div style="font-weight: 600; font-size: .82rem;">@(s.Lop?.TenLop ?? "CNTT1-K15")</div>
-                            <span style="font-size: .75rem; color: #7a899a;">@(s.Lop?.Nganh?.TenNganh ?? "Công nghệ thông tin")</span>
+                            <div style="font-weight: 600; font-size: .82rem;">@(s.Lop?.TenLop ?? "Chưa xếp lớp")</div>
+                            <span style="font-size: .75rem; color: #7a899a;">@(s.Lop?.Nganh?.TenNganh ?? "Chưa có ngành")</span>
                         </td>
                         <td>
-                            <strong style="color: #176da3; font-size: .95rem;">@gpa.ToString("0.0")</strong>
+                            @if (gpa == null)
+                            {
+                                <span style="color: #8290a0; font-size: .82rem;">Chưa có điểm</span>
+                            }
+                            else
+                            {
+                                <strong style="color: #176da3; font-size: .95rem;">@gpa.Value.ToString("0.00")</strong>
+                            }
                         </td>
                         <td>
                             <span class="gv-badge @rankBadge">@rank</span>

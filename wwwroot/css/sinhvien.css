@@ -449,6 +449,71 @@ a {
     line-height: 1.6;
 }
 
+/* ================= BẢNG DỮ LIỆU (CỔNG SINH VIÊN) ================= */
+.student-table-wrap {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.student-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: .85rem;
+    color: #243b53;
+}
+
+.student-table th {
+    padding: 13px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #627d98;
+    font-size: .72rem;
+    font-weight: 750;
+    letter-spacing: .06em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.student-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #edf2f7;
+    vertical-align: middle;
+}
+
+.student-table tbody tr:hover {
+    background: #f7fafc;
+}
+
+.student-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.student-table .text-center {
+    text-align: center;
+}
+
+.student-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: .74rem;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.student-chip.green {
+    background: #eaf6f0;
+    color: #2b7d63;
+}
+
+.student-chip.red {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
 .student-page-heading {
     display: flex;
     align-items: flex-end;

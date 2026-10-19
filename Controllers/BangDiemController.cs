@@ -47,16 +47,32 @@ public class BangDiemController : Controller
 
     // 2. Nhập điểm môn học (GET)
     [HttpGet]
-    public IActionResult NhapDiem(int? sinhVienId)
+    public IActionResult NhapDiem(int? sinhVienId, int? monHocId)
     {
-        LoadDropdowns(sinhVienId);
+        LoadDropdowns(sinhVienId, monHocId);
+
         var model = new DiemFormViewModel
         {
             SinhVienId = sinhVienId ?? 0,
-            DiemChuyenCan = 10,
-            DiemGiuaKy = 8,
-            DiemCuoiKy = 8.5
+            MonHocId = monHocId ?? 0
         };
+
+        // Nếu đã có kết quả nhập trước đó thì nạp lại giá trị cũ để chỉnh sửa.
+        if (sinhVienId > 0 && monHocId > 0)
+        {
+            var existing = _db.Diems
+                .AsNoTracking()
+                .FirstOrDefault(d => d.SinhVienId == sinhVienId && d.MonHocId == monHocId);
+
+            if (existing != null)
+            {
+                model.Id = existing.Id;
+                model.DiemChuyenCan = existing.DiemChuyenCan;
+                model.DiemGiuaKy = existing.DiemGiuaKy;
+                model.DiemCuoiKy = existing.DiemCuoiKy;
+            }
+        }
+
         return View(model);
     }
 
@@ -78,9 +94,9 @@ public class BangDiemController : Controller
         if (diem != null)
         {
             // Cập nhật lại điểm
-            diem.DiemChuyenCan = model.DiemChuyenCan;
-            diem.DiemGiuaKy = model.DiemGiuaKy;
-            diem.DiemCuoiKy = model.DiemCuoiKy;
+            diem.DiemChuyenCan = model.DiemChuyenCan!.Value;
+            diem.DiemGiuaKy = model.DiemGiuaKy!.Value;
+            diem.DiemCuoiKy = model.DiemCuoiKy!.Value;
             TempData["Msg"] = "Đã cập nhật điểm học phần thành công!";
         }
         else
@@ -90,9 +106,9 @@ public class BangDiemController : Controller
             {
                 SinhVienId = model.SinhVienId,
                 MonHocId = model.MonHocId,
-                DiemChuyenCan = model.DiemChuyenCan,
-                DiemGiuaKy = model.DiemGiuaKy,
-                DiemCuoiKy = model.DiemCuoiKy
+                DiemChuyenCan = model.DiemChuyenCan!.Value,
+                DiemGiuaKy = model.DiemGiuaKy!.Value,
+                DiemCuoiKy = model.DiemCuoiKy!.Value
             });
             TempData["Msg"] = "Đã ghi nhận điểm học phần thành công!";
         }

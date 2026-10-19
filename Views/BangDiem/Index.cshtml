@@ -66,6 +66,7 @@
                     <th style="text-align: center;">TỔNG KẾT</th>
                     <th style="text-align: center;">ĐIỂM CHỮ</th>
                     <th style="text-align: center;">ĐÁNH GIÁ</th>
+                    <th style="text-align: center;">HÀNH ĐỘNG</th>
                 </tr>
             </thead>
             <tbody>
@@ -124,13 +125,22 @@
                                 </span>
                             }
                         </td>
+                        <td style="text-align: center;">
+                            <a asp-action="NhapDiem"
+                               asp-route-sinhVienId="@d.SinhVienId"
+                               asp-route-monHocId="@d.MonHocId"
+                               class="gv-btn gv-btn-secondary gv-btn-sm"
+                               title="Sửa điểm học phần này">
+                                <i class="bi bi-pencil"></i> Sửa
+                            </a>
+                        </td>
                     </tr>
                 }
 
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="10" style="text-align: center; padding: 40px; color: #8290a0;">
+                        <td colspan="11" style="text-align: center; padding: 40px; color: #8290a0;">
                             Chưa có dữ liệu bảng điểm nào. Bấm <strong>"Nhập điểm môn học"</strong> để thêm kết quả học tập.
                         </td>
                     </tr>

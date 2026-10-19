@@ -70,6 +70,7 @@ public static class DbSeeder
             var lopQTKD = db.Lops.FirstOrDefault(l => l.TenLop.Contains("QTKD")) ?? lopCNTT;
             var lopNNA = db.Lops.FirstOrDefault(l => l.TenLop.Contains("NNA")) ?? lopCNTT;
 
+            const string trangThaiDangHoc = "Đang học";
             db.SinhViens.AddRange(
                 new SinhVien { MaSinhVien = "SV202401", HoTen = "Nguyễn Văn Hưng", GioiTinh = "Nam", Email = "hung.nv202401@student.edu.vn", SoDienThoai = "0987111222", LopId = lopCNTT?.Id, NgaySinh = new DateTime(2003, 7, 19), UserId = sinhVienUser?.Id },
                 new SinhVien { MaSinhVien = "SV202402", HoTen = "Trần Thị Mai Anh", GioiTinh = "Nữ", Email = "anh.ttm202402@student.edu.vn", SoDienThoai = "0987333444", LopId = lopCNTT?.Id, NgaySinh = new DateTime(2004, 5, 8) },
@@ -82,6 +83,13 @@ public static class DbSeeder
                 new SinhVien { MaSinhVien = "SV202409", HoTen = "Hoàng Ngọc Ánh", GioiTinh = "Nữ", Email = "anh.hn202409@student.edu.vn", SoDienThoai = "0912999111", LopId = lopQTKD?.Id, NgaySinh = new DateTime(2003, 6, 30) },
                 new SinhVien { MaSinhVien = "SV202410", HoTen = "Vũ Đình Trọng", GioiTinh = "Nam", Email = "trong.vd202410@student.edu.vn", SoDienThoai = "0912222444", LopId = lopDTVT?.Id, NgaySinh = new DateTime(2002, 10, 12) }
             );
+
+            foreach (var sinhVien in db.SinhViens)
+            {
+                sinhVien.TrangThai = trangThaiDangHoc;
+                sinhVien.NienKhoa = sinhVien.NgaySinh?.Year.ToString();
+            }
+
             await db.SaveChangesAsync();
         }
 

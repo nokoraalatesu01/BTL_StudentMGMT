@@ -44,10 +44,13 @@ public class GiangVienController : Controller
     public IActionResult DanhSachSinhVien(string? tuKhoa, int? lopId, int page = 1)
     {
         int pageSize = 10;
+        page = Math.Max(page, 1);
 
         var query = _db.SinhViens
             .Include(s => s.Lop)
             .ThenInclude(l => l!.Nganh)
+            .Include(s => s.Diems)
+            .ThenInclude(d => d.MonHoc)
             .AsQueryable();
 
         if (!string.IsNullOrEmpty(tuKhoa))
@@ -62,6 +65,12 @@ public class GiangVienController : Controller
         }
 
         var totalItems = query.Count();
+        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+        if (page > Math.Max(totalPages, 1))
+        {
+            page = Math.Max(totalPages, 1);
+        }
+
         var items = query
             .OrderBy(s => s.MaSinhVien)
             .Skip((page - 1) * pageSize)
@@ -93,6 +102,8 @@ public class GiangVienController : Controller
         var sinhVien = _db.SinhViens
             .Include(s => s.Lop)
             .ThenInclude(l => l!.Nganh)
+            .Include(s => s.Diems)
+            .ThenInclude(d => d.MonHoc)
             .FirstOrDefault(s => s.Id == id);
 
         if (sinhVien == null)

@@ -387,8 +387,16 @@ namespace BTL_StudentMGMT.Migrations
                     b.Property<DateTime?>("NgaySinh")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("NienKhoa")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("SoDienThoai")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TrangThai")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -570,7 +578,7 @@ namespace BTL_StudentMGMT.Migrations
                         .IsRequired();
 
                     b.HasOne("BTL_StudentMGMT.Models.SinhVien", "SinhVien")
-                        .WithMany()
+                        .WithMany("Diems")
                         .HasForeignKey("SinhVienId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -703,6 +711,11 @@ namespace BTL_StudentMGMT.Migrations
                     b.Navigation("ChuongTrinhs");
 
                     b.Navigation("Lops");
+                });
+
+            modelBuilder.Entity("BTL_StudentMGMT.Models.SinhVien", b =>
+                {
+                    b.Navigation("Diems");
                 });
 #pragma warning restore 612, 618
         }

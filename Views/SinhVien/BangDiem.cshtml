@@ -1,0 +1,148 @@
+@model BTL_StudentMGMT.Models.SinhVienDiemViewModel
+@{
+    ViewData["Title"] = "Bảng điểm của tôi";
+    Layout = "_SinhVienLayout";
+    var displayName = string.IsNullOrWhiteSpace(Model.HoTen) ? "Sinh viên" : Model.HoTen.Trim();
+}
+
+<div class="student-page-heading">
+    <div>
+        <p class="student-eyebrow">KẾT QUẢ HỌC TẬP</p>
+        <h1>Bảng điểm của tôi</h1>
+        <p>Điểm các học phần đã được ghi nhận, GPA được tính tự động theo số tín chỉ.</p>
+    </div>
+    <a class="student-back-link" asp-action="Index">← Về tổng quan</a>
+</div>
+
+<section class="student-stat-grid" aria-label="Tóm tắt kết quả học tập">
+    <article class="student-stat-card">
+        <span class="student-stat-icon student-icon-blue" aria-hidden="true">G</span>
+        <div>
+            <p>GPA (Hệ 10)</p>
+            <strong>@(Model.Gpa.HasValue ? Model.Gpa.Value.ToString("0.00") : "Chưa có điểm")</strong>
+        </div>
+    </article>
+    <article class="student-stat-card">
+        <span class="student-stat-icon student-icon-green" aria-hidden="true">X</span>
+        <div>
+            <p>Xếp loại</p>
+            <strong>@(Model.XepLoai ?? "Chưa xếp loại")</strong>
+        </div>
+    </article>
+    <article class="student-stat-card">
+        <span class="student-stat-icon student-icon-violet" aria-hidden="true">M</span>
+        <div>
+            <p>Học phần đã đạt</p>
+            <strong>@Model.SoMonDaDat/@Model.SoMon học phần</strong>
+        </div>
+    </article>
+</section>
+
+<div class="student-content-grid">
+    <section class="student-panel p-0 overflow-hidden">
+        <div class="student-panel-heading p-3 border-bottom">
+            <div>
+                <p class="student-eyebrow mb-1">BẢNG ĐIỂM</p>
+                <h2 style="font-size: 1rem;">Kết quả từng học phần</h2>
+            </div>
+        </div>
+
+        @if (Model.Diems.Count == 0)
+        {
+            <div class="p-4">
+                <div class="student-notice">
+                    <strong>Chưa có điểm</strong>
+                    <p>Điểm học phần sẽ hiển thị ở đây ngay khi giảng viên ghi nhận vào bảng điểm.</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="student-table-wrap">
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>Mã học phần</th>
+                            <th>Tên học phần</th>
+                            <th class="text-center">TC</th>
+                            <th class="text-center">CC</th>
+                            <th class="text-center">GK</th>
+                            <th class="text-center">CK</th>
+                            <th class="text-center">Tổng kết</th>
+                            <th class="text-center">Điểm chữ</th>
+                            <th class="text-center">Kết quả</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var diem in Model.Diems)
+                        {
+                            var isPass = diem.DiemTongKet >= 4.0;
+                            <tr>
+                                <td><strong style="color: #176da3;">@diem.MonHoc?.MaMon</strong></td>
+                                <td>@diem.MonHoc?.TenMon</td>
+                                <td class="text-center">@(diem.MonHoc?.SoTinChi ?? 0)</td>
+                                <td class="text-center">@diem.DiemChuyenCan.ToString("0.0")</td>
+                                <td class="text-center">@diem.DiemGiuaKy.ToString("0.0")</td>
+                                <td class="text-center">@diem.DiemCuoiKy.ToString("0.0")</td>
+                                <td class="text-center"><strong style="color: #176da3;">@diem.DiemTongKet.ToString("0.0")</strong></td>
+                                <td class="text-center">@diem.DiemChu</td>
+                                <td class="text-center">
+                                    @if (isPass)
+                                    {
+                                        <span class="student-chip green">Đạt</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="student-chip red">Học lại</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="student-panel">
+        <div class="student-panel-heading">
+            <div>
+                <p class="student-eyebrow">THÔNG TIN HỌC TẬP</p>
+                <h2>Lớp và ngành</h2>
+            </div>
+            <span class="student-cap-icon" aria-hidden="true">✦</span>
+        </div>
+
+        <dl class="student-info-list compact">
+            <div>
+                <dt>Họ và tên</dt>
+                <dd>@displayName</dd>
+            </div>
+            <div>
+                <dt>Mã sinh viên</dt>
+                <dd>@Model.MaSinhVien</dd>
+            </div>
+            <div>
+                <dt>Lớp</dt>
+                <dd>@(Model.TenLop ?? "Chưa xếp lớp")</dd>
+            </div>
+            <div>
+                <dt>Ngành</dt>
+                <dd>@(Model.TenNganh ?? "Chưa cập nhật")</dd>
+            </div>
+            <div>
+                <dt>Khóa / Năm nhập học</dt>
+                <dd>@(Model.NienKhoa ?? "Chưa cập nhật")</dd>
+            </div>
+            <div>
+                <dt>Trạng thái học tập</dt>
+                <dd>@(Model.TrangThai ?? "Chưa cập nhật")</dd>
+            </div>
+        </dl>
+    </section>
+</div>
+
+<p class="student-data-note">
+    GPA được tính theo công thức trung bình có trọng số số tín chỉ của các học phần đã có điểm.
+    Nếu thấy sai, vui lòng liên hệ giảng viên phụ trách hoặc bộ phận quản lý sinh viên.
+</p>

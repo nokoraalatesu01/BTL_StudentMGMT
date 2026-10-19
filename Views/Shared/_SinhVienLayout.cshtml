@@ -28,8 +28,13 @@
                 </a>
                 <a asp-controller="SinhVien" asp-action="HoSo"
                    class="@(ViewContext.RouteData.Values["action"]?.ToString() == "HoSo" ? "active" : "")">
-                    <span class="nav-symbol" aria-hidden="true">◎</span>
+                    <span class="nav-symbol" aria-hidden="true">▤</span>
                     <span>Hồ sơ của tôi</span>
+                </a>
+                <a asp-controller="SinhVien" asp-action="BangDiem"
+                   class="@(ViewContext.RouteData.Values["action"]?.ToString() == "BangDiem" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">✎</span>
+                    <span>Bảng điểm của tôi</span>
                 </a>
             </nav>
 

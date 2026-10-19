@@ -81,12 +81,12 @@
                     <div>
                         <div style="font-size: .75rem; color: #507192; font-weight: 700; text-transform: uppercase;">Ước tính tổng kết (Hệ 10)</div>
                         <div class="d-flex align-items-baseline gap-2 mt-1">
-                            <span id="txtTongKet" style="font-size: 1.6rem; font-weight: 800; color: #176da3;">0.0</span>
-                            <span id="txtDiemChu" class="gv-badge gv-badge-blue">F</span>
+                            <span id="txtTongKet" style="font-size: 1.6rem; font-weight: 800; color: #176da3;">—</span>
+                            <span id="txtDiemChu" class="gv-badge gv-badge-gray">Chưa nhập</span>
                         </div>
                     </div>
                     <div class="text-end">
-                        <span id="txtDanhGia" class="gv-badge gv-badge-red" style="font-size: .82rem; padding: 6px 14px;">Chưa đạt</span>
+                        <span id="txtDanhGia" class="gv-badge gv-badge-gray" style="font-size: .82rem; padding: 6px 14px;">Chưa nhập đủ điểm</span>
                     </div>
                 </div>
 
@@ -107,17 +107,44 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         function calculate() {
-            var cc = parseFloat(document.getElementById('inpCC').value) || 0;
-            var gk = parseFloat(document.getElementById('inpGK').value) || 0;
-            var ck = parseFloat(document.getElementById('inpCK').value) || 0;
+            var ccRaw = document.getElementById('inpCC').value.trim();
+            var gkRaw = document.getElementById('inpGK').value.trim();
+            var ckRaw = document.getElementById('inpCK').value.trim();
+
+            var elChu = document.getElementById('txtDiemChu');
+            var elDg = document.getElementById('txtDanhGia');
+            var elTk = document.getElementById('txtTongKet');
+
+            if (ccRaw === '' || gkRaw === '' || ckRaw === '') {
+                elTk.innerText = '—';
+                elChu.innerText = 'Chưa nhập';
+                elChu.className = 'gv-badge gv-badge-gray';
+                elDg.innerText = 'Chưa nhập đủ điểm';
+                elDg.className = 'gv-badge gv-badge-gray';
+                return;
+            }
+
+            var cc = parseFloat(ccRaw);
+            var gk = parseFloat(gkRaw);
+            var ck = parseFloat(ckRaw);
+
+            if (isNaN(cc) || isNaN(gk) || isNaN(ck)) {
+                elTk.innerText = '—';
+                elChu.innerText = 'Chưa nhập';
+                elChu.className = 'gv-badge gv-badge-gray';
+                elDg.innerText = 'Chưa nhập đủ điểm';
+                elDg.className = 'gv-badge gv-badge-gray';
+                return;
+            }
 
             var tk = (cc * 0.1) + (gk * 0.3) + (ck * 0.6);
             tk = Math.round(tk * 10) / 10;
-            document.getElementById('txtTongKet').innerText = tk.toFixed(1);
+            elTk.innerText = tk.toFixed(1);
 
             var chu = "F";
             var pass = false;
-            if (tk >= 8.5) { chu = "A"; pass = true; }
+            if (tk >= 9.0) { chu = "A+"; pass = true; }
+            else if (tk >= 8.5) { chu = "A"; pass = true; }
             else if (tk >= 8.0) { chu = "B+"; pass = true; }
             else if (tk >= 7.0) { chu = "B"; pass = true; }
             else if (tk >= 6.5) { chu = "C+"; pass = true; }
@@ -125,11 +152,9 @@
             else if (tk >= 5.0) { chu = "D+"; pass = true; }
             else if (tk >= 4.0) { chu = "D"; pass = true; }
 
-            var elChu = document.getElementById('txtDiemChu');
             elChu.innerText = chu;
             elChu.className = pass ? "gv-badge gv-badge-green" : "gv-badge gv-badge-red";
 
-            var elDg = document.getElementById('txtDanhGia');
             if (pass) {
                 elDg.innerText = "✓ Đạt học phần";
                 elDg.className = "gv-badge gv-badge-green";
