@@ -36,6 +36,14 @@
                     <span class="nav-symbol" aria-hidden="true">♙</span>
                     <span>Quản lý giảng viên</span>
                 </a>
+                <a asp-controller="QuanLyMonHoc" asp-action="Index" class="@(currentController == "QuanLyMonHoc" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">▤</span>
+                    <span>Quản lý môn học</span>
+                </a>
+                <a asp-controller="BangDiem" asp-action="Index" class="@(currentController == "BangDiem" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">✦</span>
+                    <span>Bảng điểm</span>
+                </a>
                 <a asp-controller="QuanLyTaiKhoan" asp-action="Index" class="@(currentController == "QuanLyTaiKhoan" ? "active" : "")">
                     <span class="nav-symbol" aria-hidden="true">◈</span>
                     <span>Quản lý tài khoản</span>

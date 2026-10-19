@@ -8,28 +8,40 @@
 <h2 class="mb-4">Tổng quan</h2>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-3">
+    <div class="col-md-4 col-xl-2">
         <div class="stat-card">
             <div>Sinh viên</div>
             <div class="num">@Model.TongSinhVien</div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4 col-xl-2">
         <div class="stat-card">
             <div>Giảng viên</div>
             <div class="num">@Model.TongGiangVien</div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4 col-xl-2">
         <div class="stat-card">
             <div>Ngành</div>
             <div class="num">@Model.TongNganh</div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4 col-xl-2">
         <div class="stat-card">
             <div>Lớp</div>
             <div class="num">@Model.TongLop</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+        <div class="stat-card">
+            <div>Môn học</div>
+            <div class="num">@Model.TongMonHoc</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+        <div class="stat-card">
+            <div>Tài khoản</div>
+            <div class="num">@Model.TongTaiKhoan</div>
         </div>
     </div>
 </div>
@@ -37,6 +49,25 @@
 @if (Model.SinhVienChuaCoLop > 0)
 {
     <div class="alert alert-warning">Có @Model.SinhVienChuaCoLop sinh viên chưa được xếp lớp.</div>
+}
+@if (Model.GiangVienChuaCoTaiKhoan > 0 || Model.SinhVienChuaCoTaiKhoan > 0)
+{
+    <div class="alert alert-warning">
+        Chưa cấp tài khoản cho
+        @if (Model.SinhVienChuaCoTaiKhoan > 0)
+        {
+            <span>@Model.SinhVienChuaCoTaiKhoan sinh viên</span>
+        }
+        @if (Model.SinhVienChuaCoTaiKhoan > 0 && Model.GiangVienChuaCoTaiKhoan > 0)
+        {
+            <span> và </span>
+        }
+        @if (Model.GiangVienChuaCoTaiKhoan > 0)
+        {
+            <span>@Model.GiangVienChuaCoTaiKhoan giảng viên</span>
+        }.
+        <a asp-controller="QuanLyTaiKhoan" asp-action="Index" class="alert-link">Quản lý tài khoản</a>
+    </div>
 }
 
 <div class="stat-card">

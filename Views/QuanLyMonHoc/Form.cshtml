@@ -1,0 +1,42 @@
+@model BTL_StudentMGMT.Models.MonHocFormViewModel
+@{
+    var isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Sửa môn học" : "Thêm môn học";
+}
+
+<div class="mb-4">
+    <h2>@ViewData["Title"]</h2>
+    <p class="text-muted mb-0">Môn học hiện được quản lý độc lập, chưa gắn với ngành hoặc chương trình đào tạo.</p>
+</div>
+
+<div class="stat-card" style="max-width:760px">
+    <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@(isEdit ? Model.Id : (int?)null)" method="post" novalidate>
+        <input asp-for="Id" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <div class="mb-3">
+            <label asp-for="MaMon" class="form-label"></label>
+            <input asp-for="MaMon" class="form-control" autocomplete="off" />
+            <span asp-validation-for="MaMon" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="TenMon" class="form-label"></label>
+            <input asp-for="TenMon" class="form-control" />
+            <span asp-validation-for="TenMon" class="text-danger"></span>
+        </div>
+        <div class="mb-4">
+            <label asp-for="SoTinChi" class="form-label"></label>
+            <input asp-for="SoTinChi" type="number" min="1" max="6"
+                   data-msg-min="Số tín chỉ phải từ 1 đến 6" data-msg-max="Số tín chỉ phải từ 1 đến 6"
+                   class="form-control" />
+            <span asp-validation-for="SoTinChi" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">@(isEdit ? "Lưu thay đổi" : "Thêm môn học")</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

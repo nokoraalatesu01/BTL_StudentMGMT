@@ -1,7 +1,7 @@
 @model BTL_StudentMGMT.Models.DiemFormViewModel
 @{
     ViewData["Title"] = "Nhập điểm học phần";
-    Layout = "_GiangVienLayout";
+    Layout = User.IsInRole("Admin") ? "_AdminLayout" : "_GiangVienLayout";
 }
 
 <div class="student-page-heading">

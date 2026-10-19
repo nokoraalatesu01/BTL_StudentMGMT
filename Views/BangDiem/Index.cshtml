@@ -1,7 +1,7 @@
 @model List<BTL_StudentMGMT.Models.Diem>
 @{
     ViewData["Title"] = "Quản lý bảng điểm & học phần";
-    Layout = "_GiangVienLayout";
+    Layout = User.IsInRole("Admin") ? "_AdminLayout" : "_GiangVienLayout";
 }
 
 <div class="student-page-heading">
