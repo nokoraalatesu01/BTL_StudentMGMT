@@ -1,0 +1,102 @@
+@model List<BTL_StudentMGMT.Models.LichGiangDay>
+@{
+    ViewData["Title"] = "Lịch giảng dạy & Thời khóa biểu";
+    Layout = "_GiangVienLayout";
+    var gv = ViewBag.GiangVien as BTL_StudentMGMT.Models.GiangVien;
+}
+
+<div class="student-page-heading">
+    <div>
+        <p class="student-eyebrow">KẾ HOẠCH ĐÀO TẠO</p>
+        <h1>Lịch giảng dạy & Thời khóa biểu</h1>
+        <p>Theo dõi thời khóa biểu các ca giảng dạy trong tuần, phòng máy và lớp học phụ trách.</p>
+    </div>
+    <a class="student-back-link" asp-action="Index">← Về tổng quan</a>
+</div>
+
+<!-- Header thông tin học kỳ -->
+<div class="student-panel p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+        <span class="gv-action-icon gv-icon-blue" style="width: 44px; height: 44px;">📅</span>
+        <div>
+            <strong style="color: #176da3; font-size: 1rem;">Thời khóa biểu giảng dạy tuần</strong>
+            <span style="font-size: .8rem; color: #7a899a; display: block;">Học kỳ 1 (Năm học 2026 - 2027) • Giảng viên: @(gv?.HoTen ?? "PGS.TS. Trần Đình Khang")</span>
+        </div>
+    </div>
+    <div>
+        <span class="gv-badge gv-badge-green" style="font-size: .82rem; padding: 6px 14px;">
+            <i class="bi bi-calendar-check"></i> Đang áp dụng
+        </span>
+    </div>
+</div>
+
+<!-- Thẻ hiển thị danh sách các buổi dạy -->
+<div class="student-panel p-0 overflow-hidden mb-4">
+    <div class="student-panel-heading p-3 border-bottom">
+        <div>
+            <p class="student-eyebrow mb-1">DANH SÁCH CA DẠY</p>
+            <h2 style="font-size: 1rem;">Tổng số: @Model.Count ca học trong tuần</h2>
+        </div>
+    </div>
+
+    <div class="gv-table-responsive">
+        <table class="gv-table">
+            <thead>
+                <tr>
+                    <th style="width: 120px;">THỨ</th>
+                    <th>MÔN HỌC / HỌC PHẦN</th>
+                    <th>LỚP HỌC</th>
+                    <th style="text-align: center;">TIẾT HỌC</th>
+                    <th style="text-align: center;">CA DẠY</th>
+                    <th style="text-align: right;">ĐIỂM DANH</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var l in Model)
+                {
+                    var isSang = l.TietBatDau <= 5;
+                    var caDay = isSang ? "Ca Sáng" : "Ca Chiều";
+                    var caBadge = isSang ? "gv-badge-amber" : "gv-badge-violet";
+                    var tietKetThuc = l.TietBatDau + l.SoTiet - 1;
+
+                    <tr>
+                        <td>
+                            <span class="gv-badge gv-badge-blue" style="font-size: .82rem; font-weight: 700;">
+                                @l.Thu
+                            </span>
+                        </td>
+                        <td>
+                            <strong style="color: #1b2e45; font-size: .92rem;">@l.MonHoc?.TenMon</strong>
+                            <span style="display: block; font-size: .75rem; color: #7a899a;">Mã HP: @l.MonHoc?.MaMon (@l.MonHoc?.SoTinChi tín chỉ)</span>
+                        </td>
+                        <td>
+                            <span class="gv-badge gv-badge-gray" style="font-weight: 600;">
+                                @l.Lop?.TenLop
+                            </span>
+                        </td>
+                        <td style="text-align: center; font-weight: 700; color: #176da3;">
+                            Tiết @l.TietBatDau - @tietKetThuc
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="gv-badge @caBadge">@caDay</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <a asp-action="DiemDanh" asp-route-lopId="@l.LopId" asp-route-monHocId="@l.MonHocId" class="gv-btn gv-btn-primary gv-btn-sm" title="Điểm danh buổi này">
+                                <i class="bi bi-check2-square"></i> Điểm danh
+                            </a>
+                        </td>
+                    </tr>
+                }
+
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: #8290a0;">
+                            Chưa có lịch giảng dạy nào được xếp trong tuần.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

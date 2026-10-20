@@ -47,6 +47,16 @@
                     <span class="nav-symbol" aria-hidden="true">✎</span>
                     <span>Nhập điểm học phần</span>
                 </a>
+                <a asp-controller="GiangVien" asp-action="LichGiangDay"
+                   class="@(ViewContext.RouteData.Values["action"]?.ToString() == "LichGiangDay" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">📅</span>
+                    <span>Lịch giảng dạy</span>
+                </a>
+                <a asp-controller="GiangVien" asp-action="DiemDanh"
+                   class="@(ViewContext.RouteData.Values["action"]?.ToString() == "DiemDanh" ? "active" : "")">
+                    <span class="nav-symbol" aria-hidden="true">✓</span>
+                    <span>Điểm danh lớp học</span>
+                </a>
                 <a asp-controller="GiangVien" asp-action="CapNhatThongTin"
                    class="@(ViewContext.RouteData.Values["action"]?.ToString() == "CapNhatThongTin" ? "active" : "")">
                     <span class="nav-symbol" aria-hidden="true">◎</span>
