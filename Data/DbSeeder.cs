@@ -47,7 +47,7 @@ public static class DbSeeder
         ");
 
         // Seed Roles
-        foreach (var role in new[] { "Admin", "GiangVien", "SinhVien" })
+        foreach (var role in new[] { "Admin", "GiangVien", "SinhVien", "PGV" })
         {
             if (!await roleManager.RoleExistsAsync(role))
             {
@@ -59,6 +59,7 @@ public static class DbSeeder
         var adminUser = await CreateUser(userManager, "admin", "Quản trị viên", "Admin@123", "Admin");
         var giangVienUser = await CreateUser(userManager, "gv01", "PGS.TS. Trần Đình Khang", "GiangVien@123", "GiangVien");
         var sinhVienUser = await CreateUser(userManager, "sv01", "Nguyễn Văn Hưng", "SinhVien@123", "SinhVien");
+        await CreateUser(userManager, "pgv", "Phòng Giáo vụ", "123456", "PGV");
 
         // Seed Ngành & Lớp
         if (!db.Nganhs.Any())

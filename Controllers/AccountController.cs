@@ -85,6 +85,11 @@ public class AccountController : Controller
             return RedirectToAction("Index", "GiangVien");
         }
 
+        if (roles.Contains("PGV"))
+        {
+            return RedirectToAction("Index", "Admin");
+        }
+
         return RedirectToAction("Index", "SinhVien");
     }
 }

@@ -20,6 +20,9 @@ public class SinhVien
     public string? TrangThai { get; set; }
     public List<Diem> Diems { get; set; } = new();
 
+    // Bổ sung navigation từ schema mới (không ảnh hưởng code cũ)
+    public virtual ICollection<DiemDanh> DiemDanhs { get; set; } = new List<DiemDanh>();
+
     public static IReadOnlyList<string> TrangThaiOptions { get; } =
     [
         "Đang học",
