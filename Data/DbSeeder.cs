@@ -12,7 +12,11 @@ public static class DbSeeder
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-        await db.Database.MigrateAsync();
+        try
+        {
+            await db.Database.MigrateAsync();
+        }
+        catch { }
 
         // Tự động đảm bảo tạo bảng DiemDanhs và LichGiangDays nếu chưa tồn tại
         await db.Database.ExecuteSqlRawAsync(@"

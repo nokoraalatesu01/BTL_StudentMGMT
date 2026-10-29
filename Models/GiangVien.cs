@@ -16,4 +16,6 @@ public class GiangVien
     public string? SoDienThoai { get; set; }
     public string? UserId { get; set; }
     public ApplicationUser? User { get; set; }
+    public int? DonViId { get; set; }
+    public virtual DonVi? DonVi { get; set; }
 }
