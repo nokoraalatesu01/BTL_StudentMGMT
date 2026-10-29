@@ -1,74 +1,300 @@
 @model BTL_StudentMGMT.Models.TaiKhoanListViewModel
 @{
     ViewData["Title"] = "Quản lý tài khoản";
+
+    var avatarColors = new[] { "gray", "pink", "cyan", "purple", "green" };
+
+    // Phân trang client-side (tất cả đã load sẵn)
+    int pageSize    = 10;
+    int totalItems  = Model.TaiKhoans.Count;
+    int totalPages  = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+    // Trang 1 tĩnh vì controller chưa hỗ trợ server-side paging
+    int curPage = 1;
+    int startRecord = 1;
+    int endRecord   = Math.Min(pageSize, totalItems);
 }
 
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+<!-- ===== HEADER ===== -->
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
     <div>
-        <h2 class="mb-1">Quản lý tài khoản</h2>
-        <p class="text-muted mb-0">Tạo tài khoản Identity, quản lý trạng thái và đặt lại mật khẩu.</p>
+        <h3 class="fw-bold mb-1" style="color:#0f172a; font-size:1.55rem; letter-spacing:-.02em;">
+            Quản lý tài khoản
+        </h3>
+        <p class="mb-0" style="font-size:.875rem; color:#64748b;">
+            Tạo tài khoản Identity, quản lý trạng thái và đặt lại mật khẩu.
+        </p>
     </div>
-    <a asp-action="Create" class="btn btn-primary">Tạo tài khoản hồ sơ</a>
+    <a asp-action="Create"
+       class="btn d-inline-flex align-items-center gap-2 text-white flex-shrink-0"
+       style="background:#2563eb; border:none; font-size:.875rem; font-weight:600; height:40px; border-radius:8px; padding:0 20px;">
+        <i class="bi bi-plus-lg" style="font-size:.9rem;"></i> Tạo tài khoản hồ sơ
+    </a>
 </div>
 
 @if (TempData["Msg"] is string message)
 {
-    <div class="alert alert-success">@message</div>
+    <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i><div>@message</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
 }
 @if (TempData["Error"] is string error)
 {
-    <div class="alert alert-danger">@error</div>
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-circle-fill"></i><div>@error</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
 }
 
-<div class="stat-card">
+<!-- ===== BỘ LỌC ===== -->
+<div class="content-card p-3 mb-3">
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <!-- Tìm kiếm -->
+        <div class="input-group" style="flex:1; min-width:220px; max-width:380px;">
+            <span class="input-group-text bg-white border-end-0 pe-1 text-muted" style="border-color:#d1d5db;">
+                <i class="bi bi-search" style="font-size:.85rem;"></i>
+            </span>
+            <input id="tkSearch" type="text"
+                   class="form-control border-start-0 ps-1"
+                   style="border-color:#d1d5db; font-size:.875rem;"
+                   placeholder="Tìm theo tên đăng nhập, họ tên hoặc vai trò..." />
+        </div>
+
+        <!-- Lọc vai trò -->
+        <select id="tkVaiTro" class="form-select"
+                style="width:180px; font-size:.875rem; border-color:#d1d5db;">
+            <option value="">-- Tất cả vai trò --</option>
+            <option value="Admin">Quản trị viên</option>
+            <option value="GiangVien">Giảng viên</option>
+            <option value="SinhVien">Sinh viên</option>
+        </select>
+
+        <!-- Lọc trạng thái -->
+        <select id="tkTrangThai" class="form-select"
+                style="width:160px; font-size:.875rem; border-color:#d1d5db;">
+            <option value="">-- Trạng thái --</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="locked">Đã khóa</option>
+        </select>
+
+        <!-- Lọc -->
+        <button type="button" onclick="filterTable()"
+                class="btn d-inline-flex align-items-center gap-1"
+                style="border:1px solid #d1d5db; background:#fff; color:#374151; font-size:.875rem; font-weight:600; height:38px; border-radius:8px; padding:0 16px;">
+            Lọc
+        </button>
+    </div>
+</div>
+
+<!-- ===== BẢNG TÀI KHOẢN ===== -->
+<div class="custom-table-container">
     <div class="table-responsive">
-        <table class="table table-hover align-middle">
+        <table class="custom-table" id="tkTable">
             <thead>
                 <tr>
-                    <th>Tên đăng nhập</th>
-                    <th>Họ tên</th>
-                    <th>Vai trò</th>
-                    <th>Hồ sơ liên kết</th>
-                    <th>Trạng thái</th>
-                    <th class="text-end">Thao tác</th>
+                    <th style="width:180px;">TÊN ĐĂNG NHẬP</th>
+                    <th>HỌ TÊN</th>
+                    <th style="width:130px;">VAI TRÒ</th>
+                    <th>HỒ SƠ LIÊN KẾT</th>
+                    <th style="width:160px;">TRẠNG THÁI</th>
                 </tr>
             </thead>
             <tbody>
+                @{ int idx = 0; }
                 @foreach (var account in Model.TaiKhoans)
                 {
-                    <tr>
-                        <td class="fw-semibold">@account.UserName @(account.IsCurrentUser ? "(bạn)" : "")</td>
-                        <td>@(account.HoTen ?? "—")</td>
-                        <td>@account.VaiTro</td>
-                        <td>@(account.HoSoLienKet ?? "Chưa liên kết hồ sơ")</td>
+                    var colorClass = avatarColors[idx % avatarColors.Length]; idx++;
+                    string initial = string.IsNullOrWhiteSpace(account.HoTen) ? "?"
+                        : account.HoTen.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).Last()[0].ToString().ToUpperInvariant();
+
+                    // Kiểu badge theo vai trò
+                    string roleBg    = account.VaiTro == "Admin"      ? "#f1f5f9"
+                                     : account.VaiTro == "GiangVien"  ? "#e0f2fe"
+                                     : "#ede9fe";
+                    string roleColor = account.VaiTro == "Admin"      ? "#475569"
+                                     : account.VaiTro == "GiangVien"  ? "#0284c7"
+                                     : "#7c3aed";
+                    string roleLabel = account.VaiTro == "Admin"      ? "Quản trị viên"
+                                     : account.VaiTro == "GiangVien"  ? "GiangVien"
+                                     : account.VaiTro == "SinhVien"   ? "SinhVien"
+                                     : account.VaiTro;
+
+                    string dataStatus = account.IsLocked ? "locked" : "active";
+                    string dataRole   = account.VaiTro;
+
+                    <tr data-status="@dataStatus" data-role="@dataRole"
+                        data-name="@account.UserName.ToLower() @(account.HoTen?.ToLower() ?? "") @account.VaiTro.ToLower()">
+
+                        <!-- TÊN ĐĂNG NHẬP -->
                         <td>
-                            @if (account.IsLocked)
+                            <div style="font-weight:700; color:#1e293b; font-size:.9rem;">
+                                @account.UserName
+                                @if (account.IsCurrentUser)
+                                {
+                                    <span style="font-size:.72rem; font-weight:600; color:#94a3b8; margin-left:4px;">(bạn)</span>
+                                }
+                            </div>
+                        </td>
+
+                        <!-- HỌ TÊN -->
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar-round @colorClass"
+                                     style="width:34px; height:34px; font-size:.8rem; font-weight:700; flex-shrink:0;">
+                                    @initial
+                                </div>
+                                <span style="font-weight:600; color:#1e293b; font-size:.875rem;">
+                                    @(account.HoTen ?? "—")
+                                </span>
+                            </div>
+                        </td>
+
+                        <!-- VAI TRÒ -->
+                        <td>
+                            <span style="display:inline-block; padding:4px 12px; border-radius:6px;
+                                         font-size:.78rem; font-weight:700;
+                                         background:@roleBg; color:@roleColor;">
+                                @roleLabel
+                            </span>
+                        </td>
+
+                        <!-- HỒ SƠ LIÊN KẾT -->
+                        <td style="font-size:.875rem; color:#475569;">
+                            @if (!string.IsNullOrWhiteSpace(account.HoSoLienKet))
                             {
-                                <span class="badge text-bg-danger">Đã khóa</span>
+                                @account.HoSoLienKet
                             }
                             else
                             {
-                                <span class="badge text-bg-success">Đang hoạt động</span>
+                                <span style="color:#94a3b8; font-style:italic;">Chưa liên kết hồ sơ</span>
                             }
                         </td>
-                        <td class="text-end text-nowrap">
-                            <a asp-action="ResetPassword" asp-route-id="@account.UserId" class="btn btn-sm btn-outline-primary">Đặt lại mật khẩu</a>
-                            @if (!account.IsCurrentUser)
-                            {
-                                <form asp-action="@(account.IsLocked ? "Unlock" : "Lock")" asp-route-id="@account.UserId" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-sm @(account.IsLocked ? "btn-outline-success" : "btn-outline-danger")">
-                                        @(account.IsLocked ? "Mở khóa" : "Khóa")
-                                    </button>
-                                </form>
-                            }
+
+                        <!-- TRẠNG THÁI + THAO TÁC gộp -->
+                        <td>
+                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                @if (account.IsLocked)
+                                {
+                                    <span style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:6px; font-size:.78rem; font-weight:700; background:#fee2e2; color:#b91c1c;">
+                                        <span style="width:7px; height:7px; border-radius:50%; background:#ef4444; flex-shrink:0;"></span>
+                                        Đã khóa
+                                    </span>
+                                    @if (!account.IsCurrentUser)
+                                    {
+                                        <form asp-action="Unlock" asp-route-id="@account.UserId" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="btn btn-sm"
+                                                    style="border:1px solid #bbf7d0; background:#f0fdf4; color:#16a34a; font-size:.75rem; font-weight:600; border-radius:5px; padding:3px 10px;">
+                                                Mở khóa
+                                            </button>
+                                        </form>
+                                    }
+                                }
+                                else
+                                {
+                                    <span style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:6px; font-size:.78rem; font-weight:700; background:#dcfce7; color:#16a34a;">
+                                        <span style="width:7px; height:7px; border-radius:50%; background:#22c55e; flex-shrink:0;"></span>
+                                        Đang hoạt động
+                                    </span>
+                                }
+                            </div>
                         </td>
                     </tr>
                 }
+
                 @if (Model.TaiKhoans.Count == 0)
                 {
-                    <tr><td colspan="6" class="py-4 text-center text-muted">Chưa có tài khoản.</td></tr>
+                    <tr>
+                        <td colspan="5" class="text-center py-5" style="color:#94a3b8;">
+                            <i class="bi bi-inbox fs-2 d-block mb-2" style="color:#cbd5e1;"></i>
+                            Chưa có tài khoản nào.
+                        </td>
+                    </tr>
                 }
             </tbody>
         </table>
     </div>
+
+    <!-- Footer -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 px-3 py-2"
+         style="border-top:1px solid #f1f5f9; background:#fafbfc;">
+        <div id="tkPagInfo" style="font-size:.82rem; color:#64748b;">
+            Hiển thị <strong style="color:#1e293b;">@startRecord – @endRecord</strong>
+            trên tổng số <strong style="color:#1e293b;">@totalItems</strong> tài khoản
+            &nbsp;|&nbsp; Số dòng mỗi trang:&nbsp;
+            <select class="form-select d-inline-block"
+                    style="width:auto; height:28px; padding:0 20px 0 8px; font-size:.78rem; border-color:#e2e8f0; display:inline-block !important;">
+                <option>10</option><option>20</option><option>50</option>
+            </select>
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <nav>
+                <ul class="pagination pagination-sm mb-0 gap-1">
+                    <li class="page-item disabled">
+                        <span class="page-link sv-page-btn" style="color:#cbd5e1;">&lsaquo; Trước</span>
+                    </li>
+                    @for (int p = 1; p <= Math.Min(totalPages, 5); p++)
+                    {
+                        <li class="page-item @(p == 1 ? "active" : "")">
+                            <span class="page-link sv-page-btn @(p == 1 ? "sv-page-active" : "")">@p</span>
+                        </li>
+                    }
+                    @if (totalPages > 5)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link sv-page-btn" style="color:#94a3b8;">…</span>
+                        </li>
+                        <li class="page-item">
+                            <span class="page-link sv-page-btn">@totalPages</span>
+                        </li>
+                    }
+                    <li class="page-item @(totalPages <= 1 ? "disabled" : "")">
+                        <span class="page-link sv-page-btn">Sau &rsaquo;</span>
+                    </li>
+                </ul>
+            </nav>
+        }
+    </div>
 </div>
+
+@section Scripts {
+<style>
+    .sv-page-btn {
+        min-width:34px; height:34px;
+        display:inline-flex; align-items:center; justify-content:center;
+        border-radius:8px !important; border:1px solid #e2e8f0 !important;
+        color:#374151 !important; font-size:.82rem; font-weight:600;
+        background:#fff; padding:0 10px; transition:all .15s ease;
+    }
+    .sv-page-btn:hover { background:#f1f5f9 !important; cursor:pointer; }
+    .sv-page-active { background:#2563eb !important; color:#fff !important; border-color:#2563eb !important; }
+    .page-item.disabled .sv-page-btn { color:#cbd5e1 !important; cursor:default; }
+    .admin-content { font-family: 'Plus Jakarta Sans', "Segoe UI", sans-serif; }
+</style>
+<script>
+function filterTable() {
+    const search   = document.getElementById('tkSearch').value.toLowerCase();
+    const vaiTro   = document.getElementById('tkVaiTro').value;
+    const trangThai = document.getElementById('tkTrangThai').value;
+    const rows = document.querySelectorAll('#tkTable tbody tr[data-status]');
+    let visible = 0;
+    rows.forEach(row => {
+        const name   = row.dataset.name  || '';
+        const status = row.dataset.status || '';
+        const role   = row.dataset.role  || '';
+        const matchSearch = !search   || name.includes(search);
+        const matchRole   = !vaiTro   || role === vaiTro;
+        const matchStatus = !trangThai || status === trangThai;
+        const show = matchSearch && matchRole && matchStatus;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    document.getElementById('tkPagInfo').innerHTML =
+        `Hiển thị <strong style="color:#1e293b;">1 – ${Math.min(visible, 10)}</strong> trên tổng số <strong style="color:#1e293b;">${visible}</strong> tài khoản`;
+}
+document.getElementById('tkSearch').addEventListener('input', filterTable);
+</script>
+}
