@@ -9,23 +9,23 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0f2c4c" />
-    <title>Đăng nhập - Hệ thống quản lý sinh viên</title>
+    <title>Đăng nhập - Cổng thông tin ĐH Giao thông Vận tải (UTC)</title>
+    <link rel="icon" type="image/png" href="~/images/logo-utc.png" />
     <link rel="stylesheet" href="~/css/fonts.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
 </head>
 <body>
     <main class="login-page">
         <section class="welcome-panel" aria-labelledby="welcome-title">
-            <a class="brand" asp-controller="Account" asp-action="Login" aria-label="Hệ thống quản lý sinh viên">
-                <span class="brand-mark" aria-hidden="true">SV</span>
-                <span class="brand-name">CỔNG SINH VIÊN</span>
+            <a class="brand brand-utc" asp-controller="Account" asp-action="Login" aria-label="Trường Đại học Giao thông Vận tải">
+                <img src="~/images/logo-utc-horizontal.png" alt="Trường Đại học Giao thông Vận tải" class="brand-utc-logo-img" />
             </a>
 
             <div class="welcome-copy">
-                <p class="eyebrow">HỆ THỐNG QUẢN LÝ SINH VIÊN</p>
+                <p class="eyebrow">HỆ THỐNG QUẢN LÝ ĐÀO TẠO &bull; UTC</p>
                 <h1 id="welcome-title"><span class="line"><span>Chào mừng bạn</span></span><span class="line"><span>trở lại.</span></span></h1>
                 <p class="welcome-description">
-                    Đăng nhập bằng tài khoản được cấp để tiếp tục vào hệ thống.
+                    Đăng nhập bằng tài khoản được nhà trường cấp để truy cập cổng thông tin.
                 </p>
             </div>
 
@@ -37,8 +37,8 @@
                     </svg>
                 </span>
                 <span>
-                    <strong>Đăng nhập an toàn</strong>
-                    <span>Thông tin tài khoản của bạn được bảo vệ.</span>
+                    <strong>Cổng xác thực an toàn UTC</strong>
+                    <span>Thông tin tài khoản và dữ liệu đào tạo được bảo vệ nghiêm ngặt.</span>
                 </span>
             </div>
 
@@ -49,8 +49,8 @@
         <section class="form-panel" aria-labelledby="login-title">
             <div class="login-card">
                 <div class="mobile-brand" aria-hidden="true">
-                    <span class="brand-mark">SV</span>
-                    <span class="brand-name">CỔNG SINH VIÊN</span>
+                    <img src="~/images/logo-utc.png" alt="UTC" class="mobile-brand-logo-img" />
+                    <span class="brand-name">ĐH GIAO THÔNG VẬN TẢI</span>
                 </div>
 
                 <p class="form-eyebrow">TÀI KHOẢN CỦA BẠN</p>

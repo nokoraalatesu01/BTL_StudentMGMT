@@ -8,16 +8,14 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0f2c4c" />
-    <title>@ViewData["Title"] - Quản trị</title>
+    <meta name="theme-color" content="#0c2340" />
+    <title>@ViewData["Title"] - Quản trị UTC</title>
+    <link rel="icon" type="image/png" href="~/images/logo-utc.png" />
     <link rel="stylesheet" href="~/css/fonts.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/sinhvien.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/portal-ui.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
     <script>
         (function() {
@@ -34,8 +32,13 @@
         <aside class="student-sidebar admin-sidebar" id="portal-sidebar">
             <div class="student-sidebar-header">
                 <a class="student-brand admin-brand" asp-controller="Admin" asp-action="Index">
-                    <span class="student-brand-mark" aria-hidden="true">AD</span>
-                    <span class="student-brand-text">QUẢN TRỊ HỆ THỐNG</span>
+                    <div class="student-brand-logo-wrap">
+                        <img src="~/images/logo-utc.png" alt="UTC Logo" class="student-brand-logo" />
+                    </div>
+                    <div class="student-brand-text-group">
+                        <span class="student-brand-school">ĐH GIAO THÔNG VẬN TẢI</span>
+                        <span class="student-brand-portal">QUẢN TRỊ HỆ THỐNG</span>
+                    </div>
                 </a>
                 <button class="sidebar-toggle sidebar-toggle-inside" type="button" aria-label="Thu gọn thanh điều hướng" title="Thu gọn thanh điều hướng">
                     <i class="bi bi-list" aria-hidden="true"></i>
@@ -99,20 +102,31 @@
                     <button class="sidebar-toggle sidebar-toggle-topbar" type="button" aria-label="Mở thanh điều hướng" aria-controls="portal-sidebar" aria-expanded="false" title="Mở thanh điều hướng">
                         <i class="bi bi-list" aria-hidden="true"></i>
                     </button>
-                    <span class="topbar-title">Cổng quản trị hệ thống</span>
+                    <div class="topbar-brand-badge">
+                        <img src="~/images/logo-utc.png" alt="UTC Logo" class="topbar-logo-badge" />
+                        <div class="topbar-brand-info">
+                            <span class="topbar-title">Cổng quản trị hệ thống</span>
+                            <span class="topbar-subtitle">ĐH Giao thông Vận tải &bull; UTC</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="topbar-user">
-                    <span class="topbar-avatar" aria-hidden="true">@accountInitial</span>
-                    <span class="topbar-user-text">
+                    <div class="topbar-avatar-wrap">
+                        <span class="topbar-avatar" aria-hidden="true">@accountInitial</span>
+                        <span class="user-status-dot" title="Trực tuyến"></span>
+                    </div>
+                    <div class="topbar-user-text">
                         <span class="topbar-name">@accountName</span>
-                        <span class="topbar-role">Quản trị viên</span>
-                    </span>
+                        <span class="topbar-role-badge">Quản trị viên</span>
+                    </div>
                 </div>
             </header>
             <main class="student-content admin-content">
                 @RenderBody()
             </main>
-            <footer class="student-footer">Cổng quản trị hệ thống &copy; @DateTime.Now.Year</footer>
+            <footer class="student-footer">
+                <span>&copy; @DateTime.Now.Year Trường Đại học Giao thông Vận tải &bull; University of Transport and Communications (UTC)</span>
+            </footer>
         </div>
     </div>
 

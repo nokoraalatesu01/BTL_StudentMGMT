@@ -1,0 +1,35 @@
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../lib/fonts/be-vietnam-pro/be-vietnam-pro-vietnamese-400-normal.woff2') format('woff2'),
+       url('../lib/fonts/be-vietnam-pro/be-vietnam-pro-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../lib/fonts/be-vietnam-pro/be-vietnam-pro-vietnamese-500-normal.woff2') format('woff2'),
+       url('../lib/fonts/be-vietnam-pro/be-vietnam-pro-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../lib/fonts/be-vietnam-pro/be-vietnam-pro-vietnamese-600-normal.woff2') format('woff2'),
+       url('../lib/fonts/be-vietnam-pro/be-vietnam-pro-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Be Vietnam Pro';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../lib/fonts/be-vietnam-pro/be-vietnam-pro-vietnamese-700-normal.woff2') format('woff2'),
+       url('../lib/fonts/be-vietnam-pro/be-vietnam-pro-latin-700-normal.woff2') format('woff2');
+}
