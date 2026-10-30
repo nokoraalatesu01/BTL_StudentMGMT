@@ -13,7 +13,7 @@
         <p>Hồ sơ cá nhân và thông tin đào tạo được lưu trữ trên hệ thống.</p>
     </div>
     <div class="d-flex gap-2">
-        <a class="student-back-link" asp-action="DanhSachSinhVien">← Về danh sách</a>
+        <a class="student-back-link" asp-action="DanhSachSinhVien"><i class="bi bi-arrow-left" aria-hidden="true"></i> Về danh sách</a>
     </div>
 </div>
 
@@ -127,10 +127,10 @@
                         {
                             var isPass = diem.DiemTongKet >= 4.0;
                             <tr>
-                                <td><strong style="color: #176da3;">@diem.MonHoc?.MaMon</strong></td>
+                                <td><strong style="color: var(--blue-600);">@diem.MonHoc?.MaMon</strong></td>
                                 <td>@diem.MonHoc?.TenMon</td>
                                 <td style="text-align: center;">@(diem.MonHoc?.SoTinChi ?? 0)</td>
-                                <td style="text-align: center;"><strong style="color: #176da3;">@diem.DiemTongKet.ToString("0.0")</strong></td>
+                                <td style="text-align: center;"><strong style="color: var(--blue-600);">@diem.DiemTongKet.ToString("0.0")</strong></td>
                                 <td style="text-align: center;">@diem.DiemChu</td>
                                 <td style="text-align: center;">
                                     <span class="gv-badge @(isPass ? "gv-badge-green" : "gv-badge-red")">

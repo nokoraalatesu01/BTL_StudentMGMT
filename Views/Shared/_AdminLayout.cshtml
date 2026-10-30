@@ -8,15 +8,18 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f4f7fb" />
+    <meta name="theme-color" content="#0f2c4c" />
     <title>@ViewData["Title"] - Quản trị</title>
+    <link rel="stylesheet" href="~/css/fonts.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/sinhvien.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/portal-ui.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
 </head>
 <body class="student-body admin-body">
     <div class="student-app admin-app">
-        <aside class="student-sidebar admin-sidebar">
+        <aside class="student-sidebar admin-sidebar" id="portal-sidebar">
             <a class="student-brand admin-brand" asp-controller="Admin" asp-action="Index">
                 <span class="student-brand-mark" aria-hidden="true">AD</span>
                 <span>QUẢN TRỊ HỆ THỐNG</span>
@@ -24,36 +27,36 @@
 
             <p class="student-nav-label">KHÔNG GIAN QUẢN TRỊ</p>
             <nav class="student-nav admin-nav" aria-label="Điều hướng quản trị">
-                <a asp-controller="Admin" asp-action="Index" class="@(currentController == "Admin" ? "active" : "")">
-                    <span class="nav-symbol" aria-hidden="true">⌂</span>
+                <a asp-controller="Admin" asp-action="Index" class="@(currentController == "Admin" ? "active" : "")" aria-current="@(currentController == "Admin" ? "page" : null)">
+                    <span class="nav-symbol" aria-hidden="true"><i class="bi bi-grid-1x2"></i></span>
                     <span>Tổng quan</span>
                 </a>
-                <a asp-controller="QuanLySinhVien" asp-action="Index" class="@(currentController == "QuanLySinhVien" ? "active" : "")">
-                    <span class="nav-symbol" aria-hidden="true">◎</span>
+                <a asp-controller="QuanLySinhVien" asp-action="Index" class="@(currentController == "QuanLySinhVien" ? "active" : "")" aria-current="@(currentController == "QuanLySinhVien" ? "page" : null)">
+                    <span class="nav-symbol" aria-hidden="true"><i class="bi bi-people"></i></span>
                     <span>Quản lý sinh viên</span>
                 </a>
-                <a asp-controller="QuanLyGiangVien" asp-action="Index" class="@(currentController == "QuanLyGiangVien" ? "active" : "")">
-                    <span class="nav-symbol" aria-hidden="true">♙</span>
+                <a asp-controller="QuanLyGiangVien" asp-action="Index" class="@(currentController == "QuanLyGiangVien" ? "active" : "")" aria-current="@(currentController == "QuanLyGiangVien" ? "page" : null)">
+                    <span class="nav-symbol" aria-hidden="true"><i class="bi bi-person-workspace"></i></span>
                     <span>Quản lý giảng viên</span>
                 </a>
-                <a asp-controller="QuanLyMonHoc" asp-action="Index" class="@(currentController == "QuanLyMonHoc" ? "active" : "")">
-                    <span class="nav-symbol" aria-hidden="true">▤</span>
+                <a asp-controller="QuanLyMonHoc" asp-action="Index" class="@(currentController == "QuanLyMonHoc" ? "active" : "")" aria-current="@(currentController == "QuanLyMonHoc" ? "page" : null)">
+                    <span class="nav-symbol" aria-hidden="true"><i class="bi bi-journal-bookmark"></i></span>
                     <span>Quản lý môn học</span>
                 </a>
-                <a asp-controller="BangDiem" asp-action="Index" class="@(currentController == "BangDiem" ? "active" : "")">
-                    <span class="nav-symbol" aria-hidden="true">✦</span>
+                <a asp-controller="BangDiem" asp-action="Index" class="@(currentController == "BangDiem" ? "active" : "")" aria-current="@(currentController == "BangDiem" ? "page" : null)">
+                    <span class="nav-symbol" aria-hidden="true"><i class="bi bi-award"></i></span>
                     <span>Bảng điểm</span>
                 </a>
-                <a asp-controller="QuanLyTaiKhoan" asp-action="Index" class="@(currentController == "QuanLyTaiKhoan" ? "active" : "")">
-                    <span class="nav-symbol" aria-hidden="true">◈</span>
+                <a asp-controller="QuanLyTaiKhoan" asp-action="Index" class="@(currentController == "QuanLyTaiKhoan" ? "active" : "")" aria-current="@(currentController == "QuanLyTaiKhoan" ? "page" : null)">
+                    <span class="nav-symbol" aria-hidden="true"><i class="bi bi-shield-lock"></i></span>
                     <span>Quản lý tài khoản</span>
                 </a>
-                <a asp-controller="QuanLyNganh" asp-action="Index" class="@(currentController == "QuanLyNganh" ? "active" : "")">
-                    <span class="nav-symbol" aria-hidden="true">▤</span>
+                <a asp-controller="QuanLyNganh" asp-action="Index" class="@(currentController == "QuanLyNganh" ? "active" : "")" aria-current="@(currentController == "QuanLyNganh" ? "page" : null)">
+                    <span class="nav-symbol" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
                     <span>Quản lý ngành</span>
                 </a>
-                <a asp-controller="QuanLyLop" asp-action="Index" class="@(currentController == "QuanLyLop" ? "active" : "")">
-                    <span class="nav-symbol" aria-hidden="true">▦</span>
+                <a asp-controller="QuanLyLop" asp-action="Index" class="@(currentController == "QuanLyLop" ? "active" : "")" aria-current="@(currentController == "QuanLyLop" ? "page" : null)">
+                    <span class="nav-symbol" aria-hidden="true"><i class="bi bi-collection"></i></span>
                     <span>Quản lý lớp</span>
                 </a>
             </nav>
@@ -65,19 +68,28 @@
                 </div>
                 <form asp-controller="Account" asp-action="Logout" method="post">
                     <button class="student-logout" type="submit">
-                        <span aria-hidden="true">↪</span>
+                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
                         <span>Đăng xuất</span>
                     </button>
                 </form>
             </div>
         </aside>
+        <div class="sidebar-scrim" aria-hidden="true"></div>
 
         <div class="student-main admin-main">
             <header class="student-topbar">
-                <span class="topbar-title">Cổng quản trị hệ thống</span>
+                <div class="topbar-lead">
+                    <button class="sidebar-toggle" type="button" aria-label="Mở menu" aria-controls="portal-sidebar" aria-expanded="false">
+                        <i class="bi bi-list" aria-hidden="true"></i>
+                    </button>
+                    <span class="topbar-title">Cổng quản trị hệ thống</span>
+                </div>
                 <div class="topbar-user">
                     <span class="topbar-avatar" aria-hidden="true">@accountInitial</span>
-                    <span>@accountName</span>
+                    <span class="topbar-user-text">
+                        <span class="topbar-name">@accountName</span>
+                        <span class="topbar-role">Quản trị viên</span>
+                    </span>
                 </div>
             </header>
             <main class="student-content admin-content">
@@ -89,6 +101,8 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/gsap/gsap.min.js"></script>
+    <script src="~/js/portal.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

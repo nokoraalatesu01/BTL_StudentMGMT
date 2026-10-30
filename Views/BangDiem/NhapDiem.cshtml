@@ -10,7 +10,7 @@
         <h1>Nhập bảng điểm học phần</h1>
         <p>Ghi nhận điểm chuyên cần, giữa kỳ và thi kết thúc môn cho sinh viên.</p>
     </div>
-    <a class="student-back-link" asp-action="Index">← Về bảng điểm</a>
+    <a class="student-back-link" asp-action="Index"><i class="bi bi-arrow-left" aria-hidden="true"></i> Về bảng điểm</a>
 </div>
 
 <div class="row justify-content-center">
@@ -21,7 +21,7 @@
                     <p class="student-eyebrow">BIỂU MẪU ĐIỂM SỐ</p>
                     <h2>Ghi nhận kết quả học tập</h2>
                 </div>
-                <span class="student-cap-icon" aria-hidden="true">✎</span>
+                <span class="student-cap-icon" aria-hidden="true"><i class="bi bi-pencil-square"></i></span>
             </div>
 
             <form method="post" asp-action="NhapDiem">
@@ -81,7 +81,7 @@
                     <div>
                         <div style="font-size: .75rem; color: #507192; font-weight: 700; text-transform: uppercase;">Ước tính tổng kết (Hệ 10)</div>
                         <div class="d-flex align-items-baseline gap-2 mt-1">
-                            <span id="txtTongKet" style="font-size: 1.6rem; font-weight: 800; color: #176da3;">—</span>
+                            <span id="txtTongKet" style="font-size: 1.6rem; font-weight: 800; color: var(--blue-600);">—</span>
                             <span id="txtDiemChu" class="gv-badge gv-badge-gray">Chưa nhập</span>
                         </div>
                     </div>
