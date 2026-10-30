@@ -1,6 +1,6 @@
 :root {
     color-scheme: light;
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -42,6 +42,22 @@ input {
     background:
         radial-gradient(ellipse at 8% 95%, rgba(20, 119, 179, .38), transparent 42%),
         linear-gradient(145deg, #123b72 0%, #15528b 53%, #126a9c 100%);
+}
+
+.brand-utc-logo-img {
+    height: 48px;
+    width: auto;
+    max-width: 300px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.3));
+}
+
+.mobile-brand-logo-img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(12, 35, 64, 0.15);
 }
 
 .brand,

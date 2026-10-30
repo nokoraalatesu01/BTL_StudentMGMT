@@ -8,8 +8,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0f2c4c" />
-    <title>@ViewData["Title"] - Cổng sinh viên</title>
+    <meta name="theme-color" content="#0c2340" />
+    <title>@ViewData["Title"] - Cổng sinh viên UTC</title>
+    <link rel="icon" type="image/png" href="~/images/logo-utc.png" />
     <link rel="stylesheet" href="~/css/fonts.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/sinhvien.css" asp-append-version="true" />
@@ -28,8 +29,13 @@
         <aside class="student-sidebar" id="portal-sidebar">
             <div class="student-sidebar-header">
                 <a class="student-brand" asp-controller="SinhVien" asp-action="Index">
-                    <span class="student-brand-mark" aria-hidden="true">SV</span>
-                    <span class="student-brand-text">CỔNG SINH VIÊN</span>
+                    <div class="student-brand-logo-wrap">
+                        <img src="~/images/logo-utc.png" alt="UTC Logo" class="student-brand-logo" />
+                    </div>
+                    <div class="student-brand-text-group">
+                        <span class="student-brand-school">ĐH GIAO THÔNG VẬN TẢI</span>
+                        <span class="student-brand-portal">CỔNG SINH VIÊN</span>
+                    </div>
                 </a>
                 <button class="sidebar-toggle sidebar-toggle-inside" type="button" aria-label="Thu gọn thanh điều hướng" title="Thu gọn thanh điều hướng">
                     <i class="bi bi-list" aria-hidden="true"></i>
@@ -76,20 +82,31 @@
                     <button class="sidebar-toggle sidebar-toggle-topbar" type="button" aria-label="Mở thanh điều hướng" aria-controls="portal-sidebar" aria-expanded="false" title="Mở thanh điều hướng">
                         <i class="bi bi-list" aria-hidden="true"></i>
                     </button>
-                    <span class="topbar-title">Cổng thông tin sinh viên</span>
+                    <div class="topbar-brand-badge">
+                        <img src="~/images/logo-utc.png" alt="UTC Logo" class="topbar-logo-badge" />
+                        <div class="topbar-brand-info">
+                            <span class="topbar-title">Cổng thông tin sinh viên</span>
+                            <span class="topbar-subtitle">ĐH Giao thông Vận tải &bull; UTC</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="topbar-user">
-                    <span class="topbar-avatar" aria-hidden="true">@accountInitial</span>
-                    <span class="topbar-user-text">
+                    <div class="topbar-avatar-wrap">
+                        <span class="topbar-avatar" aria-hidden="true">@accountInitial</span>
+                        <span class="user-status-dot" title="Trực tuyến"></span>
+                    </div>
+                    <div class="topbar-user-text">
                         <span class="topbar-name">@accountName</span>
-                        <span class="topbar-role">Sinh viên</span>
-                    </span>
+                        <span class="topbar-role-badge">Sinh viên</span>
+                    </div>
                 </div>
             </header>
             <main class="student-content">
                 @RenderBody()
             </main>
-            <footer class="student-footer">Cổng thông tin sinh viên</footer>
+            <footer class="student-footer">
+                <span>&copy; @DateTime.Now.Year Trường Đại học Giao thông Vận tải &bull; University of Transport and Communications (UTC)</span>
+            </footer>
         </div>
     </div>
 
