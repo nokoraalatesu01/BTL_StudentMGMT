@@ -8,6 +8,7 @@ public class SinhVienDiemViewModel
     public string? TenNganh { get; set; }
     public string? NienKhoa { get; set; }
     public string? TrangThai { get; set; }
+    public string? HinhAnh { get; set; }
     public List<Diem> Diems { get; set; } = new();
 
     public double? Gpa

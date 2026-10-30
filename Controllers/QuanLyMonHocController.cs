@@ -2,6 +2,7 @@ using BTL_StudentMGMT.Data;
 using BTL_StudentMGMT.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,7 +22,11 @@ public class QuanLyMonHocController : Controller
     public async Task<IActionResult> Index(string? tuKhoa, int page = 1)
     {
         page = Math.Max(1, page);
-        var query = _db.MonHocs.AsNoTracking().AsQueryable();
+        var query = _db.MonHocs
+            .AsNoTracking()
+            .Include(item => item.DonVi)
+            .AsQueryable();
+
         if (!string.IsNullOrWhiteSpace(tuKhoa))
         {
             var keyword = tuKhoa.Trim();
@@ -47,7 +52,11 @@ public class QuanLyMonHocController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create() => View("Form", new MonHocFormViewModel());
+    public async Task<IActionResult> Create()
+    {
+        await LoadDonViDropdownAsync();
+        return View("Form", new MonHocFormViewModel());
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -57,6 +66,7 @@ public class QuanLyMonHocController : Controller
         await ValidateCodeAsync(model.MaMon);
         if (!ModelState.IsValid)
         {
+            await LoadDonViDropdownAsync(model.DonViId);
             return View("Form", model);
         }
 
@@ -64,7 +74,8 @@ public class QuanLyMonHocController : Controller
         {
             MaMon = model.MaMon,
             TenMon = model.TenMon,
-            SoTinChi = model.SoTinChi
+            SoTinChi = model.SoTinChi,
+            DonViId = model.DonViId
         });
 
         try
@@ -74,6 +85,7 @@ public class QuanLyMonHocController : Controller
         catch (DbUpdateException exception) when (IsUniqueViolation(exception))
         {
             ModelState.AddModelError(nameof(model.MaMon), "Mã môn học đã tồn tại.");
+            await LoadDonViDropdownAsync(model.DonViId);
             return View("Form", model);
         }
 
@@ -90,12 +102,14 @@ public class QuanLyMonHocController : Controller
             return NotFound();
         }
 
+        await LoadDonViDropdownAsync(monHoc.DonViId);
         return View("Form", new MonHocFormViewModel
         {
             Id = monHoc.Id,
             MaMon = monHoc.MaMon,
             TenMon = monHoc.TenMon,
-            SoTinChi = monHoc.SoTinChi
+            SoTinChi = monHoc.SoTinChi,
+            DonViId = monHoc.DonViId
         });
     }
 
@@ -118,12 +132,14 @@ public class QuanLyMonHocController : Controller
         await ValidateCodeAsync(model.MaMon, id);
         if (!ModelState.IsValid)
         {
+            await LoadDonViDropdownAsync(model.DonViId);
             return View("Form", model);
         }
 
         monHoc.MaMon = model.MaMon;
         monHoc.TenMon = model.TenMon;
         monHoc.SoTinChi = model.SoTinChi;
+        monHoc.DonViId = model.DonViId;
 
         try
         {
@@ -132,6 +148,7 @@ public class QuanLyMonHocController : Controller
         catch (DbUpdateException exception) when (IsUniqueViolation(exception))
         {
             ModelState.AddModelError(nameof(model.MaMon), "Mã môn học đã tồn tại.");
+            await LoadDonViDropdownAsync(model.DonViId);
             return View("Form", model);
         }
 
@@ -149,45 +166,51 @@ public class QuanLyMonHocController : Controller
             return NotFound();
         }
 
-        if (await _db.Diems.AnyAsync(diem => diem.MonHocId == id))
+        if (await _db.Diems.AnyAsync(item => item.MonHocId == id))
         {
-            TempData["Error"] = $"Không thể xóa môn học {monHoc.MaMon} vì đã có điểm được ghi nhận.";
+            TempData["Error"] = "Không thể xóa môn học đã có điểm sinh viên.";
             return RedirectToAction(nameof(Index));
         }
 
         _db.MonHocs.Remove(monHoc);
-        try
-        {
-            await _db.SaveChangesAsync();
-        }
-        catch (DbUpdateException exception) when (IsForeignKeyViolation(exception))
-        {
-            TempData["Error"] = $"Không thể xóa môn học {monHoc.MaMon} vì đã có điểm được ghi nhận.";
-            return RedirectToAction(nameof(Index));
-        }
-
+        await _db.SaveChangesAsync();
         TempData["Msg"] = "Đã xóa môn học.";
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task ValidateCodeAsync(string code, int? exceptId = null)
+    private static void Normalize(MonHocFormViewModel model)
     {
-        if (await _db.MonHocs.AnyAsync(item =>
-                item.MaMon == code && (!exceptId.HasValue || item.Id != exceptId.Value)))
+        model.MaMon = (model.MaMon ?? "").Trim().ToUpperInvariant();
+        model.TenMon = (model.TenMon ?? "").Trim();
+    }
+
+    private async Task ValidateCodeAsync(string maMon, int? currentId = null)
+    {
+        if (string.IsNullOrWhiteSpace(maMon))
+        {
+            return;
+        }
+
+        var query = _db.MonHocs.AsNoTracking().Where(item => item.MaMon == maMon);
+        if (currentId.HasValue)
+        {
+            query = query.Where(item => item.Id != currentId.Value);
+        }
+
+        if (await query.AnyAsync())
         {
             ModelState.AddModelError(nameof(MonHocFormViewModel.MaMon), "Mã môn học đã tồn tại.");
         }
     }
 
-    private static void Normalize(MonHocFormViewModel model)
+    private async Task LoadDonViDropdownAsync(int? selectedId = null)
     {
-        model.MaMon = model.MaMon?.Trim().ToUpperInvariant() ?? "";
-        model.TenMon = model.TenMon?.Trim() ?? "";
+        var units = await _db.DonVis.AsNoTracking().Where(d => d.TrangThai == "ACTIVE").OrderBy(d => d.TenDonVi).ToListAsync();
+        ViewBag.DonViList = new SelectList(units, nameof(DonVi.DonViId), nameof(DonVi.TenDonVi), selectedId);
     }
 
-    private static bool IsUniqueViolation(DbUpdateException exception) =>
-        exception.InnerException is SqlException { Number: 2601 or 2627 };
-
-    private static bool IsForeignKeyViolation(DbUpdateException exception) =>
-        exception.InnerException is SqlException { Number: 547 };
+    private static bool IsUniqueViolation(DbUpdateException exception)
+    {
+        return exception.InnerException is SqlException sqlException && (sqlException.Number == 2601 || sqlException.Number == 2627);
+    }
 }

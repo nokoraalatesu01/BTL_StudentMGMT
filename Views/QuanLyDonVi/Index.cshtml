@@ -1,0 +1,263 @@
+@model BTL_StudentMGMT.Models.PagedResult<BTL_StudentMGMT.Models.DonViListItemViewModel>
+@{
+    ViewData["Title"] = "Quản lý đơn vị";
+    Layout = "_AdminLayout";
+    var tuKhoa = ViewBag.TuKhoa as string;
+    var loaiDonVi = ViewBag.LoaiDonVi as string;
+    var trangThai = ViewBag.TrangThai as string;
+}
+
+<!-- ===== HEADER ===== -->
+<div class="mb-4">
+    <p class="mb-1" style="font-size:.8rem; color:#64748b;">
+        <span style="color:#94a3b8;">HỆ THỐNG TỔ CHỨC</span>
+        <span style="color:#cbd5e1; margin:0 6px;">›</span>
+        <span style="color:#2563eb; font-weight:700; text-transform:uppercase; font-size:.72rem; letter-spacing:.07em;">CƠ CẤU ĐƠN VỊ</span>
+    </p>
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+        <div>
+            <h3 class="fw-bold mb-1" style="color:#0f172a; font-size:1.55rem; letter-spacing:-.02em;">
+                Quản lý đơn vị &amp; Khoa phòng
+            </h3>
+            <p class="mb-0" style="font-size:.875rem; color:#64748b; max-width:640px;">
+                Quản lý danh mục các trường, khoa đào tạo, viện, bộ môn và các phòng ban trực thuộc trong hệ thống UTC. Đơn vị được liên kết với giảng viên, ngành và môn học.
+            </p>
+        </div>
+        <div class="d-flex gap-2 flex-shrink-0">
+            <a asp-action="Create"
+               class="btn d-inline-flex align-items-center gap-2 text-white"
+               style="background:#2563eb; border:none; font-size:.875rem; font-weight:600; height:40px; border-radius:8px; padding:0 18px;">
+                <i class="bi bi-plus-lg"></i> Thêm đơn vị mới
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Msg"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-info-circle-fill"></i>
+        <div>@TempData["Msg"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- ===== BỘ LỌC TÌM KIẾM ===== -->
+<div class="card border-0 shadow-sm rounded-3 mb-4 p-3" style="background:#fff;">
+    <form method="get" asp-action="Index" class="row g-2 align-items-center">
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" name="tuKhoa" value="@tuKhoa" class="form-control border-start-0" placeholder="Tìm theo mã đơn vị, tên đơn vị, email..." />
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="loaiDonVi" class="form-select">
+                <option value="">-- Tất cả loại đơn vị --</option>
+                <option value="TRUONG" selected="@(loaiDonVi == "TRUONG")">Trường / Ban Giám hiệu</option>
+                <option value="KHOA" selected="@(loaiDonVi == "KHOA")">Khoa / Viện đào tạo</option>
+                <option value="BO_MON" selected="@(loaiDonVi == "BO_MON")">Bộ môn</option>
+                <option value="PHONG" selected="@(loaiDonVi == "PHONG")">Phòng ban chức năng</option>
+                <option value="TRUNG_TAM" selected="@(loaiDonVi == "TRUNG_TAM")">Trung tâm</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="trangThai" class="form-select">
+                <option value="">-- Tất cả trạng thái --</option>
+                <option value="ACTIVE" selected="@(trangThai == "ACTIVE")">Hoạt động (ACTIVE)</option>
+                <option value="INACTIVE" selected="@(trangThai == "INACTIVE")">Ngừng hoạt động (INACTIVE)</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                <i class="bi bi-filter"></i> Lọc
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary" title="Đặt lại bộ lọc"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- ===== BẢNG DANH SÁCH ĐƠN VỊ ===== -->
+<div class="card border-0 shadow-sm rounded-3 overflow-hidden" style="background:#fff;">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:.8rem; color:#475569; text-transform:uppercase;">
+                <tr>
+                    <th class="ps-3 py-3">Mã đơn vị</th>
+                    <th>Tên đơn vị</th>
+                    <th>Loại đơn vị</th>
+                    <th>Đơn vị cha</th>
+                    <th>Liên hệ</th>
+                    <th>Dữ liệu liên kết</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end pe-3">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            Không tìm thấy đơn vị nào phù hợp với điều kiện tìm kiếm.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td class="ps-3 fw-bold text-primary font-monospace">
+                                @item.MaDonVi
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-dark">@item.TenDonVi</div>
+                            </td>
+                            <td>
+                                @if (item.LoaiDonVi == "TRUONG")
+                                {
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">Trường</span>
+                                }
+                                else if (item.LoaiDonVi == "KHOA")
+                                {
+                                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1">Khoa / Viện</span>
+                                }
+                                else if (item.LoaiDonVi == "PHONG")
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">Phòng ban</span>
+                                }
+                                else if (item.LoaiDonVi == "BO_MON")
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Bộ môn</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-dark border px-2 py-1">@item.LoaiDonVi</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.TenDonViCha))
+                                {
+                                    <span class="text-muted"><i class="bi bi-arrow-return-right me-1"></i>@item.TenDonViCha</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted fst-italic">-- Trực tiếp --</span>
+                                }
+                            </td>
+                            <td>
+                                <div style="font-size:.825rem;">
+                                    @if (!string.IsNullOrEmpty(item.Email))
+                                    {
+                                        <div><i class="bi bi-envelope text-muted me-1"></i>@item.Email</div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.DienThoai))
+                                    {
+                                        <div><i class="bi bi-telephone text-muted me-1"></i>@item.DienThoai</div>
+                                    }
+                                    @if (string.IsNullOrEmpty(item.Email) && string.IsNullOrEmpty(item.DienThoai))
+                                    {
+                                        <span class="text-muted">--</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2" style="font-size:.78rem;">
+                                    <span class="badge bg-light text-secondary border" title="Số ngành đào tạo">
+                                        <i class="bi bi-diagram-3 me-1"></i>@item.SoNganh Ngành
+                                    </span>
+                                    <span class="badge bg-light text-secondary border" title="Số giảng viên">
+                                        <i class="bi bi-person-workspace me-1"></i>@item.SoGiangVien GV
+                                    </span>
+                                    <span class="badge bg-light text-secondary border" title="Số môn học phụ trách">
+                                        <i class="bi bi-book me-1"></i>@item.SoMonHoc Môn
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                @if (item.TrangThai == "ACTIVE")
+                                {
+                                    <span class="badge bg-success-subtle text-success px-2 py-1">
+                                        <i class="bi bi-check-circle me-1"></i>Hoạt động
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-subtle text-danger px-2 py-1">
+                                        <i class="bi bi-pause-circle me-1"></i>Ngừng HĐ
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end pe-3">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Edit" asp-route-id="@item.DonViId" class="btn btn-outline-secondary" title="Chỉnh sửa đơn vị">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@item.DonViId" title="Xóa hoặc ngừng hoạt động">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Modal Xác Nhận Xóa -->
+                                <div class="modal fade" id="deleteModal-@item.DonViId" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered text-start">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title fs-6 fw-bold">Xác nhận xử lý đơn vị</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Bạn có chắc chắn muốn xóa đơn vị <strong class="text-primary">@item.TenDonVi</strong> (Mã: <code>@item.MaDonVi</code>)?</p>
+                                                @if (item.SoGiangVien > 0 || item.SoMonHoc > 0 || item.SoNganh > 0 || item.SoDonViCon > 0)
+                                                {
+                                                    <div class="alert alert-warning py-2 px-3 fs-7 mb-0">
+                                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                                        Đơn vị này đang có dữ liệu liên kết (ngành, giảng viên, môn học hoặc đơn vị con). Hệ thống sẽ tự động chuyển sang trạng thái <strong>NGỪNG HOẠT ĐỘNG</strong> để bảo toàn toàn vẹn dữ liệu.
+                                                    </div>
+                                                }
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                                                <form asp-action="Delete" asp-route-id="@item.DonViId" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-danger">Xác nhận thực hiện</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Phân trang -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="d-flex justify-content-between align-items-center p-3 border-top" style="background:#f8fafc; font-size:.85rem;">
+            <div class="text-muted">
+                Hiển thị trang <strong>@Model.Page</strong> / <strong>@Model.TotalPages</strong> (Tổng số: @Model.TotalItems đơn vị)
+            </div>
+            <nav aria-label="Phân trang đơn vị">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-tuKhoa="@tuKhoa" asp-route-loaiDonVi="@loaiDonVi" asp-route-trangThai="@trangThai">Trước</a>
+                    </li>
+                    @for (int p = 1; p <= Model.TotalPages; p++)
+                    {
+                        <li class="page-item @(p == Model.Page ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-tuKhoa="@tuKhoa" asp-route-loaiDonVi="@loaiDonVi" asp-route-trangThai="@trangThai">@p</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-tuKhoa="@tuKhoa" asp-route-loaiDonVi="@loaiDonVi" asp-route-trangThai="@trangThai">Sau</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

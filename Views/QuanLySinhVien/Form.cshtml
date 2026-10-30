@@ -25,7 +25,7 @@
 
             <!-- Form Content -->
             <div class="p-4">
-                <form method="post" asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@Model.Id" class="row g-3">
+                <form method="post" asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@Model.Id" enctype="multipart/form-data" class="row g-3">
                     <input type="hidden" asp-for="Id" />
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3" role="alert"></div>
 
@@ -73,8 +73,16 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label small fw-semibold text-secondary">Ảnh đại diện</label>
-                        <input type="file" class="form-control" disabled title="Tùy chọn tải ảnh" />
+                        <label class="form-label small fw-semibold text-secondary">Ảnh thẻ / đại diện</label>
+                        <input type="file" asp-for="FileAnh" class="form-control" accept="image/png,image/jpeg,image/webp" />
+                        <input type="hidden" asp-for="HinhAnh" />
+                        @if (!string.IsNullOrEmpty(Model.HinhAnh))
+                        {
+                            <div class="mt-2 d-flex align-items-center gap-2">
+                                <img src="@Model.HinhAnh" alt="Ảnh hiện tại" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:1px solid #cbd5e1;" />
+                                <span class="small text-muted" style="font-size:0.75rem;">Đã có ảnh hồ sơ</span>
+                            </div>
+                        }
                     </div>
 
                     <div class="col-md-6">

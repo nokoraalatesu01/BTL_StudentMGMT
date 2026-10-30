@@ -6,7 +6,7 @@
 
 <div class="mb-4">
     <h2>@ViewData["Title"]</h2>
-    <p class="text-muted mb-0">Môn học hiện được quản lý độc lập, chưa gắn với ngành hoặc chương trình đào tạo.</p>
+    <p class="text-muted mb-0">Quản lý môn học và phân công khoa / bộ môn phụ trách giảng dạy chuyên môn.</p>
 </div>
 
 <div class="stat-card" style="max-width:760px">
@@ -23,6 +23,13 @@
             <label asp-for="TenMon" class="form-label"></label>
             <input asp-for="TenMon" class="form-control" />
             <span asp-validation-for="TenMon" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="DonViId" class="form-label"></label>
+            <select asp-for="DonViId" asp-items="ViewBag.DonViList" class="form-select">
+                <option value="">-- Chọn Khoa / Bộ môn phụ trách --</option>
+            </select>
+            <span asp-validation-for="DonViId" class="text-danger"></span>
         </div>
         <div class="mb-4">
             <label asp-for="SoTinChi" class="form-label"></label>

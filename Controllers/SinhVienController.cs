@@ -1,5 +1,6 @@
 using BTL_StudentMGMT.Data;
 using BTL_StudentMGMT.Models;
+using BTL_StudentMGMT.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
@@ -12,17 +13,46 @@ public class SinhVienController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IFileUploadService _fileUploadService;
 
-    public SinhVienController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
+    public SinhVienController(ApplicationDbContext db, UserManager<ApplicationUser> userManager, IFileUploadService fileUploadService)
     {
         _db = db;
         _userManager = userManager;
+        _fileUploadService = fileUploadService;
     }
 
     public async Task<IActionResult> Index()
     {
         var model = await LoadCurrentStudentAsync();
         return model == null ? View("Unlinked") : View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CapNhatAnhDaiDien(IFormFile? fileAnh)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId == null) return RedirectToAction(nameof(HoSo));
+
+        var student = await _db.SinhViens.FirstOrDefaultAsync(s => s.UserId == userId);
+        if (student == null) return RedirectToAction(nameof(HoSo));
+
+        if (fileAnh != null && fileAnh.Length > 0)
+        {
+            var avatarPath = await _fileUploadService.UploadAvatarAsync(fileAnh, student.HinhAnh);
+            if (!string.IsNullOrEmpty(avatarPath))
+            {
+                student.HinhAnh = avatarPath;
+                await _db.SaveChangesAsync();
+                TempData["Success"] = "Cập nhật ảnh đại diện thành công!";
+            }
+            else
+            {
+                TempData["Error"] = "Định dạng file không hợp lệ (.jpg, .jpeg, .png, .webp) hoặc vượt quá 5MB.";
+            }
+        }
+        return RedirectToAction(nameof(HoSo));
     }
 
     public async Task<IActionResult> HoSo()
@@ -60,6 +90,7 @@ public class SinhVienController : Controller
             TenNganh = student.Lop?.Nganh?.TenNganh,
             NienKhoa = student.NienKhoa,
             TrangThai = student.TrangThai,
+            HinhAnh = student.HinhAnh,
             Diems = student.Diems
                 .OrderBy(diem => diem.MonHoc?.TenMon)
                 .ToList()
@@ -112,6 +143,7 @@ public class SinhVienController : Controller
             SiSoLop = classmates,
             NienKhoa = student.NienKhoa,
             TrangThai = student.TrangThai,
+            HinhAnh = student.HinhAnh,
             Gpa = gpa,
             XepLoai = student.XepLoai,
             SoMonDaDat = student.Diems.Count(diem => diem.DiemTongKet >= 4.0),

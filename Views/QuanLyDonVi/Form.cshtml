@@ -1,0 +1,124 @@
+@model BTL_StudentMGMT.Models.DonViFormViewModel
+@{
+    var isEdit = Model.DonViId > 0;
+    ViewData["Title"] = isEdit ? "Chỉnh sửa đơn vị" : "Thêm mới đơn vị";
+    Layout = "_AdminLayout";
+}
+
+<div class="mb-4">
+    <p class="mb-1" style="font-size:.8rem; color:#64748b;">
+        <a asp-action="Index" style="color:#64748b; text-decoration:none;">QUẢN LÝ ĐƠN VỊ</a>
+        <span style="color:#cbd5e1; margin:0 6px;">›</span>
+        <span style="color:#2563eb; font-weight:700; text-transform:uppercase; font-size:.72rem; letter-spacing:.07em;">
+            @(isEdit ? "CẬP NHẬT" : "THÊM MỚI")
+        </span>
+    </p>
+    <h3 class="fw-bold mb-1" style="color:#0f172a; font-size:1.55rem; letter-spacing:-.02em;">
+        @(isEdit ? $"Chỉnh sửa đơn vị: {Model.TenDonVi}" : "Thêm mới đơn vị / Khoa phòng")
+    </h3>
+    <p class="mb-0" style="font-size:.875rem; color:#64748b;">
+        Điền đầy đủ thông tin mã đơn vị, tên đơn vị và đơn vị quản lý trực thuộc.
+    </p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-3 p-4" style="background:#fff;">
+            <form asp-action="@(isEdit ? "Edit" : "Create")" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="DonViId" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+
+                <div class="row g-3">
+                    <!-- Mã đơn vị -->
+                    <div class="col-md-4">
+                        <label asp-for="MaDonVi" class="form-label fw-semibold" style="font-size:.875rem;">
+                            Mã đơn vị <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="MaDonVi" class="form-control text-uppercase" placeholder="VD: KHOA_CNTT, UTC..." />
+                        <span asp-validation-for="MaDonVi" class="text-danger" style="font-size:.8rem;"></span>
+                    </div>
+
+                    <!-- Tên đơn vị -->
+                    <div class="col-md-8">
+                        <label asp-for="TenDonVi" class="form-label fw-semibold" style="font-size:.875rem;">
+                            Tên đơn vị <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="TenDonVi" class="form-control" placeholder="VD: Khoa Công nghệ Thông tin" />
+                        <span asp-validation-for="TenDonVi" class="text-danger" style="font-size:.8rem;"></span>
+                    </div>
+
+                    <!-- Loại đơn vị -->
+                    <div class="col-md-6">
+                        <label asp-for="LoaiDonVi" class="form-label fw-semibold" style="font-size:.875rem;">
+                            Loại đơn vị <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="LoaiDonVi" class="form-select">
+                            <option value="KHOA">Khoa / Viện đào tạo</option>
+                            <option value="TRUONG">Trường / Ban Giám hiệu</option>
+                            <option value="BO_MON">Bộ môn chuyên môn</option>
+                            <option value="PHONG">Phòng ban chức năng</option>
+                            <option value="TRUNG_TAM">Trung tâm nghiên cứu / dịch vụ</option>
+                        </select>
+                        <span asp-validation-for="LoaiDonVi" class="text-danger" style="font-size:.8rem;"></span>
+                    </div>
+
+                    <!-- Đơn vị trực thuộc / Cha -->
+                    <div class="col-md-6">
+                        <label asp-for="DonViChaId" class="form-label fw-semibold" style="font-size:.875rem;">
+                            Đơn vị quản lý cấp trên (Đơn vị cha)
+                        </label>
+                        <select asp-for="DonViChaId" asp-items="ViewBag.DonViChaList" class="form-select">
+                            <option value="">-- Không có (Cấp cao nhất / Trực tiếp) --</option>
+                        </select>
+                        <span asp-validation-for="DonViChaId" class="text-danger" style="font-size:.8rem;"></span>
+                    </div>
+
+                    <!-- Email liên hệ -->
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label fw-semibold" style="font-size:.875rem;">
+                            Email liên hệ
+                        </label>
+                        <input asp-for="Email" type="email" class="form-control" placeholder="VD: cntt@utc.edu.vn" />
+                        <span asp-validation-for="Email" class="text-danger" style="font-size:.8rem;"></span>
+                    </div>
+
+                    <!-- Điện thoại -->
+                    <div class="col-md-6">
+                        <label asp-for="DienThoai" class="form-label fw-semibold" style="font-size:.875rem;">
+                            Số điện thoại
+                        </label>
+                        <input asp-for="DienThoai" class="form-control" placeholder="VD: 02437664422" />
+                        <span asp-validation-for="DienThoai" class="text-danger" style="font-size:.8rem;"></span>
+                    </div>
+
+                    <!-- Trạng thái -->
+                    <div class="col-md-6">
+                        <label asp-for="TrangThai" class="form-label fw-semibold" style="font-size:.875rem;">
+                            Trạng thái hoạt động <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="TrangThai" class="form-select">
+                            <option value="ACTIVE">Hoạt động (ACTIVE)</option>
+                            <option value="INACTIVE">Ngừng hoạt động (INACTIVE)</option>
+                        </select>
+                        <span asp-validation-for="TrangThai" class="text-danger" style="font-size:.8rem;"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                        Quay lại danh sách
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                        <i class="bi bi-check-lg me-1"></i> @(isEdit ? "Lưu thay đổi" : "Tạo đơn vị")
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

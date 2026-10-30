@@ -17,6 +17,7 @@ public class SinhVienPortalViewModel
     public int? SiSoLop { get; set; }
     public string? NienKhoa { get; set; }
     public string? TrangThai { get; set; }
+    public string? HinhAnh { get; set; }
     public double? Gpa { get; set; }
     public string? XepLoai { get; set; }
     public int SoMonDaDat { get; set; }

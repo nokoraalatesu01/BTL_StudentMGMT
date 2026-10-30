@@ -11,11 +11,6 @@
         : Math.Round(Model.Average(d => d.DiemTongKet), 2);
     int soHocPhanAPlus = Model.Count(d => d.DiemTongKet >= 9.0);  // A+
     int soHocPhanA     = Model.Count(d => d.DiemTongKet >= 8.5);  // A/A+
-
-    var avatarColors = new[] { "gray", "pink", "cyan", "purple", "green" };
-
-    // Lấy danh sách học kỳ nếu có (ViewBag.DanhSachHocKy)
-    var hocKyHienTai = "Học kỳ 1 (2025 – 2026)";
 }
 
 <!-- ===== HEADER ===== -->
@@ -206,12 +201,8 @@
                 </tr>
             </thead>
             <tbody>
-                @{ int idx = 0; }
                 @foreach (var d in Model)
                 {
-                    var colorClass = avatarColors[idx % avatarColors.Length]; idx++;
-                    string initials = string.IsNullOrWhiteSpace(d.SinhVien?.HoTen) ? "?"
-                        : d.SinhVien.HoTen.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).Last()[0].ToString().ToUpperInvariant();
                     string maSV = d.SinhVien?.MaSinhVien ?? "—";
                     string hoTen = d.SinhVien?.HoTen ?? "—";
 
@@ -223,13 +214,7 @@
 
                         <!-- HỌ TÊN -->
                         <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="avatar-round @colorClass"
-                                     style="width:32px; height:32px; font-size:.78rem; font-weight:700; flex-shrink:0;">
-                                    @initials
-                                </div>
-                                <span style="font-weight:600; color:#1e293b; font-size:.875rem;">@hoTen</span>
-                            </div>
+                            <span style="font-weight:600; color:#1e293b; font-size:.875rem;">@hoTen</span>
                         </td>
 
                         <!-- TÊN HỌC PHẦN -->

@@ -1,5 +1,6 @@
 using BTL_StudentMGMT.Data;
 using BTL_StudentMGMT.Models;
+using BTL_StudentMGMT.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,11 +14,13 @@ public class QuanLySinhVienController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IFileUploadService _fileUploadService;
 
-    public QuanLySinhVienController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
+    public QuanLySinhVienController(ApplicationDbContext db, UserManager<ApplicationUser> userManager, IFileUploadService fileUploadService)
     {
         _db = db;
         _userManager = userManager;
+        _fileUploadService = fileUploadService;
     }
 
     public async Task<IActionResult> Index(string? tuKhoa, int? lopId, string? trangThai, int page = 1)
@@ -118,6 +121,12 @@ public class QuanLySinhVienController : Controller
             return View("Form", model);
         }
 
+        string? avatarPath = null;
+        if (model.FileAnh != null && model.FileAnh.Length > 0)
+        {
+            avatarPath = await _fileUploadService.UploadAvatarAsync(model.FileAnh);
+        }
+
         var sinhVien = new SinhVien
         {
             MaSinhVien = model.MaSinhVien,
@@ -129,7 +138,8 @@ public class QuanLySinhVienController : Controller
             DiaChi = model.DiaChi,
             LopId = model.LopId,
             NienKhoa = model.NienKhoa,
-            TrangThai = model.TrangThai
+            TrangThai = model.TrangThai,
+            HinhAnh = avatarPath
         };
 
         _db.SinhViens.Add(sinhVien);
@@ -168,7 +178,8 @@ public class QuanLySinhVienController : Controller
             NienKhoa = sinhVien.NienKhoa,
             TrangThai = sinhVien.TrangThai,
             Gpa = sinhVien.Gpa,
-            XepLoai = sinhVien.XepLoai
+            XepLoai = sinhVien.XepLoai,
+            HinhAnh = sinhVien.HinhAnh
         });
     }
 
@@ -204,6 +215,15 @@ public class QuanLySinhVienController : Controller
         sinhVien.NienKhoa = model.NienKhoa;
         sinhVien.TrangThai = model.TrangThai;
 
+        if (model.FileAnh != null && model.FileAnh.Length > 0)
+        {
+            var avatarPath = await _fileUploadService.UploadAvatarAsync(model.FileAnh, sinhVien.HinhAnh);
+            if (!string.IsNullOrEmpty(avatarPath))
+            {
+                sinhVien.HinhAnh = avatarPath;
+            }
+        }
+
         await _db.SaveChangesAsync();
 
         TempData["Msg"] = "Đã cập nhật sinh viên";
@@ -228,6 +248,7 @@ public class QuanLySinhVienController : Controller
 
         await using var transaction = await _db.Database.BeginTransactionAsync();
         _db.SinhViens.Remove(sinhVien);
+        _fileUploadService.DeleteFile(sinhVien.HinhAnh);
         await _db.SaveChangesAsync();
 
         if (sinhVien.UserId != null)

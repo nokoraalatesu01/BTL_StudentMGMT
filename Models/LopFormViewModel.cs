@@ -14,4 +14,7 @@ public class LopFormViewModel
     [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn ngành")]
     [Display(Name = "Ngành")]
     public int NganhId { get; set; }
+
+    [Display(Name = "Chương trình đào tạo (tùy chọn)")]
+    public int? ChuongTrinhDaoTaoId { get; set; }
 }

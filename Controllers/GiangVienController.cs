@@ -1,5 +1,6 @@
 using BTL_StudentMGMT.Data;
 using BTL_StudentMGMT.Models;
+using BTL_StudentMGMT.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,13 @@ public class GiangVienController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IFileUploadService _fileUploadService;
 
-    public GiangVienController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
+    public GiangVienController(ApplicationDbContext db, UserManager<ApplicationUser> userManager, IFileUploadService fileUploadService)
     {
         _db = db;
         _userManager = userManager;
+        _fileUploadService = fileUploadService;
     }
 
     // 1. Trang tổng quan giảng viên
@@ -267,7 +270,8 @@ public class GiangVienController : Controller
             MaGiangVien = giangVien.MaGiangVien,
             HoTen = giangVien.HoTen,
             Email = giangVien.Email,
-            SoDienThoai = giangVien.SoDienThoai
+            SoDienThoai = giangVien.SoDienThoai,
+            HinhAnh = giangVien.HinhAnh
         };
 
         return View(model);
@@ -276,7 +280,7 @@ public class GiangVienController : Controller
     // 8. Cập nhật thông tin giảng viên (POST)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult CapNhatThongTin(CapNhatGiangVienViewModel model)
+    public async Task<IActionResult> CapNhatThongTin(CapNhatGiangVienViewModel model)
     {
         var user = _userManager.GetUserAsync(User).Result;
         if (user == null)
@@ -293,6 +297,15 @@ public class GiangVienController : Controller
         if (!ModelState.IsValid)
         {
             return View(model);
+        }
+
+        if (model.FileAnh != null && model.FileAnh.Length > 0)
+        {
+            var avatarPath = await _fileUploadService.UploadAvatarAsync(model.FileAnh, giangVien.HinhAnh);
+            if (!string.IsNullOrEmpty(avatarPath))
+            {
+                giangVien.HinhAnh = avatarPath;
+            }
         }
 
         giangVien.HoTen = model.HoTen.Trim();

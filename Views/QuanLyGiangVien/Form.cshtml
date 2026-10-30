@@ -10,8 +10,9 @@
 </div>
 
 <div class="stat-card" style="max-width:760px">
-    <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@Model.Id" method="post">
+    <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
         <input asp-for="Id" type="hidden" />
+        <input asp-for="HinhAnh" type="hidden" />
         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
         <div class="mb-3">
@@ -25,14 +26,33 @@
             <span asp-validation-for="HoTen" class="text-danger"></span>
         </div>
         <div class="mb-3">
+            <label asp-for="DonViId" class="form-label"></label>
+            <select asp-for="DonViId" asp-items="ViewBag.DonViList" class="form-select">
+                <option value="">-- Chọn Khoa / Đơn vị trực thuộc --</option>
+            </select>
+            <span asp-validation-for="DonViId" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
             <label asp-for="Email" class="form-label"></label>
             <input asp-for="Email" class="form-control" />
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
-        <div class="mb-4">
+        <div class="mb-3">
             <label asp-for="SoDienThoai" class="form-label"></label>
             <input asp-for="SoDienThoai" class="form-control" />
             <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+        </div>
+        <div class="mb-4">
+            <label asp-for="FileAnh" class="form-label">Ảnh đại diện / Ảnh thẻ</label>
+            <input asp-for="FileAnh" type="file" class="form-control" accept="image/png,image/jpeg,image/webp" />
+            <span asp-validation-for="FileAnh" class="text-danger"></span>
+            @if (!string.IsNullOrEmpty(Model.HinhAnh))
+            {
+                <div class="mt-2 d-flex align-items-center gap-2">
+                    <img src="@Model.HinhAnh" alt="Ảnh hiện tại" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:1px solid #cbd5e1;" />
+                    <span class="small text-muted">Đã có ảnh đại diện</span>
+                </div>
+            }
         </div>
 
         <button type="submit" class="btn btn-primary">@(isEdit ? "Lưu thay đổi" : "Thêm giảng viên")</button>

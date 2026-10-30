@@ -19,6 +19,7 @@ public class QuanLyNganhController : Controller
     public async Task<IActionResult> Index(string? tuKhoa)
     {
         var query = _db.Nganhs
+            .Include(nganh => nganh.DonVi)
             .Include(nganh => nganh.Lops)
             .Include(nganh => nganh.ChuongTrinhs)
             .AsQueryable();
@@ -56,8 +57,9 @@ public class QuanLyNganhController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        await LoadDonViDropdownAsync();
         return View("Form", new NganhFormViewModel());
     }
 
@@ -67,10 +69,12 @@ public class QuanLyNganhController : Controller
     {
         Normalize(model);
         await ValidateUniqueCodeAsync(model);
+        await SynchronizeFacultyFromDonViAsync(model);
         ValidateFaculty(model);
 
         if (!ModelState.IsValid)
         {
+            await LoadDonViDropdownAsync(model.DonViId);
             return View("Form", model);
         }
 
@@ -79,6 +83,7 @@ public class QuanLyNganhController : Controller
             MaNganh = model.MaNganh,
             TenNganh = model.TenNganh,
             TenKhoa = model.TenKhoa,
+            DonViId = model.DonViId,
             TichHopCuNhanKySu = model.TichHopCuNhanKySu
         });
         await _db.SaveChangesAsync();
@@ -96,12 +101,14 @@ public class QuanLyNganhController : Controller
             return NotFound();
         }
 
+        await LoadDonViDropdownAsync(nganh.DonViId);
         return View("Form", new NganhFormViewModel
         {
             Id = nganh.Id,
             MaNganh = nganh.MaNganh,
             TenNganh = nganh.TenNganh,
             TenKhoa = nganh.TenKhoa,
+            DonViId = nganh.DonViId,
             TichHopCuNhanKySu = nganh.TichHopCuNhanKySu
         });
     }
@@ -123,16 +130,19 @@ public class QuanLyNganhController : Controller
 
         Normalize(model);
         await ValidateUniqueCodeAsync(model, id);
+        await SynchronizeFacultyFromDonViAsync(model);
         ValidateFaculty(model);
 
         if (!ModelState.IsValid)
         {
+            await LoadDonViDropdownAsync(model.DonViId);
             return View("Form", model);
         }
 
         nganh.MaNganh = model.MaNganh;
         nganh.TenNganh = model.TenNganh;
         nganh.TenKhoa = model.TenKhoa;
+        nganh.DonViId = model.DonViId;
         nganh.TichHopCuNhanKySu = model.TichHopCuNhanKySu;
         await _db.SaveChangesAsync();
 
@@ -261,5 +271,23 @@ public class QuanLyNganhController : Controller
         model.MaNganh = model.MaNganh?.Trim() ?? "";
         model.TenNganh = model.TenNganh?.Trim() ?? "";
         model.TenKhoa = model.TenKhoa?.Trim() ?? "";
+    }
+
+    private async Task SynchronizeFacultyFromDonViAsync(NganhFormViewModel model)
+    {
+        if (model.DonViId.HasValue && string.IsNullOrWhiteSpace(model.TenKhoa))
+        {
+            var dv = await _db.DonVis.FindAsync(model.DonViId.Value);
+            if (dv != null)
+            {
+                model.TenKhoa = dv.TenDonVi;
+            }
+        }
+    }
+
+    private async Task LoadDonViDropdownAsync(int? selectedId = null)
+    {
+        var units = await _db.DonVis.AsNoTracking().Where(d => d.TrangThai == "ACTIVE").OrderBy(d => d.TenDonVi).ToListAsync();
+        ViewBag.DonViList = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(units, nameof(DonVi.DonViId), nameof(DonVi.TenDonVi), selectedId);
     }
 }

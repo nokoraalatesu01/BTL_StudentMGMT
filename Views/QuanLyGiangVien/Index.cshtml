@@ -189,10 +189,17 @@
                         <!-- HỌ TÊN -->
                         <td>
                             <div class="d-flex align-items-center gap-3">
-                                <div class="avatar-round @colorClass"
-                                     style="width:36px; height:36px; font-size:.82rem; font-weight:700; flex-shrink:0;">
-                                    @initials
-                                </div>
+                                @if (!string.IsNullOrEmpty(item.HinhAnh))
+                                {
+                                    <img src="@item.HinhAnh" alt="@item.HoTen" class="avatar-round" style="width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0;" />
+                                }
+                                else
+                                {
+                                    <div class="avatar-round @colorClass"
+                                         style="width:36px; height:36px; font-size:.82rem; font-weight:700; flex-shrink:0;">
+                                        @initials
+                                    </div>
+                                }
                                 <div>
                                     <div style="font-weight:700; color:#1e293b; font-size:.875rem; line-height:1.3;">@item.HoTen</div>
                                     <small style="color:#94a3b8; font-size:.775rem;">@khoaTen</small>

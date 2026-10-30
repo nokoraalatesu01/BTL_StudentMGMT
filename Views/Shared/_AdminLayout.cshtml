@@ -71,6 +71,10 @@
                     <span class="nav-symbol" aria-hidden="true"><i class="bi bi-shield-lock"></i></span>
                     <span>Quản lý tài khoản</span>
                 </a>
+                <a asp-controller="QuanLyDonVi" asp-action="Index" class="@(currentController == "QuanLyDonVi" ? "active" : "")" aria-current="@(currentController == "QuanLyDonVi" ? "page" : null)">
+                    <span class="nav-symbol" aria-hidden="true"><i class="bi bi-building"></i></span>
+                    <span>Quản lý đơn vị</span>
+                </a>
                 <a asp-controller="QuanLyNganh" asp-action="Index" class="@(currentController == "QuanLyNganh" ? "active" : "")" aria-current="@(currentController == "QuanLyNganh" ? "page" : null)">
                     <span class="nav-symbol" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
                     <span>Quản lý ngành</span>

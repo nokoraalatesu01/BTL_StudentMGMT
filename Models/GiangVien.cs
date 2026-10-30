@@ -14,6 +14,7 @@ public class GiangVien
 
     public string? Email { get; set; }
     public string? SoDienThoai { get; set; }
+    public string? HinhAnh { get; set; }
     public string? UserId { get; set; }
     public ApplicationUser? User { get; set; }
     public int? DonViId { get; set; }

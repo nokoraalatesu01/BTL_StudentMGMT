@@ -19,4 +19,7 @@ public class MonHocFormViewModel
     [Range(1, 6, ErrorMessage = "Số tín chỉ phải từ 1 đến 6")]
     [Display(Name = "Số tín chỉ")]
     public int SoTinChi { get; set; } = 3;
+
+    [Display(Name = "Khoa / Đơn vị phụ trách")]
+    public int? DonViId { get; set; }
 }

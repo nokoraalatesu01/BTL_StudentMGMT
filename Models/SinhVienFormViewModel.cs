@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace BTL_StudentMGMT.Models;
 
@@ -45,4 +46,10 @@ public class SinhVienFormViewModel
     public double? Gpa { get; set; }
 
     public string? XepLoai { get; set; }
+
+    [Display(Name = "Ảnh đại diện")]
+    public string? HinhAnh { get; set; }
+
+    [Display(Name = "Tải lên ảnh mới")]
+    public IFormFile? FileAnh { get; set; }
 }

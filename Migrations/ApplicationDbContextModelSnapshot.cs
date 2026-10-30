@@ -255,7 +255,8 @@ namespace BTL_StudentMGMT.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("GhiChu")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<int>("LopId")
                         .HasColumnType("int");
@@ -271,7 +272,8 @@ namespace BTL_StudentMGMT.Migrations
 
                     b.Property<string>("TrangThai")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -281,7 +283,7 @@ namespace BTL_StudentMGMT.Migrations
 
                     b.HasIndex("SinhVienId");
 
-                    b.ToTable("DiemDanhs");
+                    b.ToTable("DiemDanhs", (string)null);
                 });
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.DiemThanhPhan", b =>
@@ -404,6 +406,10 @@ namespace BTL_StudentMGMT.Migrations
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("HinhAnh")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("HoTen")
                         .IsRequired()
@@ -565,14 +571,16 @@ namespace BTL_StudentMGMT.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("GhiChu")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<int?>("GiangVienId")
                         .HasColumnType("int");
 
                     b.Property<string>("HocKy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("LopId")
                         .HasColumnType("int");
@@ -582,14 +590,16 @@ namespace BTL_StudentMGMT.Migrations
 
                     b.Property<string>("PhongHoc")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("SoTiet")
                         .HasColumnType("int");
 
                     b.Property<string>("Thu")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<int>("TietBatDau")
                         .HasColumnType("int");
@@ -602,7 +612,7 @@ namespace BTL_StudentMGMT.Migrations
 
                     b.HasIndex("MonHocId");
 
-                    b.ToTable("LichGiangDays");
+                    b.ToTable("LichGiangDays", (string)null);
                 });
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.LichHoc", b =>
@@ -855,6 +865,10 @@ namespace BTL_StudentMGMT.Migrations
 
                     b.Property<string>("GioiTinh")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HinhAnh")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("HoTen")
                         .IsRequired()
@@ -1172,13 +1186,16 @@ namespace BTL_StudentMGMT.Migrations
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.GiangVien", b =>
                 {
-                    b.HasOne("BTL_StudentMGMT.Models.DonVi", null)
+                    b.HasOne("BTL_StudentMGMT.Models.DonVi", "DonVi")
                         .WithMany("GiangViens")
-                        .HasForeignKey("DonViId");
+                        .HasForeignKey("DonViId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("BTL_StudentMGMT.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
+
+                    b.Navigation("DonVi");
 
                     b.Navigation("User");
                 });
@@ -1250,9 +1267,12 @@ namespace BTL_StudentMGMT.Migrations
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.MonHoc", b =>
                 {
-                    b.HasOne("BTL_StudentMGMT.Models.DonVi", null)
+                    b.HasOne("BTL_StudentMGMT.Models.DonVi", "DonVi")
                         .WithMany("MonHocs")
-                        .HasForeignKey("DonViId");
+                        .HasForeignKey("DonViId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("DonVi");
                 });
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.Nganh", b =>

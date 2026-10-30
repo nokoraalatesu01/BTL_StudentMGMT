@@ -76,7 +76,7 @@ public class QuanLyLopController : Controller
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        await LoadNganhAsync();
+        await LoadDropdownsAsync();
         return View("Form", new LopFormViewModel());
     }
 
@@ -89,14 +89,15 @@ public class QuanLyLopController : Controller
 
         if (!ModelState.IsValid)
         {
-            await LoadNganhAsync(model.NganhId);
+            await LoadDropdownsAsync(model.NganhId, model.ChuongTrinhDaoTaoId);
             return View("Form", model);
         }
 
         _db.Lops.Add(new Lop
         {
             TenLop = model.TenLop,
-            NganhId = model.NganhId
+            NganhId = model.NganhId,
+            ChuongTrinhDaoTaoId = model.ChuongTrinhDaoTaoId
         });
         await _db.SaveChangesAsync();
 
@@ -113,12 +114,13 @@ public class QuanLyLopController : Controller
             return NotFound();
         }
 
-        await LoadNganhAsync(lop.NganhId);
+        await LoadDropdownsAsync(lop.NganhId, lop.ChuongTrinhDaoTaoId);
         return View("Form", new LopFormViewModel
         {
             Id = lop.Id,
             TenLop = lop.TenLop,
-            NganhId = lop.NganhId
+            NganhId = lop.NganhId,
+            ChuongTrinhDaoTaoId = lop.ChuongTrinhDaoTaoId
         });
     }
 
@@ -142,12 +144,13 @@ public class QuanLyLopController : Controller
 
         if (!ModelState.IsValid)
         {
-            await LoadNganhAsync(model.NganhId);
+            await LoadDropdownsAsync(model.NganhId, model.ChuongTrinhDaoTaoId);
             return View("Form", model);
         }
 
         lop.TenLop = model.TenLop;
         lop.NganhId = model.NganhId;
+        lop.ChuongTrinhDaoTaoId = model.ChuongTrinhDaoTaoId;
         await _db.SaveChangesAsync();
 
         TempData["Msg"] = "Đã cập nhật lớp.";
@@ -195,12 +198,18 @@ public class QuanLyLopController : Controller
         }
     }
 
-    private async Task LoadNganhAsync(int? selected = null)
+    private async Task LoadDropdownsAsync(int? selectedNganh = null, int? selectedChuongTrinh = null)
     {
         ViewBag.DanhSachNganh = new SelectList(
             await _db.Nganhs.OrderBy(nganh => nganh.TenNganh).ToListAsync(),
             nameof(Nganh.Id),
             nameof(Nganh.TenNganh),
-            selected);
+            selectedNganh);
+
+        ViewBag.DanhSachChuongTrinh = new SelectList(
+            await _db.ChuongTrinhDaoTaos.OrderBy(c => c.TenChuongTrinh).ToListAsync(),
+            nameof(ChuongTrinhDaoTao.Id),
+            nameof(ChuongTrinhDaoTao.TenChuongTrinh),
+            selectedChuongTrinh);
     }
 }
