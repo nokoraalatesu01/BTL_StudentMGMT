@@ -2,15 +2,23 @@
 @{
     ViewData["Title"] = "Quản Lý Danh Sách Sinh Viên - Admin";
     var avatarColors = new[] { "gray", "pink", "cyan", "purple", "green" };
+    int startRecord = (Model.Page - 1) * Model.PageSize + 1;
+    int endRecord   = Math.Min(Model.Page * Model.PageSize, Model.TotalItems);
 }
 
-<!-- Tiêu đề trang gọn gàng -->
+<!-- ===== TIÊU ĐỀ TRANG ===== -->
 <div class="mb-4">
-    <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-        <i class="bi bi-people-fill text-primary" style="color: #2563eb !important;"></i>
-        Đào tạo / <strong>Quản lý thông tin sinh viên</strong>
+    <p class="mb-1" style="font-size:.82rem; color:#64748b;">
+        <span style="color:#94a3b8;">Đào tạo</span>
+        <span style="color:#cbd5e1; margin:0 6px;">/</span>
+        <span style="color:#1e293b; font-weight:700;">Quản lý thông tin sinh viên</span>
+    </p>
+    <h3 class="fw-bold mb-1" style="color:#0f172a; font-size:1.55rem; letter-spacing:-.02em;">
+        Quản lý thông tin sinh viên
     </h3>
-    <p class="text-muted mb-0 small">Hệ thống danh sách sinh viên toàn trường, thêm mới, phân lớp và quản lý học tập</p>
+    <p class="mb-0" style="font-size:.875rem; color:#64748b;">
+        Hệ thống danh sách sinh viên toàn trường, thêm mới, phân lớp và quản lý học tập
+    </p>
 </div>
 
 @if (TempData["Msg"] != null)
@@ -21,68 +29,91 @@
         <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-3 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-circle-fill text-danger"></i>
+        <div>@TempData["Error"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
-<!-- Bộ lọc tìm kiếm có nút Thêm mới cạnh nút Lọc chuẩn theo Ảnh mẫu -->
-<div class="content-card p-3 mb-4">
-    <form method="get" class="row g-2 align-items-center">
-        <div class="col-lg-4 col-md-12">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0 text-muted">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input name="tuKhoa" value="@ViewBag.TuKhoa" class="form-control border-start-0 ps-0"
-                       placeholder="Tìm theo tên, mã SV, lớp, email..." />
-            </div>
+<!-- ===== BỘ LỌC + NÚT THÊM MỚI ===== -->
+<div class="content-card p-3 mb-3">
+    <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
+
+        <!-- Ô tìm kiếm -->
+        <div class="input-group" style="width:280px; min-width:200px;">
+            <span class="input-group-text bg-white border-end-0 pe-1 text-muted" style="border-color:#d1d5db;">
+                <i class="bi bi-search" style="font-size:.85rem;"></i>
+            </span>
+            <input name="tuKhoa" value="@ViewBag.TuKhoa"
+                   class="form-control border-start-0 ps-1"
+                   style="border-color:#d1d5db; font-size:.875rem;"
+                   placeholder="Tìm theo tên, mã SV, lớp, email..." />
         </div>
 
-        <div class="col-lg-3 col-md-4">
-            <select name="lopId" asp-items="ViewBag.DanhSachLop" class="form-select">
-                <option value="">-- Tất cả Khoa / Viện / Lớp --</option>
-            </select>
-        </div>
+        <!-- Lọc khoa/lớp -->
+        <select name="lopId" asp-items="ViewBag.DanhSachLop"
+                class="form-select"
+                style="width:220px; min-width:160px; font-size:.875rem; border-color:#d1d5db;">
+            <option value="">-- Tất cả Khoa / Viện / Lớp --</option>
+        </select>
 
-        <div class="col-lg-2 col-md-3">
-            <select name="trangThai" class="form-select">
-                <option value="">-- Trạng thái --</option>
-                @foreach (var trangThai in BTL_StudentMGMT.Models.SinhVien.TrangThaiOptions)
-                {
-                    <option value="@trangThai" selected="@(ViewBag.TrangThai == trangThai)">@trangThai</option>
-                }
-            </select>
-        </div>
+        <!-- Lọc trạng thái -->
+        <select name="trangThai" class="form-select"
+                style="width:155px; min-width:130px; font-size:.875rem; border-color:#d1d5db;">
+            <option value="">-- Trạng thái --</option>
+            @foreach (var trangThai in BTL_StudentMGMT.Models.SinhVien.TrangThaiOptions)
+            {
+                <option value="@trangThai" selected="@(ViewBag.TrangThai == trangThai)">@trangThai</option>
+            }
+        </select>
 
-        <div class="col-lg-3 col-md-5 d-flex gap-2">
-            <button type="submit" class="btn btn-outline-primary rounded-3 d-flex align-items-center gap-1 px-3">
-                <i class="bi bi-funnel"></i> Lọc
-            </button>
-            <a asp-action="Create" class="btn btn-primary-blue rounded-3 d-flex align-items-center gap-1 px-3 text-nowrap"
-               style="background: #4f46e5 !important; border: none;">
-                <i class="bi bi-plus-lg"></i> Thêm mới
-            </a>
-            <a asp-action="Index" class="btn btn-outline-custom rounded-3" title="Đặt lại bộ lọc">
-                <i class="bi bi-arrow-counterclockwise"></i>
-            </a>
-        </div>
+        <!-- Nút Lọc -->
+        <button type="submit" class="btn d-inline-flex align-items-center gap-1 px-3"
+                style="border:1px solid #d1d5db; background:#fff; color:#374151; font-size:.875rem; font-weight:600; height:38px; border-radius:8px;">
+            Lọc
+        </button>
+
+        <!-- Reset -->
+        <a asp-action="Index" class="btn d-inline-flex align-items-center"
+           title="Đặt lại bộ lọc"
+           style="border:1px solid #d1d5db; background:#fff; color:#6b7280; font-size:.875rem; height:38px; border-radius:8px; padding:0 10px;">
+            <i class="bi bi-arrow-counterclockwise"></i>
+        </a>
+
+        <!-- Thêm mới — đẩy sang phải -->
+        <a asp-action="Create"
+           class="btn d-inline-flex align-items-center gap-2 ms-auto text-white px-4"
+           style="background:#4f46e5; border:none; font-size:.875rem; font-weight:600; height:38px; border-radius:8px;">
+            <i class="bi bi-plus-lg" style="font-size:.9rem;"></i>
+            Thêm mới
+        </a>
+
     </form>
 </div>
 
-
-<!-- Bảng hiển thị danh sách sinh viên học theo layout ảnh mẫu -->
-<div class="custom-table-container mb-4">
+<!-- ===== BẢNG DANH SÁCH SINH VIÊN ===== -->
+<div class="custom-table-container">
     <div class="table-responsive">
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th style="width: 55px;">ẢNH</th>
-                    <th>MÃ SV</th>
-                    <th>HỌ VÀ TÊN</th>
+                    <th style="width:52px;">ẢNH</th>
+                    <th>MÃ SV
+                        <i class="bi bi-chevron-expand ms-1" style="font-size:.65rem; color:#94a3b8;"></i>
+                    </th>
+                    <th>HỌ VÀ TÊN
+                        <i class="bi bi-chevron-expand ms-1" style="font-size:.65rem; color:#94a3b8;"></i>
+                    </th>
                     <th>NGÀY SINH</th>
                     <th>GIỚI TÍNH</th>
                     <th>KHOA / LỚP</th>
                     <th>ĐIỂM GPA</th>
                     <th>XẾP LOẠI</th>
                     <th>TRẠNG THÁI</th>
-                    <th class="text-end">HÀNH ĐỘNG</th>
+                    <th class="text-end" style="padding-right:1.25rem;">HÀNH ĐỘNG</th>
                 </tr>
             </thead>
             <tbody>
@@ -91,26 +122,34 @@
                 {
                     var colorClass = avatarColors[idx % avatarColors.Length];
                     idx++;
-                    var gpa = s.Gpa;
-                    string rank = s.XepLoai;
+
+                    var gpa      = s.Gpa;
+                    string rank  = s.XepLoai ?? "Chưa xếp loại";
                     string rankClass = gpa == null
                         ? "badge-rank-chuadiem"
-                        : (gpa >= 8.5 ? "badge-rank-gioi" : (gpa >= 7.0 ? "badge-rank-kha" : "badge-rank-trungbinh"));
+                        : (gpa >= 8.5 ? "badge-rank-gioi"
+                          : (gpa >= 7.0 ? "badge-rank-kha" : "badge-rank-trungbinh"));
+
                     string status = s.TrangThai ?? "Đang học";
                     string statusClass = status switch
                     {
-                        "Đang học" => "badge-status-danghoc",
+                        "Đang học"   => "badge-status-danghoc",
                         "Tốt nghiệp" => "badge-status-totnghiep",
-                        "Bảo lưu" => "badge-status-baoluu",
-                        _ => "badge-status-dinhchi"
+                        "Bảo lưu"    => "badge-status-baoluu",
+                        _            => "badge-status-dinhchi"
                     };
 
+                    <!-- Lấy chữ cái đầu tên -->
+                    string initials = string.IsNullOrWhiteSpace(s.HoTen) ? "?" :
+                        s.HoTen.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).Last()[0].ToString().ToUpperInvariant();
+
                     <tr>
-                        <!-- ẢNH CÓ CHẤM ONLINE -->
+                        <!-- AVATAR -->
                         <td>
                             <div class="avatar-online-box">
-                                <div class="avatar-round @colorClass">
-                                    <i class="bi bi-person-fill"></i>
+                                <div class="avatar-round @colorClass"
+                                     style="font-size:.82rem; font-weight:700; font-style:normal;">
+                                    @initials
                                 </div>
                                 <span class="dot-online"></span>
                             </div>
@@ -118,78 +157,101 @@
 
                         <!-- MÃ SV -->
                         <td>
-                            <span class="fw-semibold text-secondary">@s.MaSinhVien</span>
+                            <span style="font-weight:600; color:#475569; font-size:.875rem;">@s.MaSinhVien</span>
                         </td>
 
-                        <!-- HỌ VÀ TÊN + EMAIL -->
+                        <!-- HỌ TÊN + EMAIL -->
                         <td>
-                            <div class="fw-bold text-dark">@s.HoTen</div>
-                            <small class="text-muted d-block">@(s.Email ?? "Chưa cập nhật")</small>
+                            <div style="font-weight:700; color:#0f172a; font-size:.875rem;">@s.HoTen</div>
+                            <small style="color:#94a3b8; font-size:.78rem; display:block; margin-top:1px;">
+                                @(s.Email ?? "Chưa cập nhật")
+                            </small>
                         </td>
 
                         <!-- NGÀY SINH -->
-                        <td>
-                            <span>@(s.NgaySinh?.ToString("dd/MM/yyyy") ?? "—")</span>
+                        <td style="color:#475569; font-size:.875rem; white-space:nowrap;">
+                            @(s.NgaySinh?.ToString("dd/MM/yyyy") ?? "—")
                         </td>
 
                         <!-- GIỚI TÍNH -->
                         <td>
                             @if (s.GioiTinh == "Nữ")
                             {
-                                <span class="badge-gender-nu">♀ NỮ</span>
+                                <span class="badge-gender-nu">
+                                    <i class="bi bi-gender-female me-1" style="font-size:.75rem;"></i>Nữ
+                                </span>
                             }
                             else if (s.GioiTinh == "Nam")
                             {
-                                <span class="badge-gender-nam">♂ NAM</span>
+                                <span class="badge-gender-nam">
+                                    <i class="bi bi-gender-male me-1" style="font-size:.75rem;"></i>Nam
+                                </span>
                             }
                             else
                             {
-                                <span class="text-muted small">—</span>
+                                <span style="color:#94a3b8; font-size:.875rem;">—</span>
                             }
                         </td>
 
                         <!-- KHOA / LỚP -->
                         <td>
-                            <div class="fw-bold text-dark" style="font-size: 0.85rem;">
+                            <div style="font-weight:600; color:#1e293b; font-size:.83rem; line-height:1.3;">
                                 @(s.Lop?.Nganh?.TenNganh ?? "Chưa có ngành")
                             </div>
-                            <small class="text-muted">@(s.Lop?.TenLop ?? "Chưa xếp lớp")</small>
+                            <small style="color:#4f46e5; font-size:.78rem; font-weight:600;">
+                                @(s.Lop?.TenLop ?? "Chưa xếp lớp")
+                            </small>
                         </td>
 
                         <!-- ĐIỂM GPA -->
                         <td>
                             @if (gpa == null)
                             {
-                                <span class="text-muted small">Chưa có điểm</span>
+                                <span style="color:#94a3b8; font-size:.8rem; font-style:italic;">Chưa<br/>có điểm</span>
                             }
                             else
                             {
-                                <span class="fw-bold text-primary fs-6" style="color: #2563eb !important;">@gpa.Value.ToString("0.00")</span>
+                                <span style="font-weight:800; color:#1e40af; font-size:1rem;">
+                                    @gpa.Value.ToString("0.00")
+                                </span>
                             }
                         </td>
 
                         <!-- XẾP LOẠI -->
                         <td>
-                            <span class="@rankClass">@rank</span>
+                            @if (gpa == null)
+                            {
+                                <span style="color:#94a3b8; font-size:.8rem; font-style:italic;">Chưa<br/>xếp loại</span>
+                            }
+                            else
+                            {
+                                <span class="@rankClass">@rank</span>
+                            }
                         </td>
 
                         <!-- TRẠNG THÁI -->
                         <td>
-                            <span class="@statusClass">@status</span>
+                            <span class="@statusClass">
+                                <span class="sv-status-dot"></span>
+                                @status
+                            </span>
                         </td>
 
-                        <!-- HÀNH ĐỘNG (Xem, Sửa, Xóa) -->
-                        <td class="text-end text-nowrap">
-                            <a asp-action="Details" asp-route-id="@s.Id" class="icon-action-btn" title="Xem chi tiết">
+                        <!-- HÀNH ĐỘNG -->
+                        <td class="text-end text-nowrap" style="padding-right:1.25rem;">
+                            <a asp-action="Details" asp-route-id="@s.Id"
+                               class="icon-action-btn" title="Xem chi tiết">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a asp-action="Edit" asp-route-id="@s.Id" class="icon-action-btn" title="Chỉnh sửa">
+                            <a asp-action="Edit" asp-route-id="@s.Id"
+                               class="icon-action-btn" title="Chỉnh sửa">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <form asp-action="Delete" asp-route-id="@s.Id" method="post" class="d-inline"
-                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa sinh viên @s.HoTen?');">
+                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa sinh viên @Html.Raw(s.HoTen.Replace("'", "\\'"))?');">
+                                @Html.AntiForgeryToken()
                                 <button type="submit" class="icon-action-btn delete" title="Xóa">
-                                    <i class="bi bi-trash"></i>
+                                    <i class="bi bi-trash3"></i>
                                 </button>
                             </form>
                         </td>
@@ -199,34 +261,152 @@
                 @if (!Model.Items.Any())
                 {
                     <tr>
-                        <td colspan="10" class="text-center text-muted py-5">
-                            <i class="bi bi-inbox fs-2 d-block text-secondary mb-2 opacity-50"></i>
-                            Không có sinh viên nào phù hợp.
+                        <td colspan="10" class="text-center py-5" style="color:#94a3b8;">
+                            <i class="bi bi-inbox fs-2 d-block mb-2" style="color:#cbd5e1;"></i>
+                            <span style="font-size:.9rem;">Không có sinh viên nào phù hợp với bộ lọc.</span>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
+
+    <!-- ===== FOOTER BẢNG: INFO + PHÂN TRANG ===== -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 px-3 py-2"
+         style="border-top:1px solid #f1f5f9; background:#fafbfc;">
+
+        <!-- Thông tin số dòng -->
+        <div style="font-size:.82rem; color:#64748b;">
+            Hiển thị
+            <strong style="color:#1e293b;">@startRecord – @endRecord</strong>
+            trên tổng số
+            <strong style="color:#1e293b;">@Model.TotalItems.ToString("N0")</strong>
+            sinh viên
+
+            @if (Model.TotalPages > 1)
+            {
+                <span style="margin-left:14px; color:#94a3b8;">
+                    | Số dòng mỗi trang:&nbsp;
+                    <strong style="color:#475569;">@Model.PageSize</strong>
+                </span>
+            }
+        </div>
+
+        <!-- Phân trang -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Phân trang sinh viên">
+                <ul class="pagination pagination-sm mb-0 gap-1">
+
+                    <!-- Nút Trước -->
+                    <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                        <a class="page-link sv-page-btn"
+                           asp-action="Index" asp-route-page="@(Model.Page - 1)"
+                           asp-route-tuKhoa="@ViewBag.TuKhoa"
+                           asp-route-lopId="@ViewBag.LopId"
+                           asp-route-trangThai="@ViewBag.TrangThai"
+                           aria-label="Trang trước">&lsaquo; Trước</a>
+                    </li>
+
+                    @{
+                        // Hiển thị tối đa 7 trang, với dấu "..."
+                        int totalP  = Model.TotalPages;
+                        int curP    = Model.Page;
+                        var pages   = new List<int?>();
+
+                        if (totalP <= 7)
+                        {
+                            for (int i = 1; i <= totalP; i++) pages.Add(i);
+                        }
+                        else
+                        {
+                            pages.Add(1);
+                            if (curP > 3) pages.Add(null); // ellipsis
+                            for (int i = Math.Max(2, curP - 1); i <= Math.Min(totalP - 1, curP + 1); i++)
+                                pages.Add(i);
+                            if (curP < totalP - 2) pages.Add(null); // ellipsis
+                            pages.Add(totalP);
+                        }
+                    }
+
+                    @foreach (var pg in pages)
+                    {
+                        if (pg == null)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link sv-page-btn" style="color:#94a3b8;">…</span>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item @(pg == curP ? "active" : "")">
+                                <a class="page-link sv-page-btn @(pg == curP ? "sv-page-active" : "")"
+                                   asp-action="Index" asp-route-page="@pg"
+                                   asp-route-tuKhoa="@ViewBag.TuKhoa"
+                                   asp-route-lopId="@ViewBag.LopId"
+                                   asp-route-trangThai="@ViewBag.TrangThai">@pg</a>
+                            </li>
+                        }
+                    }
+
+                    <!-- Nút Sau -->
+                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link sv-page-btn"
+                           asp-action="Index" asp-route-page="@(Model.Page + 1)"
+                           asp-route-tuKhoa="@ViewBag.TuKhoa"
+                           asp-route-lopId="@ViewBag.LopId"
+                           asp-route-trangThai="@ViewBag.TrangThai"
+                           aria-label="Trang sau">Sau &rsaquo;</a>
+                    </li>
+
+                </ul>
+            </nav>
+        }
+    </div>
 </div>
 
-<!-- Phân trang -->
-@if (Model.TotalPages > 1)
-{
-    <nav class="d-flex justify-content-center mt-3">
-        <ul class="pagination pagination-sm gap-1">
-            @for (var p = 1; p <= Model.TotalPages; p++)
-            {
-                <li class="page-item @(p == Model.Page ? "active" : "")">
-                    <a class="page-link rounded-2 @(p == Model.Page ? "bg-primary text-white border-0" : "")"
-                       style="@(p == Model.Page ? "background-color: #2563eb !important;" : "")"
-                       asp-action="Index"
-                       asp-route-page="@p"
-                       asp-route-tuKhoa="@ViewBag.TuKhoa"
-                       asp-route-lopId="@ViewBag.LopId"
-                       asp-route-trangThai="@ViewBag.TrangThai">@p</a>
-                </li>
-            }
-        </ul>
-    </nav>
+@section Scripts {
+<style>
+    /* Chấm trạng thái trong badge */
+    .badge-status-danghoc,
+    .badge-status-totnghiep,
+    .badge-status-baoluu,
+    .badge-status-dinhchi {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .sv-status-dot {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .badge-status-danghoc  .sv-status-dot { background: #16a34a; }
+    .badge-status-totnghiep .sv-status-dot { background: #7c3aed; }
+    .badge-status-baoluu   .sv-status-dot { background: #d97706; }
+    .badge-status-dinhchi  .sv-status-dot { background: #b91c1c; }
+
+    /* Nút phân trang */
+    .sv-page-btn {
+        min-width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #374151 !important;
+        font-size: .82rem;
+        font-weight: 600;
+        background: #fff;
+        padding: 0 8px;
+        transition: all .15s ease;
+    }
+    .sv-page-btn:hover    { background: #f1f5f9 !important; border-color: #cbd5e1 !important; }
+    .sv-page-active       { background: #2563eb !important; color: #fff !important; border-color: #2563eb !important; }
+    .page-item.disabled .sv-page-btn { color: #cbd5e1 !important; }
+
+    /* Đảm bảo font admin dùng Plus Jakarta Sans */
+    .admin-content { font-family: 'Plus Jakarta Sans', "Segoe UI", sans-serif; }
+</style>
 }
