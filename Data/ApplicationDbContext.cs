@@ -33,12 +33,13 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ThanhPhanDiem> ThanhPhanDiems => Set<ThanhPhanDiem>();
     public DbSet<DiemThanhPhan> DiemThanhPhans => Set<DiemThanhPhan>();
     public DbSet<KetQuaHocTap> KetQuaHocTaps => Set<KetQuaHocTap>();
+    public DbSet<ChuongTrinhHocBong> ChuongTrinhHocBongs => Set<ChuongTrinhHocBong>();
+    // Schema mở rộng (chưa kích hoạt nghiệp vụ):
     // public DbSet<BuoiDiemDanh> BuoiDiemDanhs => Set<BuoiDiemDanh>();
     // public DbSet<ChiTietHoaDonHocPhi> ChiTietHoaDonHocPhis => Set<ChiTietHoaDonHocPhi>();
     // public DbSet<HoaDonHocPhi> HoaDonHocPhis => Set<HoaDonHocPhi>();
     // public DbSet<ThanhToan> ThanhToans => Set<ThanhToan>();
     // public DbSet<BieuPhiHocPhi> BieuPhiHocPhis => Set<BieuPhiHocPhi>();
-    // public DbSet<ChuongTrinhHocBong> ChuongTrinhHocBongs => Set<ChuongTrinhHocBong>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -149,18 +150,29 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .Property(giangVien => giangVien.SoDienThoai)
             .HasMaxLength(30);
         modelBuilder.Entity<GiangVien>()
+            .Property(giangVien => giangVien.HinhAnh)
+            .HasMaxLength(500);
+        modelBuilder.Entity<GiangVien>()
             .HasIndex(giangVien => giangVien.MaGiangVien)
             .IsUnique();
         modelBuilder.Entity<GiangVien>()
             .HasIndex(giangVien => giangVien.UserId)
             .IsUnique()
             .HasFilter("[UserId] IS NOT NULL");
+        modelBuilder.Entity<GiangVien>()
+            .HasOne(giangVien => giangVien.DonVi)
+            .WithMany(donVi => donVi.GiangViens)
+            .HasForeignKey(giangVien => giangVien.DonViId)
+            .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<SinhVien>()
             .Property(sinhVien => sinhVien.NienKhoa)
             .HasMaxLength(50);
         modelBuilder.Entity<SinhVien>()
             .Property(sinhVien => sinhVien.TrangThai)
             .HasMaxLength(50);
+        modelBuilder.Entity<SinhVien>()
+            .Property(sinhVien => sinhVien.HinhAnh)
+            .HasMaxLength(500);
         modelBuilder.Entity<SinhVien>()
             .HasIndex(sinhVien => sinhVien.UserId)
             .IsUnique()
@@ -175,6 +187,53 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<MonHoc>()
             .Property(monHoc => monHoc.TenMon)
             .HasMaxLength(255);
+        modelBuilder.Entity<MonHoc>()
+            .HasOne(monHoc => monHoc.DonVi)
+            .WithMany(donVi => donVi.MonHocs)
+            .HasForeignKey(monHoc => monHoc.DonViId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DiemDanh>(entity =>
+        {
+            entity.ToTable("DiemDanhs");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TrangThai).HasMaxLength(50);
+            entity.Property(e => e.GhiChu).HasMaxLength(255);
+            entity.HasOne(e => e.SinhVien)
+                .WithMany(s => s.DiemDanhs)
+                .HasForeignKey(e => e.SinhVienId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Lop)
+                .WithMany()
+                .HasForeignKey(e => e.LopId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.MonHoc)
+                .WithMany()
+                .HasForeignKey(e => e.MonHocId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<LichGiangDay>(entity =>
+        {
+            entity.ToTable("LichGiangDays");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Thu).HasMaxLength(20);
+            entity.Property(e => e.PhongHoc).HasMaxLength(50);
+            entity.Property(e => e.GhiChu).HasMaxLength(255);
+            entity.Property(e => e.HocKy).HasMaxLength(100);
+            entity.HasOne(e => e.GiangVien)
+                .WithMany()
+                .HasForeignKey(e => e.GiangVienId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+            entity.HasOne(e => e.MonHoc)
+                .WithMany()
+                .HasForeignKey(e => e.MonHocId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Lop)
+                .WithMany()
+                .HasForeignKey(e => e.LopId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
         modelBuilder.Entity<Diem>()
             .HasIndex(diem => new { diem.SinhVienId, diem.MonHocId })
             .IsUnique();

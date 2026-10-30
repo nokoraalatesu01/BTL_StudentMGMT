@@ -169,10 +169,11 @@
                         : item.MaMon.StartsWith("ENG") ? "Bổ trợ"
                         : "Chuyên ngành";
 
-                    string khoaPhuTrach = item.MaMon.StartsWith("BUS") ? "Khoa Quản trị kinh doanh"
+                    string khoaPhuTrach = item.DonVi?.TenDonVi
+                        ?? (item.MaMon.StartsWith("BUS") ? "Khoa Quản trị kinh doanh"
                         : item.MaMon.StartsWith("INT") ? "Khoa Công nghệ Thông tin"
                         : item.MaMon.StartsWith("ENG") ? "Khoa Ngôn ngữ Anh"
-                        : "Khoa Kỹ thuật";
+                        : "Khoa Kỹ thuật");
 
                     <tr>
                         <!-- MÃ MÔN -->

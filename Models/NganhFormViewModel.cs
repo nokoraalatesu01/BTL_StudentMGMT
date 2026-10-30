@@ -21,6 +21,9 @@ public class NganhFormViewModel
     [Display(Name = "Khoa")]
     public string TenKhoa { get; set; } = "";
 
+    [Display(Name = "Đơn vị quản lý (Khoa)")]
+    public int? DonViId { get; set; }
+
     [Display(Name = "Đào tạo tích hợp Cử nhân - Kỹ sư")]
     public bool TichHopCuNhanKySu { get; set; }
 }

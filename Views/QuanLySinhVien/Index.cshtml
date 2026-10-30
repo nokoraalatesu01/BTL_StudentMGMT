@@ -147,10 +147,17 @@
                         <!-- AVATAR -->
                         <td>
                             <div class="avatar-online-box">
-                                <div class="avatar-round @colorClass"
-                                     style="font-size:.82rem; font-weight:700; font-style:normal;">
-                                    @initials
-                                </div>
+                                @if (!string.IsNullOrEmpty(s.HinhAnh))
+                                {
+                                    <img src="@s.HinhAnh" alt="@s.HoTen" class="avatar-round" style="width:36px; height:36px; border-radius:50%; object-fit:cover;" />
+                                }
+                                else
+                                {
+                                    <div class="avatar-round @colorClass"
+                                         style="font-size:.82rem; font-weight:700; font-style:normal;">
+                                        @initials
+                                    </div>
+                                }
                                 <span class="dot-online"></span>
                             </div>
                         </td>

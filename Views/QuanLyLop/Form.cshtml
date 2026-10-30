@@ -18,6 +18,13 @@
         <span asp-validation-for="NganhId" class="text-danger"></span>
     </div>
     <div class="col-12">
+        <label asp-for="ChuongTrinhDaoTaoId" class="form-label"></label>
+        <select asp-for="ChuongTrinhDaoTaoId" asp-items="ViewBag.DanhSachChuongTrinh" class="form-select">
+            <option value="">-- Chương trình chuẩn (Mặc định theo ngành) --</option>
+        </select>
+        <span asp-validation-for="ChuongTrinhDaoTaoId" class="text-danger"></span>
+    </div>
+    <div class="col-12">
         <label asp-for="TenLop" class="form-label"></label>
         <input asp-for="TenLop" class="form-control" />
         <span asp-validation-for="TenLop" class="text-danger"></span>

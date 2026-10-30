@@ -18,6 +18,7 @@ public class SinhVien
     public ApplicationUser? User { get; set; }
     public string? NienKhoa { get; set; }
     public string? TrangThai { get; set; }
+    public string? HinhAnh { get; set; }
     public List<Diem> Diems { get; set; } = new();
 
     // Bổ sung navigation từ schema mới (không ảnh hưởng code cũ)

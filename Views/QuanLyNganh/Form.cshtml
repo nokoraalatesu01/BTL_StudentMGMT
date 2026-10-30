@@ -17,7 +17,14 @@
         <span asp-validation-for="MaNganh" class="text-danger"></span>
     </div>
     <div class="col-md-6">
-        <label asp-for="TenKhoa" class="form-label">Khoa chuyên môn</label>
+        <label asp-for="DonViId" class="form-label">Đơn vị quản lý (Khoa chuẩn hóa)</label>
+        <select asp-for="DonViId" asp-items="ViewBag.DonViList" class="form-select">
+            <option value="">-- Chọn Đơn vị chuẩn hóa --</option>
+        </select>
+        <span asp-validation-for="DonViId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="TenKhoa" class="form-label">Khoa chuyên môn (Tên hiển thị)</label>
         <select asp-for="TenKhoa" class="form-select">
             <option value="">-- Chọn khoa --</option>
             @foreach (var faculty in NganhCatalog.Faculties)
@@ -27,7 +34,7 @@
         </select>
         <span asp-validation-for="TenKhoa" class="text-danger"></span>
     </div>
-    <div class="col-12">
+    <div class="col-md-6">
         <label asp-for="TenNganh" class="form-label"></label>
         <input asp-for="TenNganh" class="form-control" />
         <span asp-validation-for="TenNganh" class="text-danger"></span>

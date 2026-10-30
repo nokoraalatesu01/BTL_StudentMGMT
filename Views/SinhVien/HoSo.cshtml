@@ -15,12 +15,48 @@
     <a class="student-back-link" asp-action="Index"><i class="bi bi-arrow-left" aria-hidden="true"></i> Về tổng quan</a>
 </div>
 
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show rounded-3 mb-3 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-check-circle-fill"></i>
+        <div>@TempData["Success"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-3 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>@TempData["Error"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <section class="student-panel profile-panel">
     <div class="profile-banner">
-        <div class="student-avatar large" aria-hidden="true">@nameInitial</div>
+        <div class="student-avatar-wrapper position-relative">
+            @if (!string.IsNullOrEmpty(Model.HinhAnh))
+            {
+                <img src="@Model.HinhAnh" alt="@displayName" class="student-avatar large object-fit-cover shadow-sm" />
+            }
+            else
+            {
+                <div class="student-avatar large" aria-hidden="true">@nameInitial</div>
+            }
+            <form asp-action="CapNhatAnhDaiDien" method="post" enctype="multipart/form-data" id="avatarUploadForm" class="avatar-upload-form">
+                @Html.AntiForgeryToken()
+                <label for="fileAnhInput" class="avatar-change-btn" title="Thay đổi ảnh đại diện">
+                    <i class="bi bi-camera-fill"></i>
+                </label>
+                <input type="file" id="fileAnhInput" name="fileAnh" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="document.getElementById('avatarUploadForm').submit();" />
+            </form>
+        </div>
         <div>
             <h2>@displayName</h2>
             <p>Mã sinh viên: <strong>@Model.MaSinhVien</strong></p>
+            <label for="fileAnhInput" class="btn btn-sm btn-outline-primary mt-1" style="cursor:pointer; font-size:.78rem; font-weight:600; border-radius:6px;">
+                <i class="bi bi-upload"></i> Đổi ảnh thẻ / avatar
+            </label>
         </div>
     </div>
 

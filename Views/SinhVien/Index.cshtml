@@ -12,7 +12,14 @@
         <h1>Xin chào, @displayName</h1>
         <p>Đây là trang tổng quan hồ sơ học tập của bạn.</p>
     </div>
-    <div class="student-avatar" aria-hidden="true">@nameInitial</div>
+    @if (!string.IsNullOrEmpty(Model.HinhAnh))
+    {
+        <img src="@Model.HinhAnh" alt="@displayName" class="student-avatar object-fit-cover shadow-sm" />
+    }
+    else
+    {
+        <div class="student-avatar" aria-hidden="true">@nameInitial</div>
+    }
 </section>
 
 <section class="student-stat-grid" aria-label="Thông tin học tập">

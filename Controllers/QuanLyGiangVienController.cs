@@ -1,8 +1,10 @@
 using BTL_StudentMGMT.Data;
 using BTL_StudentMGMT.Models;
+using BTL_StudentMGMT.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 
@@ -14,17 +16,24 @@ public class QuanLyGiangVienController : Controller
     private const int PageSize = 10;
     private readonly ApplicationDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IFileUploadService _fileUploadService;
 
-    public QuanLyGiangVienController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
+    public QuanLyGiangVienController(ApplicationDbContext db, UserManager<ApplicationUser> userManager, IFileUploadService fileUploadService)
     {
         _db = db;
         _userManager = userManager;
+        _fileUploadService = fileUploadService;
     }
 
     public async Task<IActionResult> Index(string? tuKhoa, int page = 1)
     {
         page = Math.Max(1, page);
-        var query = _db.GiangViens.AsNoTracking().Include(item => item.User).AsQueryable();
+        var query = _db.GiangViens
+            .AsNoTracking()
+            .Include(item => item.User)
+            .Include(item => item.DonVi)
+            .AsQueryable();
+
         if (!string.IsNullOrWhiteSpace(tuKhoa))
         {
             var keyword = tuKhoa.Trim();
@@ -53,12 +62,17 @@ public class QuanLyGiangVienController : Controller
         var giangVien = await _db.GiangViens
             .AsNoTracking()
             .Include(item => item.User)
+            .Include(item => item.DonVi)
             .FirstOrDefaultAsync(item => item.Id == id);
         return giangVien == null ? NotFound() : View(giangVien);
     }
 
     [HttpGet]
-    public IActionResult Create() => View("Form", new GiangVienFormViewModel());
+    public async Task<IActionResult> Create()
+    {
+        await LoadDonViDropdownAsync();
+        return View("Form", new GiangVienFormViewModel());
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -69,7 +83,14 @@ public class QuanLyGiangVienController : Controller
 
         if (!ModelState.IsValid)
         {
+            await LoadDonViDropdownAsync(model.DonViId);
             return View("Form", model);
+        }
+
+        string? avatarPath = null;
+        if (model.FileAnh != null && model.FileAnh.Length > 0)
+        {
+            avatarPath = await _fileUploadService.UploadAvatarAsync(model.FileAnh);
         }
 
         _db.GiangViens.Add(new GiangVien
@@ -77,7 +98,9 @@ public class QuanLyGiangVienController : Controller
             MaGiangVien = model.MaGiangVien,
             HoTen = model.HoTen,
             Email = model.Email,
-            SoDienThoai = model.SoDienThoai
+            SoDienThoai = model.SoDienThoai,
+            DonViId = model.DonViId,
+            HinhAnh = avatarPath
         });
 
         try
@@ -87,6 +110,7 @@ public class QuanLyGiangVienController : Controller
         catch (DbUpdateException exception) when (IsUniqueViolation(exception))
         {
             ModelState.AddModelError(nameof(model.MaGiangVien), "Mã giảng viên đã tồn tại.");
+            await LoadDonViDropdownAsync(model.DonViId);
             return View("Form", model);
         }
 
@@ -103,13 +127,16 @@ public class QuanLyGiangVienController : Controller
             return NotFound();
         }
 
+        await LoadDonViDropdownAsync(giangVien.DonViId);
         return View("Form", new GiangVienFormViewModel
         {
             Id = giangVien.Id,
             MaGiangVien = giangVien.MaGiangVien,
             HoTen = giangVien.HoTen,
             Email = giangVien.Email,
-            SoDienThoai = giangVien.SoDienThoai
+            SoDienThoai = giangVien.SoDienThoai,
+            DonViId = giangVien.DonViId,
+            HinhAnh = giangVien.HinhAnh
         });
     }
 
@@ -132,13 +159,24 @@ public class QuanLyGiangVienController : Controller
         await ValidateCodeAsync(model.MaGiangVien, id);
         if (!ModelState.IsValid)
         {
+            await LoadDonViDropdownAsync(model.DonViId);
             return View("Form", model);
+        }
+
+        if (model.FileAnh != null && model.FileAnh.Length > 0)
+        {
+            var avatarPath = await _fileUploadService.UploadAvatarAsync(model.FileAnh, giangVien.HinhAnh);
+            if (!string.IsNullOrEmpty(avatarPath))
+            {
+                giangVien.HinhAnh = avatarPath;
+            }
         }
 
         giangVien.MaGiangVien = model.MaGiangVien;
         giangVien.HoTen = model.HoTen;
         giangVien.Email = model.Email;
         giangVien.SoDienThoai = model.SoDienThoai;
+        giangVien.DonViId = model.DonViId;
 
         try
         {
@@ -147,10 +185,11 @@ public class QuanLyGiangVienController : Controller
         catch (DbUpdateException exception) when (IsUniqueViolation(exception))
         {
             ModelState.AddModelError(nameof(model.MaGiangVien), "Mã giảng viên đã tồn tại.");
+            await LoadDonViDropdownAsync(model.DonViId);
             return View("Form", model);
         }
 
-        TempData["Msg"] = "Đã cập nhật giảng viên.";
+        TempData["Msg"] = "Đã cập nhật thông tin giảng viên.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -158,59 +197,54 @@ public class QuanLyGiangVienController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
-        var giangVien = await _db.GiangViens.FirstOrDefaultAsync(item => item.Id == id);
+        var giangVien = await _db.GiangViens.FindAsync(id);
         if (giangVien == null)
         {
             return NotFound();
         }
 
-        if (giangVien.UserId == _userManager.GetUserId(User))
-        {
-            TempData["Error"] = "Không thể xóa hồ sơ đang gắn với tài khoản Admin hiện tại.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        await using var transaction = await _db.Database.BeginTransactionAsync();
         _db.GiangViens.Remove(giangVien);
+        _fileUploadService.DeleteFile(giangVien.HinhAnh);
         await _db.SaveChangesAsync();
-
-        if (giangVien.UserId != null)
-        {
-            var user = await _userManager.FindByIdAsync(giangVien.UserId);
-            if (user != null)
-            {
-                var deleteResult = await _userManager.DeleteAsync(user);
-                if (!deleteResult.Succeeded)
-                {
-                    await transaction.RollbackAsync();
-                    TempData["Error"] = $"Không thể xóa tài khoản giảng viên: {string.Join("; ", deleteResult.Errors.Select(error => error.Description))}";
-                    return RedirectToAction(nameof(Index));
-                }
-            }
-        }
-
-        await transaction.CommitAsync();
-        TempData["Msg"] = "Đã xóa hồ sơ giảng viên và tài khoản liên kết (nếu có).";
+        TempData["Msg"] = "Đã xóa giảng viên.";
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task ValidateCodeAsync(string code, int? exceptId = null)
+    private static void Normalize(GiangVienFormViewModel model)
     {
-        if (await _db.GiangViens.AnyAsync(item =>
-                item.MaGiangVien == code && (!exceptId.HasValue || item.Id != exceptId.Value)))
+        model.MaGiangVien = (model.MaGiangVien ?? "").Trim();
+        model.HoTen = (model.HoTen ?? "").Trim();
+        model.Email = string.IsNullOrWhiteSpace(model.Email) ? null : model.Email.Trim();
+        model.SoDienThoai = string.IsNullOrWhiteSpace(model.SoDienThoai) ? null : model.SoDienThoai.Trim();
+    }
+
+    private async Task ValidateCodeAsync(string maGiangVien, int? currentId = null)
+    {
+        if (string.IsNullOrWhiteSpace(maGiangVien))
+        {
+            return;
+        }
+
+        var query = _db.GiangViens.AsNoTracking().Where(item => item.MaGiangVien == maGiangVien);
+        if (currentId.HasValue)
+        {
+            query = query.Where(item => item.Id != currentId.Value);
+        }
+
+        if (await query.AnyAsync())
         {
             ModelState.AddModelError(nameof(GiangVienFormViewModel.MaGiangVien), "Mã giảng viên đã tồn tại.");
         }
     }
 
-    private static void Normalize(GiangVienFormViewModel model)
+    private async Task LoadDonViDropdownAsync(int? selectedId = null)
     {
-        model.MaGiangVien = model.MaGiangVien.Trim();
-        model.HoTen = model.HoTen.Trim();
-        model.Email = string.IsNullOrWhiteSpace(model.Email) ? null : model.Email.Trim();
-        model.SoDienThoai = string.IsNullOrWhiteSpace(model.SoDienThoai) ? null : model.SoDienThoai.Trim();
+        var units = await _db.DonVis.AsNoTracking().Where(d => d.TrangThai == "ACTIVE").OrderBy(d => d.TenDonVi).ToListAsync();
+        ViewBag.DonViList = new SelectList(units, nameof(DonVi.DonViId), nameof(DonVi.TenDonVi), selectedId);
     }
 
-    private static bool IsUniqueViolation(DbUpdateException exception) =>
-        exception.InnerException is SqlException { Number: 2601 or 2627 };
+    private static bool IsUniqueViolation(DbUpdateException exception)
+    {
+        return exception.InnerException is SqlException sqlException && (sqlException.Number == 2601 || sqlException.Number == 2627);
+    }
 }
