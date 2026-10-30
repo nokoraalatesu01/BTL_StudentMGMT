@@ -26,24 +26,24 @@
 <!-- 3 Thẻ thống kê đồng bộ giao diện sinh viên -->
 <section class="student-stat-grid" aria-label="Thống kê đào tạo">
     <article class="student-stat-card">
-        <span class="student-stat-icon student-icon-blue" aria-hidden="true">SV</span>
+        <span class="student-stat-icon student-icon-blue" aria-hidden="true"><i class="bi bi-people"></i></span>
         <div>
             <p>Tổng số sinh viên</p>
-            <strong>@ViewBag.TongSoSinhVien sinh viên</strong>
+            <strong><span data-count="@ViewBag.TongSoSinhVien">@ViewBag.TongSoSinhVien</span> sinh viên</strong>
         </div>
     </article>
     <article class="student-stat-card">
-        <span class="student-stat-icon student-icon-green" aria-hidden="true">L</span>
+        <span class="student-stat-icon student-icon-green" aria-hidden="true"><i class="bi bi-collection"></i></span>
         <div>
             <p>Tổng số lớp học</p>
-            <strong>@ViewBag.TongSoLop lớp hành chính</strong>
+            <strong><span data-count="@ViewBag.TongSoLop">@ViewBag.TongSoLop</span> lớp hành chính</strong>
         </div>
     </article>
     <article class="student-stat-card">
-        <span class="student-stat-icon student-icon-violet" aria-hidden="true">N</span>
+        <span class="student-stat-icon student-icon-violet" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
         <div>
             <p>Ngành đào tạo</p>
-            <strong>@ViewBag.TongSoNganh ngành học</strong>
+            <strong><span data-count="@ViewBag.TongSoNganh">@ViewBag.TongSoNganh</span> ngành học</strong>
         </div>
     </article>
 </section>
@@ -57,7 +57,7 @@
                 <p class="student-eyebrow">HỒ SƠ CÁ NHÂN</p>
                 <h2>Thông tin của tôi</h2>
             </div>
-            <a class="student-text-link" asp-action="CapNhatThongTin">Cập nhật <span aria-hidden="true">→</span></a>
+            <a class="student-text-link" asp-action="CapNhatThongTin">Cập nhật <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
         </div>
 
         <dl class="student-info-list">
@@ -87,53 +87,53 @@
                 <p class="student-eyebrow">TÁC VỤ ĐÀO TẠO</p>
                 <h2>Quản lý & Giảng dạy</h2>
             </div>
-            <span class="student-cap-icon" aria-hidden="true">✦</span>
+            <span class="student-cap-icon" aria-hidden="true"><i class="bi bi-lightning-charge"></i></span>
         </div>
 
         <div class="gv-action-list">
             <a class="gv-action-row" asp-action="DanhSachSinhVien">
-                <div class="gv-action-icon gv-icon-blue">👥</div>
+                <div class="gv-action-icon gv-icon-blue"><i class="bi bi-people"></i></div>
                 <div class="gv-action-info">
                     <strong>Danh sách sinh viên</strong>
                     <span>Tra cứu, tìm kiếm và lọc hồ sơ theo từng lớp học</span>
                 </div>
-                <span class="gv-action-arrow">→</span>
+                <i class="bi bi-arrow-right gv-action-arrow" aria-hidden="true"></i>
             </a>
 
             <a class="gv-action-row" asp-controller="BangDiem" asp-action="Index">
-                <div class="gv-action-icon gv-icon-green">✦</div>
+                <div class="gv-action-icon gv-icon-green"><i class="bi bi-journal-text"></i></div>
                 <div class="gv-action-info">
                     <strong>Bảng điểm sinh viên</strong>
                     <span>Xem tổng hợp kết quả học phần, chuyên cần, giữa kỳ, GPA</span>
                 </div>
-                <span class="gv-action-arrow">→</span>
+                <i class="bi bi-arrow-right gv-action-arrow" aria-hidden="true"></i>
             </a>
 
             <a class="gv-action-row" asp-controller="BangDiem" asp-action="NhapDiem">
-                <div class="gv-action-icon gv-icon-violet">✎</div>
+                <div class="gv-action-icon gv-icon-violet"><i class="bi bi-pencil-square"></i></div>
                 <div class="gv-action-info">
                     <strong>Nhập bảng điểm học phần</strong>
                     <span>Ghi nhận điểm thi, chuyên cần theo môn học cho sinh viên</span>
                 </div>
-                <span class="gv-action-arrow">→</span>
+                <i class="bi bi-arrow-right gv-action-arrow" aria-hidden="true"></i>
             </a>
 
             <a class="gv-action-row" asp-action="LichGiangDay">
-                <div class="gv-action-icon gv-icon-amber">📅</div>
+                <div class="gv-action-icon gv-icon-amber"><i class="bi bi-calendar3"></i></div>
                 <div class="gv-action-info">
                     <strong>Lịch giảng dạy & Thời khóa biểu</strong>
                     <span>Xem thời khóa biểu các ca học trong tuần, phòng máy và lớp dạy</span>
                 </div>
-                <span class="gv-action-arrow">→</span>
+                <i class="bi bi-arrow-right gv-action-arrow" aria-hidden="true"></i>
             </a>
 
             <a class="gv-action-row" asp-action="DiemDanh">
-                <div class="gv-action-icon gv-icon-blue">✓</div>
+                <div class="gv-action-icon gv-icon-blue"><i class="bi bi-clipboard-check"></i></div>
                 <div class="gv-action-info">
                     <strong>Điểm danh sinh viên theo buổi</strong>
                     <span>Ghi nhận sĩ số, sinh viên vắng mặt, có phép theo từng buổi học</span>
                 </div>
-                <span class="gv-action-arrow">→</span>
+                <i class="bi bi-arrow-right gv-action-arrow" aria-hidden="true"></i>
             </a>
         </div>
     </section>

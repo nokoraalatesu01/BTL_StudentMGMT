@@ -11,26 +11,26 @@
         <h1>Bảng điểm của tôi</h1>
         <p>Điểm các học phần đã được ghi nhận, GPA được tính tự động theo số tín chỉ.</p>
     </div>
-    <a class="student-back-link" asp-action="Index">← Về tổng quan</a>
+    <a class="student-back-link" asp-action="Index"><i class="bi bi-arrow-left" aria-hidden="true"></i> Về tổng quan</a>
 </div>
 
 <section class="student-stat-grid" aria-label="Tóm tắt kết quả học tập">
     <article class="student-stat-card">
-        <span class="student-stat-icon student-icon-blue" aria-hidden="true">G</span>
+        <span class="student-stat-icon student-icon-blue" aria-hidden="true"><i class="bi bi-graph-up-arrow"></i></span>
         <div>
             <p>GPA (Hệ 10)</p>
             <strong>@(Model.Gpa.HasValue ? Model.Gpa.Value.ToString("0.00") : "Chưa có điểm")</strong>
         </div>
     </article>
     <article class="student-stat-card">
-        <span class="student-stat-icon student-icon-green" aria-hidden="true">X</span>
+        <span class="student-stat-icon student-icon-green" aria-hidden="true"><i class="bi bi-trophy"></i></span>
         <div>
             <p>Xếp loại</p>
             <strong>@(Model.XepLoai ?? "Chưa xếp loại")</strong>
         </div>
     </article>
     <article class="student-stat-card">
-        <span class="student-stat-icon student-icon-violet" aria-hidden="true">M</span>
+        <span class="student-stat-icon student-icon-violet" aria-hidden="true"><i class="bi bi-journal-check"></i></span>
         <div>
             <p>Học phần đã đạt</p>
             <strong>@Model.SoMonDaDat/@Model.SoMon học phần</strong>
@@ -78,13 +78,13 @@
                         {
                             var isPass = diem.DiemTongKet >= 4.0;
                             <tr>
-                                <td><strong style="color: #176da3;">@diem.MonHoc?.MaMon</strong></td>
+                                <td><strong style="color: var(--blue-600);">@diem.MonHoc?.MaMon</strong></td>
                                 <td>@diem.MonHoc?.TenMon</td>
                                 <td class="text-center">@(diem.MonHoc?.SoTinChi ?? 0)</td>
                                 <td class="text-center">@diem.DiemChuyenCan.ToString("0.0")</td>
                                 <td class="text-center">@diem.DiemGiuaKy.ToString("0.0")</td>
                                 <td class="text-center">@diem.DiemCuoiKy.ToString("0.0")</td>
-                                <td class="text-center"><strong style="color: #176da3;">@diem.DiemTongKet.ToString("0.0")</strong></td>
+                                <td class="text-center"><strong style="color: var(--blue-600);">@diem.DiemTongKet.ToString("0.0")</strong></td>
                                 <td class="text-center">@diem.DiemChu</td>
                                 <td class="text-center">
                                     @if (isPass)
@@ -110,7 +110,7 @@
                 <p class="student-eyebrow">THÔNG TIN HỌC TẬP</p>
                 <h2>Lớp và ngành</h2>
             </div>
-            <span class="student-cap-icon" aria-hidden="true">✦</span>
+            <span class="student-cap-icon" aria-hidden="true"><i class="bi bi-mortarboard"></i></span>
         </div>
 
         <dl class="student-info-list compact">

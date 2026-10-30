@@ -11,7 +11,7 @@
         <h1>Danh sách sinh viên</h1>
         <p>Theo dõi thông tin sinh viên, kết quả học tập và thông tin các lớp học.</p>
     </div>
-    <a class="student-back-link" asp-action="Index">← Về tổng quan</a>
+    <a class="student-back-link" asp-action="Index"><i class="bi bi-arrow-left" aria-hidden="true"></i> Về tổng quan</a>
 </div>
 
 <!-- Bộ lọc tìm kiếm đặt gọn trong student-panel -->
@@ -32,7 +32,7 @@
             <button type="submit" class="gv-btn gv-btn-primary">
                 <i class="bi bi-funnel"></i> Lọc
             </button>
-            <a asp-controller="QuanLySinhVien" asp-action="Create" class="gv-btn gv-btn-primary text-nowrap" style="background: #176da3 !important;">
+            <a asp-controller="QuanLySinhVien" asp-action="Create" class="gv-btn gv-btn-primary text-nowrap" style="background: var(--blue-600) !important;">
                 <i class="bi bi-plus-lg"></i> Thêm mới
             </a>
             <a asp-action="DanhSachSinhVien" class="gv-btn gv-btn-secondary" title="Đặt lại bộ lọc">
@@ -92,7 +92,7 @@
                             <div class="gv-table-avatar">@initial</div>
                         </td>
                         <td>
-                            <strong style="color: #176da3;">@s.MaSinhVien</strong>
+                            <strong style="color: var(--blue-600);">@s.MaSinhVien</strong>
                         </td>
                         <td>
                             <div style="font-weight: 600; color: #1b2e45;">@s.HoTen</div>
@@ -115,7 +115,7 @@
                             }
                             else
                             {
-                                <strong style="color: #176da3; font-size: .95rem;">@gpa.Value.ToString("0.00")</strong>
+                                <strong style="color: var(--blue-600); font-size: .95rem;">@gpa.Value.ToString("0.00")</strong>
                             }
                         </td>
                         <td>

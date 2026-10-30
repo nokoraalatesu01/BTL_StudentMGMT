@@ -11,15 +11,15 @@
         <h1>Lịch giảng dạy & Thời khóa biểu</h1>
         <p>Theo dõi thời khóa biểu các ca giảng dạy trong tuần, phòng máy và lớp học phụ trách.</p>
     </div>
-    <a class="student-back-link" asp-action="Index">← Về tổng quan</a>
+    <a class="student-back-link" asp-action="Index"><i class="bi bi-arrow-left" aria-hidden="true"></i> Về tổng quan</a>
 </div>
 
 <!-- Header thông tin học kỳ -->
 <div class="student-panel p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div class="d-flex align-items-center gap-3">
-        <span class="gv-action-icon gv-icon-blue" style="width: 44px; height: 44px;">📅</span>
+        <span class="gv-action-icon gv-icon-blue" style="width: 44px; height: 44px;"><i class="bi bi-calendar3"></i></span>
         <div>
-            <strong style="color: #176da3; font-size: 1rem;">Thời khóa biểu giảng dạy tuần</strong>
+            <strong style="color: var(--blue-600); font-size: 1rem;">Thời khóa biểu giảng dạy tuần</strong>
             <span style="font-size: .8rem; color: #7a899a; display: block;">Học kỳ 1 (Năm học 2026 - 2027) • Giảng viên: @(gv?.HoTen ?? "PGS.TS. Trần Đình Khang")</span>
         </div>
     </div>
@@ -74,7 +74,7 @@
                                 @l.Lop?.TenLop
                             </span>
                         </td>
-                        <td style="text-align: center; font-weight: 700; color: #176da3;">
+                        <td style="text-align: center; font-weight: 700; color: var(--blue-600);">
                             Tiết @l.TietBatDau - @tietKetThuc
                         </td>
                         <td style="text-align: center;">

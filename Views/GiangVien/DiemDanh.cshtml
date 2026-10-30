@@ -10,7 +10,7 @@
         <h1>Điểm danh sinh viên theo buổi học</h1>
         <p>Ghi nhận chuyên cần, vắng mặt hoặc nghỉ có phép của sinh viên theo từng lớp và môn học.</p>
     </div>
-    <a class="student-back-link" asp-action="Index">← Về tổng quan</a>
+    <a class="student-back-link" asp-action="Index"><i class="bi bi-arrow-left" aria-hidden="true"></i> Về tổng quan</a>
 </div>
 
 @if (TempData["Msg"] != null)
@@ -83,7 +83,7 @@
                             <tr>
                                 <td>@(i + 1)</td>
                                 <td>
-                                    <strong style="color: #176da3;">@sv.MaSinhVien</strong>
+                                    <strong style="color: var(--blue-600);">@sv.MaSinhVien</strong>
                                     <input type="hidden" name="DanhSachSinhVien[@i].SinhVienId" value="@sv.SinhVienId" />
                                     <input type="hidden" name="DanhSachSinhVien[@i].MaSinhVien" value="@sv.MaSinhVien" />
                                     <input type="hidden" name="DanhSachSinhVien[@i].HoTen" value="@sv.HoTen" />

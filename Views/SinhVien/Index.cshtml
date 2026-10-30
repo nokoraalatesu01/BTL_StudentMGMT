@@ -17,28 +17,28 @@
 
 <section class="student-stat-grid" aria-label="Thông tin học tập">
     <article class="student-stat-card">
-        <span class="student-stat-icon student-icon-blue" aria-hidden="true">SV</span>
+        <span class="student-stat-icon student-icon-blue" aria-hidden="true"><i class="bi bi-person-badge"></i></span>
         <div>
             <p>Mã sinh viên</p>
             <strong>@Model.MaSinhVien</strong>
         </div>
     </article>
     <article class="student-stat-card">
-        <span class="student-stat-icon student-icon-green" aria-hidden="true">L</span>
+        <span class="student-stat-icon student-icon-green" aria-hidden="true"><i class="bi bi-collection"></i></span>
         <div>
             <p>Lớp hành chính</p>
             <strong>@(Model.TenLop ?? "Chưa xếp lớp")</strong>
         </div>
     </article>
     <article class="student-stat-card">
-        <span class="student-stat-icon student-icon-violet" aria-hidden="true">N</span>
+        <span class="student-stat-icon student-icon-violet" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
         <div>
             <p>Ngành đào tạo</p>
             <strong>@(Model.TenNganh ?? "Chưa xác định")</strong>
         </div>
     </article>
     <article class="student-stat-card">
-        <span class="student-stat-icon student-icon-green" aria-hidden="true">G</span>
+        <span class="student-stat-icon student-icon-amber" aria-hidden="true"><i class="bi bi-graph-up-arrow"></i></span>
         <div>
             <p>GPA (Hệ 10)</p>
             <strong>@(Model.Gpa.HasValue ? Model.Gpa.Value.ToString("0.00") : "Chưa có điểm")</strong>
@@ -53,7 +53,7 @@
                 <p class="student-eyebrow">HỒ SƠ CÁ NHÂN</p>
                 <h2>Thông tin của tôi</h2>
             </div>
-            <a class="student-text-link" asp-action="HoSo">Xem đầy đủ <span aria-hidden="true">→</span></a>
+            <a class="student-text-link" asp-action="HoSo">Xem đầy đủ <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
         </div>
 
         <dl class="student-info-list">
@@ -90,7 +90,7 @@
                 <p class="student-eyebrow">THÔNG TIN ĐÀO TẠO</p>
                 <h2>Lớp và ngành</h2>
             </div>
-            <a class="student-text-link" asp-action="BangDiem">Xem bảng điểm <span aria-hidden="true">→</span></a>
+            <a class="student-text-link" asp-action="BangDiem">Xem bảng điểm <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
         </div>
 
         @if (Model.TenLop == null)

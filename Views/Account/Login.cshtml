@@ -8,8 +8,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#123b72" />
+    <meta name="theme-color" content="#0f2c4c" />
     <title>Đăng nhập - Hệ thống quản lý sinh viên</title>
+    <link rel="stylesheet" href="~/css/fonts.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
 </head>
 <body>
@@ -22,7 +23,7 @@
 
             <div class="welcome-copy">
                 <p class="eyebrow">HỆ THỐNG QUẢN LÝ SINH VIÊN</p>
-                <h1 id="welcome-title">Chào mừng bạn<br />trở lại.</h1>
+                <h1 id="welcome-title"><span class="line"><span>Chào mừng bạn</span></span><span class="line"><span>trở lại.</span></span></h1>
                 <p class="welcome-description">
                     Đăng nhập bằng tài khoản được cấp để tiếp tục vào hệ thống.
                 </p>
@@ -115,16 +116,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        const passwordInput = document.getElementById("Password");
-        const passwordToggle = document.querySelector(".password-toggle");
-
-        passwordToggle.addEventListener("click", () => {
-            const isVisible = passwordInput.type === "text";
-            passwordInput.type = isVisible ? "password" : "text";
-            passwordToggle.setAttribute("aria-pressed", String(!isVisible));
-            passwordToggle.setAttribute("aria-label", isVisible ? "Hiện mật khẩu" : "Ẩn mật khẩu");
-        });
-    </script>
+    <script src="~/lib/gsap/gsap.min.js"></script>
+    <script src="~/js/login.js" asp-append-version="true"></script>
 </body>
 </html>
