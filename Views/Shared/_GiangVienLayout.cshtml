@@ -15,14 +15,28 @@
     <link rel="stylesheet" href="~/css/sinhvien.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/portal-ui.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/giangvien.css" asp-append-version="true" />
+    <script>
+        (function() {
+            try {
+                if (window.innerWidth > 768 && localStorage.getItem('portal_sidebar_collapsed') === 'true') {
+                    document.documentElement.classList.add('sidebar-collapsed');
+                }
+            } catch(e) {}
+        })();
+    </script>
 </head>
 <body class="student-body">
     <div class="student-app">
         <aside class="student-sidebar" id="portal-sidebar">
-            <a class="student-brand" asp-controller="GiangVien" asp-action="Index">
-                <span class="student-brand-mark" aria-hidden="true">GV</span>
-                <span>CỔNG GIẢNG VIÊN</span>
-            </a>
+            <div class="student-sidebar-header">
+                <a class="student-brand" asp-controller="GiangVien" asp-action="Index">
+                    <span class="student-brand-mark" aria-hidden="true">GV</span>
+                    <span class="student-brand-text">CỔNG GIẢNG VIÊN</span>
+                </a>
+                <button class="sidebar-toggle sidebar-toggle-inside" type="button" aria-label="Thu gọn thanh điều hướng" title="Thu gọn thanh điều hướng">
+                    <i class="bi bi-list" aria-hidden="true"></i>
+                </button>
+            </div>
 
             <p class="student-nav-label">KHÔNG GIAN CỦA BẠN</p>
             <nav class="student-nav" aria-label="Điều hướng giảng viên">
@@ -81,7 +95,7 @@
         <div class="student-main">
             <header class="student-topbar">
                 <div class="topbar-lead">
-                    <button class="sidebar-toggle" type="button" aria-label="Mở menu" aria-controls="portal-sidebar" aria-expanded="false">
+                    <button class="sidebar-toggle sidebar-toggle-topbar" type="button" aria-label="Mở thanh điều hướng" aria-controls="portal-sidebar" aria-expanded="false" title="Mở thanh điều hướng">
                         <i class="bi bi-list" aria-hidden="true"></i>
                     </button>
                     <span class="topbar-title">Cổng thông tin giảng viên</span>
