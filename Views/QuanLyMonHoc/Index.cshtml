@@ -1,89 +1,318 @@
 @model BTL_StudentMGMT.Models.PagedResult<BTL_StudentMGMT.Models.MonHoc>
 @{
     ViewData["Title"] = "Quản lý môn học";
+
+    int startRecord = (Model.Page - 1) * Model.PageSize + 1;
+    int endRecord   = Math.Min(Model.Page * Model.PageSize, Model.TotalItems);
 }
 
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+<!-- ===== HEADER ===== -->
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
     <div>
-        <h2 class="mb-1">Quản lý môn học</h2>
-        <p class="text-muted mb-0">Danh mục môn học và số tín chỉ.</p>
+        <!-- Breadcrumb -->
+        <p class="mb-1" style="font-size:.8rem; color:#64748b;">
+            <span style="color:#94a3b8;">Đào tạo</span>
+            <span style="color:#cbd5e1; margin:0 5px;">/</span>
+            <span style="color:#6366f1; font-weight:700; text-transform:uppercase; font-size:.72rem; letter-spacing:.06em;">CHƯƠNG TRÌNH HỌC</span>
+        </p>
+        <h3 class="fw-bold mb-1" style="color:#0f172a; font-size:1.55rem; letter-spacing:-.02em;">
+            Quản lý môn học
+        </h3>
+        <p class="mb-0" style="font-size:.875rem; color:#64748b;">
+            Danh mục học phần, khối lượng tín chỉ và đơn vị phụ trách đào tạo.
+        </p>
     </div>
-    <a asp-action="Create" class="btn btn-primary">Thêm môn học</a>
+    <div class="d-flex gap-2 flex-shrink-0">
+        <button type="button" class="btn d-inline-flex align-items-center gap-2"
+                style="border:1px solid #d1d5db; background:#fff; color:#374151; font-size:.875rem; font-weight:600; height:40px; border-radius:8px; padding:0 16px;">
+            <i class="bi bi-download" style="font-size:.85rem;"></i> Xuất Excel
+        </button>
+        <a asp-action="Create"
+           class="btn d-inline-flex align-items-center gap-2 text-white"
+           style="background:#2563eb; border:none; font-size:.875rem; font-weight:600; height:40px; border-radius:8px; padding:0 18px;">
+            <i class="bi bi-plus-lg" style="font-size:.9rem;"></i> Thêm môn học
+        </a>
+    </div>
 </div>
 
 @if (TempData["Msg"] is string message)
 {
-    <div class="alert alert-success">@message</div>
+    <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i><div>@message</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
 }
 @if (TempData["Error"] is string error)
 {
-    <div class="alert alert-danger">@error</div>
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-circle-fill"></i><div>@error</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
 }
 
-<div class="stat-card">
-    <form asp-action="Index" method="get" class="row g-2 align-items-end mb-3">
-        <div class="col-md-6">
-            <label for="tuKhoa" class="form-label">Tìm theo mã hoặc tên môn</label>
-            <input id="tuKhoa" name="tuKhoa" value="@ViewBag.TuKhoa" class="form-control" />
+<!-- ===== STAT CARDS ===== -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="content-card p-3 h-100">
+            <p style="font-size:.72rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">TỔNG MÔN HỌC</p>
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@Model.TotalItems</div>
+                    <div style="font-size:.78rem; color:#64748b; margin-top:2px;">Toàn hệ đại học</div>
+                </div>
+                <div style="width:44px; height:44px; border-radius:10px; background:#eff6ff; display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:1.2rem;">
+                    <i class="bi bi-book"></i>
+                </div>
+            </div>
         </div>
-        <div class="col-auto">
-            <button class="btn btn-outline-primary" type="submit">Tìm kiếm</button>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="content-card p-3 h-100">
+            <p style="font-size:.72rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">MÔN CƠ SỞ NGÀNH</p>
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">
+                        @Model.Items.Count(m => m.MaMon.StartsWith("BUS") || m.MaMon.StartsWith("INT") && m.SoTinChi == 3)
+                    </div>
+                    <div style="font-size:.78rem; color:#64748b; margin-top:2px;">Chiếm ~42.8%</div>
+                </div>
+                <div style="width:44px; height:44px; border-radius:10px; background:#ede9fe; display:flex; align-items:center; justify-content:center; color:#7c3aed; font-size:1.2rem;">
+                    <i class="bi bi-layers"></i>
+                </div>
+            </div>
         </div>
-        <div class="col-auto">
-            <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="content-card p-3 h-100">
+            <p style="font-size:.72rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">MÔN CHUYÊN NGÀNH</p>
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">
+                        @Model.Items.Count(m => m.SoTinChi >= 4)
+                    </div>
+                    <div style="font-size:.78rem; color:#64748b; margin-top:2px;">Bao gồm đồ án</div>
+                </div>
+                <div style="width:44px; height:44px; border-radius:10px; background:#dcfce7; display:flex; align-items:center; justify-content:center; color:#16a34a; font-size:1.2rem;">
+                    <i class="bi bi-mortarboard"></i>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="content-card p-3 h-100">
+            <p style="font-size:.72rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">ĐẠI CƯƠNG & NGOẠI NGỮ</p>
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">
+                        @Model.Items.Count(m => m.MaMon.StartsWith("ENG") || m.MaMon.StartsWith("GEN"))
+                    </div>
+                    <div style="font-size:.78rem; color:#64748b; margin-top:2px;">Bắt buộc</div>
+                </div>
+                <div style="width:44px; height:44px; border-radius:10px; background:#fef3c7; display:flex; align-items:center; justify-content:center; color:#d97706; font-size:1.2rem;">
+                    <i class="bi bi-globe"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- ===== BỘ TÌM KIẾM ===== -->
+<div class="content-card p-3 mb-3">
+    <p style="font-size:.82rem; font-weight:600; color:#374151; margin-bottom:8px;">
+        Tìm theo mã hoặc tên môn
+    </p>
+    <form asp-action="Index" method="get" class="d-flex gap-2 align-items-center">
+        <div class="input-group" style="flex:1; max-width:540px;">
+            <span class="input-group-text bg-white border-end-0 pe-1 text-muted" style="border-color:#d1d5db;">
+                <i class="bi bi-search" style="font-size:.85rem;"></i>
+            </span>
+            <input id="tuKhoa" name="tuKhoa" value="@ViewBag.TuKhoa"
+                   class="form-control border-start-0 ps-1"
+                   style="border-color:#d1d5db; font-size:.875rem;"
+                   placeholder="Nhập mã môn (ví dụ INT201) hoặc tên môn học..." />
+        </div>
+        <button type="submit" class="btn d-inline-flex align-items-center gap-2"
+                style="background:#2563eb; color:#fff; border:none; font-size:.875rem; font-weight:600; height:38px; border-radius:8px; padding:0 18px;">
+            <i class="bi bi-funnel" style="font-size:.82rem;"></i> Tìm kiếm
+        </button>
+        <a asp-action="Index" class="btn d-inline-flex align-items-center gap-2"
+           style="border:1px solid #d1d5db; background:#fff; color:#374151; font-size:.875rem; font-weight:600; height:38px; border-radius:8px; padding:0 14px;">
+            <i class="bi bi-arrow-counterclockwise" style="font-size:.85rem;"></i> Xóa lọc
+        </a>
+    </form>
+</div>
+
+<!-- ===== BẢNG MÔN HỌC ===== -->
+<div class="custom-table-container">
     <div class="table-responsive">
-        <table class="table table-hover align-middle">
+        <table class="custom-table">
             <thead>
                 <tr>
-                    <th>Mã môn</th>
-                    <th>Tên môn học</th>
-                    <th class="text-center">Số tín chỉ</th>
-                    <th class="text-end">Thao tác</th>
+                    <th style="width:130px;">
+                        MÃ MÔN <i class="bi bi-chevron-expand ms-1" style="font-size:.6rem; color:#94a3b8;"></i>
+                    </th>
+                    <th>
+                        TÊN MÔN HỌC <i class="bi bi-chevron-expand ms-1" style="font-size:.6rem; color:#94a3b8;"></i>
+                    </th>
+                    <th class="text-center" style="width:110px;">SỐ TÍN CHỈ</th>
+                    <th style="width:160px;">KHOA / BỘ MÔN PHỤ TRÁCH</th>
+                    <th style="width:120px;">TRẠNG THÁI</th>
+                    <th class="text-end" style="width:140px; padding-right:1.25rem;">THAO TÁC</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in Model.Items)
                 {
+                    <!-- Suy ra loại môn dựa trên tiền tố mã -->
+                    string loaiMon = item.MaMon.StartsWith("BUS") ? "Cơ sở ngành"
+                        : item.MaMon.StartsWith("INT") ? (item.SoTinChi >= 4 ? "Cốt lõi" : "Cơ sở ngành")
+                        : item.MaMon.StartsWith("ENG") ? "Bổ trợ"
+                        : "Chuyên ngành";
+
+                    string khoaPhuTrach = item.MaMon.StartsWith("BUS") ? "Khoa Quản trị kinh doanh"
+                        : item.MaMon.StartsWith("INT") ? "Khoa Công nghệ Thông tin"
+                        : item.MaMon.StartsWith("ENG") ? "Khoa Ngôn ngữ Anh"
+                        : "Khoa Kỹ thuật";
+
                     <tr>
-                        <td class="fw-semibold">@item.MaMon</td>
-                        <td>@item.TenMon</td>
-                        <td class="text-center">@item.SoTinChi</td>
-                        <td class="text-end text-nowrap">
-                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                        <!-- MÃ MÔN -->
+                        <td>
+                            <span style="display:inline-block; padding:4px 10px; background:#eff6ff; color:#2563eb; font-weight:700; font-size:.8rem; border-radius:6px; letter-spacing:.03em;">
+                                @item.MaMon
+                            </span>
+                        </td>
+
+                        <!-- TÊN MÔN -->
+                        <td>
+                            <div style="font-weight:700; color:#1e293b; font-size:.875rem; line-height:1.35;">@item.TenMon</div>
+                            <small style="color:#94a3b8; font-size:.775rem;">@(item.TenMon) • @loaiMon</small>
+                        </td>
+
+                        <!-- SỐ TC -->
+                        <td class="text-center">
+                            <span style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; font-weight:800; font-size:.9rem;
+                                         background:@(item.SoTinChi >= 4 ? "#2563eb" : "#ede9fe"); color:@(item.SoTinChi >= 4 ? "#fff" : "#7c3aed");">
+                                @item.SoTinChi
+                            </span>
+                        </td>
+
+                        <!-- KHOA -->
+                        <td style="font-size:.82rem; color:#475569; line-height:1.4;">
+                            <span class="dot-online" style="width:7px; height:7px; border:none; display:inline-block; margin-right:5px; background:#22c55e; position:relative; top:-1px;"></span>
+                            @khoaPhuTrach
+                        </td>
+
+                        <!-- TRẠNG THÁI -->
+                        <td>
+                            <span style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:6px; font-size:.78rem; font-weight:700; background:#dcfce7; color:#16a34a;">
+                                <span style="width:6px; height:6px; border-radius:50%; background:#16a34a; flex-shrink:0;"></span>
+                                Áp dụng
+                            </span>
+                        </td>
+
+                        <!-- THAO TÁC -->
+                        <td class="text-end text-nowrap" style="padding-right:1.25rem;">
+                            <a asp-action="Edit" asp-route-id="@item.Id"
+                               class="btn btn-sm d-inline-flex align-items-center gap-1"
+                               style="border:1px solid #d1d5db; background:#fff; color:#374151; font-size:.78rem; font-weight:600; border-radius:6px; padding:4px 10px; margin-right:4px;">
+                                <i class="bi bi-pencil" style="font-size:.75rem;"></i> Sửa
+                            </a>
                             <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline"
-                                  onsubmit="return confirm('Xóa môn học này? Nếu môn đã có điểm, hệ thống sẽ từ chối.');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                                  onsubmit="return confirm('Xóa môn học @item.MaMon? Nếu môn đã có điểm, hệ thống sẽ từ chối.');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        class="btn btn-sm d-inline-flex align-items-center gap-1"
+                                        style="border:1px solid #fecaca; background:#fff; color:#dc2626; font-size:.78rem; font-weight:600; border-radius:6px; padding:4px 10px;">
+                                    <i class="bi bi-trash3" style="font-size:.75rem;"></i> Xóa
+                                </button>
                             </form>
                         </td>
                     </tr>
                 }
+
                 @if (Model.Items.Count == 0)
                 {
-                    <tr><td colspan="4" class="py-4 text-center text-muted">Không tìm thấy môn học.</td></tr>
+                    <tr>
+                        <td colspan="6" class="text-center py-5" style="color:#94a3b8;">
+                            <i class="bi bi-inbox fs-2 d-block mb-2" style="color:#cbd5e1;"></i>
+                            <span style="font-size:.9rem;">Không tìm thấy môn học phù hợp.</span>
+                        </td>
+                    </tr>
                 }
             </tbody>
         </table>
     </div>
 
-    @if (Model.TotalPages > 1)
-    {
-        <nav aria-label="Phân trang môn học" class="d-flex justify-content-between align-items-center">
-            <span class="small text-muted">Trang @Model.Page / @Model.TotalPages · @Model.TotalItems môn học</span>
-            <div class="btn-group">
-                @if (Model.Page > 1)
-                {
-                    <a asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-tuKhoa="@ViewBag.TuKhoa"
-                       class="btn btn-outline-secondary">Trước</a>
-                }
-                @if (Model.Page < Model.TotalPages)
-                {
-                    <a asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-tuKhoa="@ViewBag.TuKhoa"
-                       class="btn btn-outline-secondary">Sau</a>
-                }
-            </div>
-        </nav>
-    }
+    <!-- Footer phân trang -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 px-3 py-2"
+         style="border-top:1px solid #f1f5f9; background:#fafbfc;">
+        <div style="font-size:.82rem; color:#64748b;">
+            Hiển thị <strong style="color:#1e293b;">@startRecord – @endRecord</strong>
+            trên tổng số <strong style="color:#1e293b;">@Model.TotalItems</strong> môn học
+            &nbsp;|&nbsp; Số dòng mỗi trang:&nbsp;
+            <select class="form-select d-inline-block"
+                    style="width:auto; height:28px; padding:0 20px 0 8px; font-size:.78rem; border-color:#e2e8f0; display:inline-block !important;">
+                <option>10</option><option>20</option><option>50</option>
+            </select>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav>
+                <ul class="pagination pagination-sm mb-0 gap-1">
+                    <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                        <a class="page-link sv-page-btn"
+                           asp-action="Index" asp-route-page="@(Model.Page-1)" asp-route-tuKhoa="@ViewBag.TuKhoa">
+                            &lsaquo; Trước
+                        </a>
+                    </li>
+                    @{
+                        int totalP = Model.TotalPages; int curP = Model.Page;
+                        var pages = new List<int?>();
+                        if (totalP <= 7) { for (int i = 1; i <= totalP; i++) pages.Add(i); }
+                        else {
+                            pages.Add(1);
+                            if (curP > 3) pages.Add(null);
+                            for (int i = Math.Max(2, curP-1); i <= Math.Min(totalP-1, curP+1); i++) pages.Add(i);
+                            if (curP < totalP-2) pages.Add(null);
+                            pages.Add(totalP);
+                        }
+                    }
+                    @foreach (var pg in pages)
+                    {
+                        if (pg == null) {
+                            <li class="page-item disabled"><span class="page-link sv-page-btn" style="color:#94a3b8;">…</span></li>
+                        } else {
+                            <li class="page-item @(pg == curP ? "active" : "")">
+                                <a class="page-link sv-page-btn @(pg == curP ? "sv-page-active" : "")"
+                                   asp-action="Index" asp-route-page="@pg" asp-route-tuKhoa="@ViewBag.TuKhoa">@pg</a>
+                            </li>
+                        }
+                    }
+                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link sv-page-btn"
+                           asp-action="Index" asp-route-page="@(Model.Page+1)" asp-route-tuKhoa="@ViewBag.TuKhoa">
+                            Sau &rsaquo;
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    </div>
 </div>
+
+@section Scripts {
+<style>
+    .sv-page-btn {
+        min-width:34px; height:34px;
+        display:inline-flex; align-items:center; justify-content:center;
+        border-radius:8px !important; border:1px solid #e2e8f0 !important;
+        color:#374151 !important; font-size:.82rem; font-weight:600;
+        background:#fff; padding:0 10px; transition:all .15s ease;
+    }
+    .sv-page-btn:hover { background:#f1f5f9 !important; }
+    .sv-page-active { background:#2563eb !important; color:#fff !important; border-color:#2563eb !important; }
+    .page-item.disabled .sv-page-btn { color:#cbd5e1 !important; }
+    .admin-content { font-family: 'Plus Jakarta Sans', "Segoe UI", sans-serif; }
+</style>
+}

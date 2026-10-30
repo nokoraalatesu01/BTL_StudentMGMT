@@ -1,86 +1,387 @@
 @model BTL_StudentMGMT.Models.PagedResult<BTL_StudentMGMT.Models.LopListItemViewModel>
 @{
     ViewData["Title"] = "Quản lý lớp";
+
+    var avatarColors = new[] { "gray", "pink", "cyan", "purple", "green" };
+    int startRecord = (Model.Page - 1) * Model.PageSize + 1;
+    int endRecord   = Math.Min(Model.Page * Model.PageSize, Model.TotalItems);
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Quản lý lớp</h2>
-    <a asp-action="Create" class="btn btn-primary">+ Thêm lớp</a>
+<!-- ===== HEADER ===== -->
+<div class="mb-4">
+    <p class="mb-1" style="font-size:.8rem; color:#64748b;">
+        <span style="color:#94a3b8;">ĐÀO TẠO</span>
+        <span style="color:#cbd5e1; margin:0 6px;">/</span>
+        <span style="color:#6366f1; font-weight:700; text-transform:uppercase; font-size:.72rem; letter-spacing:.07em;">TỔ CHỨC ĐÀO TẠO</span>
+    </p>
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+        <div>
+            <h3 class="fw-bold mb-1" style="color:#0f172a; font-size:1.55rem; letter-spacing:-.02em;">
+                Quản lý lớp
+            </h3>
+            <p class="mb-0" style="font-size:.875rem; color:#64748b; max-width:540px;">
+                Quản lý danh sách lớp sinh viên chuyên ngành, niên khóa đào tạo, phân bổ khoa chuyên môn và số lượng sinh viên theo lớp.
+            </p>
+        </div>
+        <div class="d-flex gap-2 flex-shrink-0">
+            <button type="button" class="btn d-inline-flex align-items-center gap-2"
+                    style="border:1px solid #d1d5db; background:#fff; color:#374151; font-size:.875rem; font-weight:600; height:40px; border-radius:8px; padding:0 16px;">
+                <i class="bi bi-download" style="font-size:.85rem;"></i> Xuất danh sách Excel
+            </button>
+            <a asp-action="Create"
+               class="btn d-inline-flex align-items-center gap-2 text-white"
+               style="background:#2563eb; border:none; font-size:.875rem; font-weight:600; height:40px; border-radius:8px; padding:0 18px;">
+                <i class="bi bi-plus-lg"></i> + Thêm lớp
+            </a>
+        </div>
+    </div>
 </div>
 
 @if (TempData["Msg"] != null)
 {
-    <div class="alert alert-success">@TempData["Msg"]</div>
+    <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i><div>@TempData["Msg"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-warning">@TempData["Error"]</div>
+    <div class="alert alert-warning alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i><div>@TempData["Error"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
 }
 
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-4">
-        <input name="tuKhoa" value="@ViewBag.TuKhoa" class="form-control" placeholder="Tìm theo tên lớp" />
+<!-- ===== STAT CARDS ===== -->
+<div class="row g-3 mb-4">
+    <!-- Tổng số lớp -->
+    <div class="col-6 col-lg-3">
+        <div class="content-card p-3 h-100">
+            <p style="font-size:.7rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">TỔNG SỐ LỚP HỌC</p>
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@Model.TotalItems</div>
+                    <div class="mt-1">
+                        <span style="font-size:.75rem; font-weight:700; color:#6366f1;">Khóa K14–K17</span>
+                    </div>
+                    <div style="font-size:.75rem; color:#64748b; margin-top:3px;">Lớp chuyên ngành đang mở</div>
+                </div>
+                <div style="width:44px; height:44px; border-radius:10px; background:#eff6ff; display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:1.2rem; flex-shrink:0;">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-5">
-        <select name="nganhId" asp-items="ViewBag.DanhSachNganh" class="form-select">
-            <option value="">-- Tất cả ngành --</option>
-        </select>
-    </div>
-    <div class="col-md-3">
-        <button type="submit" class="btn btn-outline-primary">Lọc</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
-    </div>
-</form>
 
-<div class="table-responsive">
-    <table class="table table-striped table-hover align-middle">
-        <thead>
-            <tr>
-                <th>Tên lớp</th>
-                <th>Mã ngành</th>
-                <th>Ngành</th>
-                <th class="text-center">Sinh viên</th>
-                <th class="text-end">Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var lop in Model.Items)
-            {
-                <tr>
-                    <td>@lop.TenLop</td>
-                    <td>@lop.MaNganh</td>
-                    <td>@lop.TenNganh</td>
-                    <td class="text-center">@lop.SoSinhVien</td>
-                    <td class="text-end text-nowrap">
-                        <a asp-action="Edit" asp-route-id="@lop.Id" class="btn btn-sm btn-warning">Sửa</a>
-                        <form asp-action="Delete" asp-route-id="@lop.Id" method="post" class="d-inline"
-                              onsubmit="return confirm('Xóa lớp này?');">
-                            <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-            @if (Model.Items.Count == 0)
-            {
-                <tr><td colspan="5" class="text-center text-muted">Không có dữ liệu lớp.</td></tr>
-            }
-        </tbody>
-    </table>
+    <!-- Tổng sinh viên -->
+    <div class="col-6 col-lg-3">
+        <div class="content-card p-3 h-100">
+            <p style="font-size:.7rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">TỔNG SỐ SINH VIÊN</p>
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">
+                        @Model.Items.Sum(l => l.SoSinhVien)
+                        <span style="font-size:.85rem; font-weight:600; color:#64748b;">+</span>
+                    </div>
+                    <div class="mt-1">
+                        <span style="font-size:.75rem; font-weight:700; color:#16a34a;">Chính quy</span>
+                    </div>
+                    <div style="font-size:.75rem; color:#64748b; margin-top:3px;">Sĩ số trung bình 28 SV/lớp</div>
+                </div>
+                <div style="width:44px; height:44px; border-radius:10px; background:#dcfce7; display:flex; align-items:center; justify-content:center; color:#16a34a; font-size:1.2rem; flex-shrink:0;">
+                    <i class="bi bi-people"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ngành đào tạo -->
+    <div class="col-6 col-lg-3">
+        <div class="content-card p-3 h-100">
+            <p style="font-size:.7rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">NGÀNH ĐÀO TẠO</p>
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">
+                        @Model.Items.Select(l => l.MaNganh).Distinct().Count()
+                    </div>
+                    <div class="mt-1">
+                        <span style="font-size:.75rem; font-weight:700; color:#6366f1;">Phân bổ 6 Khoa</span>
+                    </div>
+                    <div style="font-size:.75rem; color:#64748b; margin-top:3px;">Bao gồm cả lớp 4 Chương trình</div>
+                </div>
+                <div style="width:44px; height:44px; border-radius:10px; background:#ede9fe; display:flex; align-items:center; justify-content:center; color:#7c3aed; font-size:1.2rem; flex-shrink:0;">
+                    <i class="bi bi-diagram-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Giảng viên chủ nhiệm -->
+    <div class="col-6 col-lg-3">
+        <div class="content-card p-3 h-100">
+            <p style="font-size:.7rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">GIẢNG VIÊN CHỦ NHIỆM</p>
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@Model.TotalItems</div>
+                    <div class="mt-1">
+                        <span style="font-size:.75rem; font-weight:700; color:#16a34a;">100% Đã phân công</span>
+                    </div>
+                    <div style="font-size:.75rem; color:#64748b; margin-top:3px;">Cố vấn học tập trực: Hoàn tiếp</div>
+                </div>
+                <div style="width:44px; height:44px; border-radius:10px; background:#fef3c7; display:flex; align-items:center; justify-content:center; color:#d97706; font-size:1.2rem; flex-shrink:0;">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-@if (Model.TotalPages > 1)
-{
-    <nav aria-label="Phân trang lớp">
-        <ul class="pagination">
-            @for (var currentPage = 1; currentPage <= Model.TotalPages; currentPage++)
-            {
-                <li class="page-item @(currentPage == Model.Page ? "active" : "")">
-                    <a class="page-link" asp-action="Index"
-                       asp-route-page="@currentPage"
-                       asp-route-tuKhoa="@ViewBag.TuKhoa"
-                       asp-route-nganhId="@ViewBag.NganhId">@currentPage</a>
-                </li>
-            }
-        </ul>
-    </nav>
+<!-- ===== BỘ LỌC ===== -->
+<div class="content-card p-3 mb-3">
+    <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
+        <div class="input-group" style="flex:1; min-width:240px;">
+            <span class="input-group-text bg-white border-end-0 pe-1 text-muted" style="border-color:#d1d5db;">
+                <i class="bi bi-search" style="font-size:.82rem;"></i>
+            </span>
+            <input name="tuKhoa" value="@ViewBag.TuKhoa"
+                   class="form-control border-start-0 ps-1"
+                   style="border-color:#d1d5db; font-size:.875rem;"
+                   placeholder="Tìm theo tên lớp, mã lớp hoặc giảng viên chủ nhiệm..." />
+        </div>
+
+        <select name="nganhId" asp-items="ViewBag.DanhSachNganh"
+                class="form-select"
+                style="width:190px; min-width:140px; font-size:.875rem; border-color:#d1d5db;">
+            <option value="">-- Tất cả ngành --</option>
+        </select>
+
+        <select class="form-select" style="width:160px; min-width:130px; font-size:.875rem; border-color:#d1d5db;">
+            <option value="">-- Niên khóa --</option>
+            <option>2021 – 2025</option>
+            <option>2022 – 2026</option>
+            <option>2023 – 2027</option>
+            <option>2024 – 2028</option>
+        </select>
+
+        <button type="submit"
+                class="btn d-inline-flex align-items-center gap-2 text-white"
+                style="background:#2563eb; border:none; font-size:.875rem; font-weight:600; height:38px; border-radius:8px; padding:0 18px;">
+            <i class="bi bi-funnel" style="font-size:.82rem;"></i> Tìm kiếm
+        </button>
+        <a asp-action="Index"
+           class="btn d-inline-flex align-items-center"
+           style="border:1px solid #d1d5db; background:#fff; color:#6b7280; font-size:.875rem; height:38px; border-radius:8px; padding:0 10px;"
+           title="Đặt lại bộ lọc">
+            <i class="bi bi-arrow-counterclockwise"></i>
+        </a>
+    </form>
+</div>
+
+<!-- ===== BẢNG LỚP ===== -->
+<div class="custom-table-container">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th style="width:120px;">TÊN LỚP</th>
+                    <th style="width:100px;">MÃ NGÀNH</th>
+                    <th>TÊN NGÀNH & KHOA</th>
+                    <th style="width:110px;">NIÊN KHÓA</th>
+                    <th style="width:140px;">CỐ VẤN HỌC TẬP</th>
+                    <th class="text-center" style="width:80px;">SĨ SỐ</th>
+                    <th style="width:120px;">TRẠNG THÁI</th>
+                    <th class="text-end" style="width:130px; padding-right:1.25rem;">THAO TÁC</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int idx = 0; }
+                @foreach (var lop in Model.Items)
+                {
+                    var colorClass = avatarColors[idx % avatarColors.Length]; idx++;
+
+                    // Suy ra niên khóa từ tên lớp (ví dụ CNTT1-K14 → K14 → 2021-2025)
+                    string nienKhoa = "—";
+                    var kMatch = System.Text.RegularExpressions.Regex.Match(lop.TenLop, @"K(\d+)");
+                    if (kMatch.Success && int.TryParse(kMatch.Groups[1].Value, out int kNum))
+                    {
+                        int startYear = 2007 + kNum; // K14 → 2021
+                        nienKhoa = $"{startYear} – {startYear + 4}";
+                    }
+
+                    // Chữ cái đầu mã ngành làm avatar cố vấn
+                    string cvInitial = string.IsNullOrEmpty(lop.MaNganh) ? "?" : lop.MaNganh[0].ToString();
+
+                    // Trạng thái dựa theo sĩ số
+                    string trangThai = lop.SoSinhVien == 0 ? "Chờ xếp lớp" : "Đang học";
+                    string statusBg  = trangThai == "Đang học" ? "#dcfce7" : "#f1f5f9";
+                    string statusFg  = trangThai == "Đang học" ? "#16a34a" : "#94a3b8";
+                    string dotBg     = trangThai == "Đang học" ? "#22c55e" : "#94a3b8";
+
+                    <tr>
+                        <!-- TÊN LỚP -->
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="width:8px; height:8px; border-radius:50%; background:@dotBg; flex-shrink:0;"></span>
+                                <span style="font-weight:700; color:#2563eb; font-size:.875rem;">@lop.TenLop</span>
+                            </div>
+                        </td>
+
+                        <!-- MÃ NGÀNH -->
+                        <td>
+                            <span style="display:inline-block; padding:3px 10px; background:#eff6ff; color:#2563eb; font-weight:700; font-size:.78rem; border-radius:6px;">
+                                @lop.MaNganh
+                            </span>
+                        </td>
+
+                        <!-- NGÀNH & KHOA -->
+                        <td>
+                            <div style="font-weight:600; color:#1e293b; font-size:.83rem; line-height:1.3;">@lop.TenNganh</div>
+                            <small style="color:#94a3b8; font-size:.775rem;">Ngành: @lop.TenNganh</small>
+                        </td>
+
+                        <!-- NIÊN KHÓA -->
+                        <td style="color:#475569; font-size:.875rem; white-space:nowrap;">
+                            @nienKhoa
+                        </td>
+
+                        <!-- CỐ VẤN HỌC TẬP -->
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar-round @colorClass"
+                                     style="width:28px; height:28px; font-size:.72rem; font-weight:700; flex-shrink:0;">
+                                    @cvInitial
+                                </div>
+                                <span style="font-size:.8rem; color:#64748b;">Chưa gán</span>
+                            </div>
+                        </td>
+
+                        <!-- SĨ SỐ -->
+                        <td class="text-center">
+                            <span style="font-weight:700; font-size:.875rem; color:#1e293b;">
+                                @lop.SoSinhVien
+                                <span style="font-size:.75rem; font-weight:500; color:#94a3b8;">sv</span>
+                            </span>
+                        </td>
+
+                        <!-- TRẠNG THÁI -->
+                        <td>
+                            <span style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:6px; font-size:.78rem; font-weight:700; background:@statusBg; color:@statusFg;">
+                                <span style="width:6px; height:6px; border-radius:50%; background:@dotBg; flex-shrink:0;"></span>
+                                @trangThai
+                            </span>
+                        </td>
+
+                        <!-- THAO TÁC (icon buttons như ảnh) -->
+                        <td class="text-end text-nowrap" style="padding-right:1.25rem;">
+                            <a asp-action="Edit" asp-route-id="@lop.Id"
+                               class="icon-action-btn" title="Xem chi tiết"
+                               style="color:#6366f1;">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@lop.Id"
+                               class="icon-action-btn" title="Chỉnh sửa">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@lop.Id" method="post" class="d-inline"
+                                  onsubmit="return confirm('Xóa lớp @Html.Raw(lop.TenLop.Replace("'", "\\'"))?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="icon-action-btn delete" title="Xóa">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+
+                @if (Model.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5" style="color:#94a3b8;">
+                            <i class="bi bi-inbox fs-2 d-block mb-2" style="color:#cbd5e1;"></i>
+                            <span style="font-size:.9rem;">Không có dữ liệu lớp phù hợp.</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Footer phân trang -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 px-3 py-2"
+         style="border-top:1px solid #f1f5f9; background:#fafbfc;">
+        <div style="font-size:.82rem; color:#64748b;">
+            Hiển thị <strong style="color:#1e293b;">@startRecord – @endRecord</strong>
+            trên tổng số <strong style="color:#1e293b;">@Model.TotalItems</strong> lớp
+            &nbsp;&nbsp;
+            SỐ DÒNG:&nbsp;
+            <select class="form-select d-inline-block"
+                    style="width:auto; height:28px; padding:0 20px 0 8px; font-size:.78rem; border-color:#e2e8f0; display:inline-block !important;">
+                <option>10</option><option>20</option><option>50</option>
+            </select>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav>
+                <ul class="pagination pagination-sm mb-0 gap-1">
+                    <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                        <a class="page-link sv-page-btn"
+                           asp-action="Index" asp-route-page="@(Model.Page-1)"
+                           asp-route-tuKhoa="@ViewBag.TuKhoa" asp-route-nganhId="@ViewBag.NganhId">
+                            &lsaquo; Trước
+                        </a>
+                    </li>
+                    @{
+                        int totalP = Model.TotalPages; int curP = Model.Page;
+                        var pages = new List<int?>();
+                        if (totalP <= 7) { for (int i = 1; i <= totalP; i++) pages.Add(i); }
+                        else {
+                            pages.Add(1);
+                            if (curP > 3) pages.Add(null);
+                            for (int i = Math.Max(2, curP - 1); i <= Math.Min(totalP - 1, curP + 1); i++) pages.Add(i);
+                            if (curP < totalP - 2) pages.Add(null);
+                            pages.Add(totalP);
+                        }
+                    }
+                    @foreach (var pg in pages)
+                    {
+                        if (pg == null) {
+                            <li class="page-item disabled">
+                                <span class="page-link sv-page-btn" style="color:#94a3b8;">…</span>
+                            </li>
+                        } else {
+                            <li class="page-item @(pg == curP ? "active" : "")">
+                                <a class="page-link sv-page-btn @(pg == curP ? "sv-page-active" : "")"
+                                   asp-action="Index" asp-route-page="@pg"
+                                   asp-route-tuKhoa="@ViewBag.TuKhoa" asp-route-nganhId="@ViewBag.NganhId">@pg</a>
+                            </li>
+                        }
+                    }
+                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link sv-page-btn"
+                           asp-action="Index" asp-route-page="@(Model.Page+1)"
+                           asp-route-tuKhoa="@ViewBag.TuKhoa" asp-route-nganhId="@ViewBag.NganhId">
+                            Sau &rsaquo;
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<style>
+    .sv-page-btn {
+        min-width:34px; height:34px;
+        display:inline-flex; align-items:center; justify-content:center;
+        border-radius:8px !important; border:1px solid #e2e8f0 !important;
+        color:#374151 !important; font-size:.82rem; font-weight:600;
+        background:#fff; padding:0 10px; transition:all .15s ease;
+    }
+    .sv-page-btn:hover  { background:#f1f5f9 !important; }
+    .sv-page-active     { background:#2563eb !important; color:#fff !important; border-color:#2563eb !important; }
+    .page-item.disabled .sv-page-btn { color:#cbd5e1 !important; cursor:default; }
+    .admin-content { font-family: 'Plus Jakarta Sans', "Segoe UI", sans-serif; }
+</style>
 }
