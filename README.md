@@ -103,6 +103,7 @@ Các tài khoản dưới đây được khai báo trong `Data/DbSeeder.cs`. See
 | Vai trò | Tên đăng nhập | Mật khẩu |
 |---|---|---|
 | Quản trị viên (Admin) | `admin` | `Admin@123` |
+| Phòng Giáo vụ (PGV) | `pgv` | `Pgv@123` |
 | Giảng viên | `gv01` | `GiangVien@123` |
 | Sinh viên | `sv01` | `SinhVien@123` |
 
@@ -110,7 +111,7 @@ Các tài khoản dưới đây được khai báo trong `Data/DbSeeder.cs`. See
 
 | Vai trò | Điều hướng sau đăng nhập |
 |---|---|
-| Admin | Trang quản trị (`Admin/Index`) |
+| Admin / PGV | Trang quản trị (`Admin/Index`) |
 | Giảng viên | Trang giảng viên (`GiangVien/Index`) |
 | Sinh viên | Trang sinh viên (`SinhVien/Index`) |
 

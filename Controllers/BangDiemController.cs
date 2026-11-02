@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BTL_StudentMGMT.Controllers;
 
-[Authorize(Roles = "Admin,GiangVien")]
+[Authorize(Roles = "Admin,PGV,GiangVien")]
 public class BangDiemController : Controller
 {
     private readonly ApplicationDbContext _db;

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace BTL_StudentMGMT.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,PGV")]
 public class QuanLySinhVienController : Controller
 {
     private readonly ApplicationDbContext _db;

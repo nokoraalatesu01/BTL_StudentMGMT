@@ -1,8 +1,97 @@
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Cổng thông tin đào tạo & Quản lý sinh viên UTC";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="py-4">
+    <!-- Hero Section -->
+    <div class="p-5 mb-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0c2340 0%, #1e3a8a 60%, #3b82f6 100%);">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge bg-white text-primary px-3 py-2 rounded-pill fw-bold text-uppercase mb-3" style="font-size: 0.75rem; letter-spacing: .05em;">
+                    Trường Đại học Giao thông Vận tải &bull; UTC
+                </span>
+                <h1 class="display-5 fw-bold mb-3">Hệ Thống Quản Lý Đào Tạo & Sinh Viên</h1>
+                <p class="lead mb-4" style="color: #cbd5e1; max-width: 650px;">
+                    Cổng thông tin tích hợp phục vụ tra cứu kết quả học tập, thời khóa biểu, điểm danh, lịch giảng dạy và quản lý hồ sơ đào tạo chính quy.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        @if (User.IsInRole("Admin") || User.IsInRole("PGV"))
+                        {
+                            <a class="btn btn-warning btn-lg px-4 rounded-pill fw-bold text-dark" asp-controller="Admin" asp-action="Index">
+                                <i class="bi bi-speedometer2 me-1"></i> Bảng điều khiển Quản trị
+                            </a>
+                        }
+                        else if (User.IsInRole("GiangVien"))
+                        {
+                            <a class="btn btn-warning btn-lg px-4 rounded-pill fw-bold text-dark" asp-controller="GiangVien" asp-action="Index">
+                                <i class="bi bi-person-workspace me-1"></i> Không gian Giảng viên
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-warning btn-lg px-4 rounded-pill fw-bold text-dark" asp-controller="SinhVien" asp-action="Index">
+                                <i class="bi bi-mortarboard-fill me-1"></i> Cổng thông tin Sinh viên
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <a class="btn btn-warning btn-lg px-4 rounded-pill fw-bold text-dark" asp-controller="Account" asp-action="Login">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập hệ thống
+                        </a>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-4 d-none d-lg-block text-center">
+                <img src="~/images/logo-utc.png" alt="UTC Logo" style="max-height: 180px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 hover-shadow transition">
+                <div class="card-body">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-4 mb-3" style="width: 52px; height: 52px; font-size: 1.5rem;">
+                        <i class="bi bi-mortarboard"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Cổng Sinh Viên</h5>
+                    <p class="card-text text-muted" style="font-size: 0.9rem;">
+                        Theo dõi hồ sơ cá nhân, tiến độ học tập, bảng điểm chi tiết từng học phần và điểm trung bình tích lũy GPA.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 hover-shadow transition">
+                <div class="card-body">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-success-subtle text-success rounded-4 mb-3" style="width: 52px; height: 52px; font-size: 1.5rem;">
+                        <i class="bi bi-person-video3"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Cổng Giảng Viên</h5>
+                    <p class="card-text text-muted" style="font-size: 0.9rem;">
+                        Quản lý lịch giảng dạy, danh sách sinh viên các lớp học phần, thực hiện điểm danh buổi học và nhập điểm chuyên cần, giữa kỳ, cuối kỳ.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3 hover-shadow transition">
+                <div class="card-body">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-warning-subtle text-warning-emphasis rounded-4 mb-3" style="width: 52px; height: 52px; font-size: 1.5rem;">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Quản Trị & Giáo Vụ</h5>
+                    <p class="card-text text-muted" style="font-size: 0.9rem;">
+                        Quản lý toàn diện cơ sở dữ liệu đào tạo: đơn vị khoa viện, ngành học, lớp hành chính, danh mục môn học và tài khoản hệ thống.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

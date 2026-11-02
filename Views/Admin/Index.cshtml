@@ -5,20 +5,32 @@
     var max = Model.ThongKeTheoLop.Any() ? Math.Max(1, Model.ThongKeTheoLop.Max(x => x.SoSinhVien)) : 1;
 }
 
-<h2 class="mb-4">Tổng quan</h2>
+<!-- ===== TIÊU ĐỀ TRANG ===== -->
+<div class="page-header mb-4">
+    <div>
+        <p class="page-breadcrumb">
+            <span style="color:#94a3b8;">Hệ thống</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-cur">Tổng quan</span>
+        </p>
+        <h3 class="page-title">Tổng quan hệ thống</h3>
+        <p class="page-subtitle">Thống kê chung về sinh viên, giảng viên, tổ chức và tài khoản trong hệ thống.</p>
+    </div>
+</div>
 
+<!-- ===== STAT CARDS ===== -->
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-4">
-        <div class="stat-card">
+        <div class="stat-card h-100">
             <span class="stat-ico blue" aria-hidden="true"><i class="bi bi-people"></i></span>
             <div class="stat-body">
-                <div class="stat-label">Sinh viên</div>
+                <div class="stat-label">Tổng sinh viên</div>
                 <div class="num">@Model.TongSinhVien</div>
             </div>
         </div>
     </div>
     <div class="col-sm-6 col-xl-4">
-        <div class="stat-card">
+        <div class="stat-card h-100">
             <span class="stat-ico teal" aria-hidden="true"><i class="bi bi-person-workspace"></i></span>
             <div class="stat-body">
                 <div class="stat-label">Giảng viên</div>
@@ -27,25 +39,25 @@
         </div>
     </div>
     <div class="col-sm-6 col-xl-4">
-        <div class="stat-card">
+        <div class="stat-card h-100">
             <span class="stat-ico violet" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
             <div class="stat-body">
-                <div class="stat-label">Ngành</div>
+                <div class="stat-label">Ngành đào tạo</div>
                 <div class="num">@Model.TongNganh</div>
             </div>
         </div>
     </div>
     <div class="col-sm-6 col-xl-4">
-        <div class="stat-card">
+        <div class="stat-card h-100">
             <span class="stat-ico amber" aria-hidden="true"><i class="bi bi-collection"></i></span>
             <div class="stat-body">
-                <div class="stat-label">Lớp</div>
+                <div class="stat-label">Lớp hành chính</div>
                 <div class="num">@Model.TongLop</div>
             </div>
         </div>
     </div>
     <div class="col-sm-6 col-xl-4">
-        <div class="stat-card">
+        <div class="stat-card h-100">
             <span class="stat-ico rose" aria-hidden="true"><i class="bi bi-journal-bookmark"></i></span>
             <div class="stat-body">
                 <div class="stat-label">Môn học</div>
@@ -54,7 +66,7 @@
         </div>
     </div>
     <div class="col-sm-6 col-xl-4">
-        <div class="stat-card">
+        <div class="stat-card h-100">
             <span class="stat-ico ink" aria-hidden="true"><i class="bi bi-shield-lock"></i></span>
             <div class="stat-body">
                 <div class="stat-label">Tài khoản</div>
@@ -64,31 +76,39 @@
     </div>
 </div>
 
+<!-- ===== CẢNH BÁO ===== -->
 @if (Model.SinhVienChuaCoLop > 0)
 {
-    <div class="alert alert-warning">Có @Model.SinhVienChuaCoLop sinh viên chưa được xếp lớp.</div>
+    <div class="alert alert-warning d-flex align-items-center gap-2 rounded-3 mb-3">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>Có <strong>@Model.SinhVienChuaCoLop</strong> sinh viên chưa được xếp lớp.</div>
+    </div>
 }
 @if (Model.GiangVienChuaCoTaiKhoan > 0 || Model.SinhVienChuaCoTaiKhoan > 0)
 {
-    <div class="alert alert-warning">
-        Chưa cấp tài khoản cho
-        @if (Model.SinhVienChuaCoTaiKhoan > 0)
-        {
-            <span>@Model.SinhVienChuaCoTaiKhoan sinh viên</span>
-        }
-        @if (Model.SinhVienChuaCoTaiKhoan > 0 && Model.GiangVienChuaCoTaiKhoan > 0)
-        {
-            <span> và </span>
-        }
-        @if (Model.GiangVienChuaCoTaiKhoan > 0)
-        {
-            <span>@Model.GiangVienChuaCoTaiKhoan giảng viên</span>
-        }.
-        <a asp-controller="QuanLyTaiKhoan" asp-action="Index" class="alert-link">Quản lý tài khoản</a>
+    <div class="alert alert-warning d-flex align-items-center gap-2 rounded-3 mb-3">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>
+            Chưa cấp tài khoản cho
+            @if (Model.SinhVienChuaCoTaiKhoan > 0)
+            {
+                <strong>@Model.SinhVienChuaCoTaiKhoan sinh viên</strong>
+            }
+            @if (Model.SinhVienChuaCoTaiKhoan > 0 && Model.GiangVienChuaCoTaiKhoan > 0)
+            {
+                <span> và </span>
+            }
+            @if (Model.GiangVienChuaCoTaiKhoan > 0)
+            {
+                <strong>@Model.GiangVienChuaCoTaiKhoan giảng viên</strong>
+            }.
+            <a asp-controller="QuanLyTaiKhoan" asp-action="Index" class="alert-link ms-1">Quản lý tài khoản →</a>
+        </div>
     </div>
 }
 
-<div class="stat-card chart-card">
+<!-- ===== BIỂU ĐỒ THEO LỚP ===== -->
+<div class="content-card chart-card">
     <h5>Số sinh viên theo lớp</h5>
     <p class="chart-sub">Phân bố sinh viên đang được xếp vào từng lớp hành chính.</p>
 

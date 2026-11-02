@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BTL_StudentMGMT.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,PGV")]
 public class QuanLyNganhController : Controller
 {
     private readonly ApplicationDbContext _db;
@@ -260,9 +260,18 @@ public class QuanLyNganhController : Controller
 
     private void ValidateFaculty(NganhFormViewModel model)
     {
-        if (!NganhCatalog.Faculties.Contains(model.TenKhoa, StringComparer.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(model.TenKhoa))
         {
-            ModelState.AddModelError(nameof(model.TenKhoa), "Vui lòng chọn một trong 7 khoa hiện hành.");
+            ModelState.AddModelError(nameof(model.TenKhoa), "Vui lòng chọn hoặc nhập tên khoa quản lý.");
+            return;
+        }
+
+        var isValid = NganhCatalog.Faculties.Contains(model.TenKhoa, StringComparer.OrdinalIgnoreCase)
+            || _db.DonVis.Any(d => d.TenDonVi == model.TenKhoa);
+
+        if (!isValid)
+        {
+            ModelState.AddModelError(nameof(model.TenKhoa), "Vui lòng chọn một trong các khoa hiện hành.");
         }
     }
 

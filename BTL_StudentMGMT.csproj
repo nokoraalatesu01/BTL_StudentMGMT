@@ -19,4 +19,11 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="TempScaffold\**" />
+    <Compile Remove="TempTestBieuPhi\**" />
+    <Compile Remove="TempTestBuoiDiemDanh\**" />
+    <Compile Remove="TempTestCapHocBong\**" />
+  </ItemGroup>
+
 </Project>

@@ -121,7 +121,7 @@
                     </div>
                     <div class="topbar-user-text">
                         <span class="topbar-name">@accountName</span>
-                        <span class="topbar-role-badge">Quản trị viên</span>
+                        <span class="topbar-role-badge">@(User.IsInRole("PGV") ? "Phòng Giáo vụ" : "Quản trị viên")</span>
                     </div>
                 </div>
             </header>
