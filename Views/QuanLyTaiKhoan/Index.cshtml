@@ -8,8 +8,6 @@
     int pageSize    = 10;
     int totalItems  = Model.TaiKhoans.Count;
     int totalPages  = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
-    // Trang 1 tĩnh vì controller chưa hỗ trợ server-side paging
-    int curPage = 1;
     int startRecord = 1;
     int endRecord   = Math.Min(pageSize, totalItems);
 }

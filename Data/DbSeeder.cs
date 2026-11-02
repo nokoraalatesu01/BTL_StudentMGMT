@@ -33,15 +33,21 @@ public static class DbSeeder
         {
             if (!await roleManager.RoleExistsAsync(role))
             {
-                await roleManager.CreateAsync(new IdentityRole(role));
+                var roleResult = await roleManager.CreateAsync(new IdentityRole(role));
+                if (!roleResult.Succeeded)
+                {
+                    throw new InvalidOperationException(
+                        $"Không thể tạo role {role}: " +
+                        string.Join("; ", roleResult.Errors.Select(error => error.Description)));
+                }
             }
         }
 
         // 3. Seed Users
-        var adminUser = await CreateUser(userManager, "admin", "Quản trị viên", "Admin@123", "Admin");
+        await CreateUser(userManager, "admin", "Quản trị viên", "Admin@123", "Admin");
         var giangVienUser = await CreateUser(userManager, "gv01", "PGS.TS. Trần Đình Khang", "GiangVien@123", "GiangVien");
         var sinhVienUser = await CreateUser(userManager, "sv01", "Nguyễn Văn Hưng", "SinhVien@123", "SinhVien");
-        await CreateUser(userManager, "pgv", "Phòng Giáo vụ", "123456", "PGV");
+        await CreateUser(userManager, "pgv", "Phòng Giáo vụ", "Pgv@123", "PGV");
 
         // 4. Seed Đơn vị (DonVi) chuẩn hóa
         DonVi? truongUtc = await db.DonVis.FirstOrDefaultAsync(d => d.MaDonVi == "UTC");
@@ -199,7 +205,8 @@ public static class DbSeeder
                 var lopNNA = await db.Lops.FirstOrDefaultAsync(l => l.TenLop.Contains("NNA")) ?? lopCNTT;
 
                 const string trangThaiDangHoc = "Đang học";
-                db.SinhViens.AddRange(
+                var danhSachSinhVienMoi = new[]
+                {
                     new SinhVien { MaSinhVien = "SV202401", HoTen = "Nguyễn Văn Hưng", GioiTinh = "Nam", Email = "hung.nv202401@student.edu.vn", SoDienThoai = "0987111222", LopId = lopCNTT?.Id, NgaySinh = new DateTime(2003, 7, 19), UserId = sinhVienUser?.Id },
                     new SinhVien { MaSinhVien = "SV202402", HoTen = "Trần Thị Mai Anh", GioiTinh = "Nữ", Email = "anh.ttm202402@student.edu.vn", SoDienThoai = "0987333444", LopId = lopCNTT?.Id, NgaySinh = new DateTime(2004, 5, 8) },
                     new SinhVien { MaSinhVien = "SV202403", HoTen = "Lê Hoàng Long", GioiTinh = "Nam", Email = "long.lh202403@student.edu.vn", SoDienThoai = "0987555666", LopId = lopQTKD?.Id, NgaySinh = new DateTime(2003, 11, 5) },
@@ -210,14 +217,15 @@ public static class DbSeeder
                     new SinhVien { MaSinhVien = "SV202408", HoTen = "Đặng Quang Huy", GioiTinh = "Nam", Email = "huy.dq202408@student.edu.vn", SoDienThoai = "0912777888", LopId = lopCNTT?.Id, NgaySinh = new DateTime(2003, 12, 14) },
                     new SinhVien { MaSinhVien = "SV202409", HoTen = "Hoàng Ngọc Ánh", GioiTinh = "Nữ", Email = "anh.hn202409@student.edu.vn", SoDienThoai = "0912999111", LopId = lopQTKD?.Id, NgaySinh = new DateTime(2003, 6, 30) },
                     new SinhVien { MaSinhVien = "SV202410", HoTen = "Vũ Đình Trọng", GioiTinh = "Nam", Email = "trong.vd202410@student.edu.vn", SoDienThoai = "0912222444", LopId = lopDTVT?.Id, NgaySinh = new DateTime(2002, 10, 12) }
-                );
+                };
 
-                foreach (var sinhVien in db.SinhViens)
+                foreach (var sinhVien in danhSachSinhVienMoi)
                 {
                     sinhVien.TrangThai = trangThaiDangHoc;
                     sinhVien.NienKhoa = sinhVien.NgaySinh?.Year.ToString();
                 }
 
+                db.SinhViens.AddRange(danhSachSinhVienMoi);
                 await db.SaveChangesAsync();
                 await trans.CommitAsync();
             }
@@ -411,6 +419,17 @@ public static class DbSeeder
                 }
             }
 
+            if (!await userManager.IsInRoleAsync(user, role))
+            {
+                var roleResult = await userManager.AddToRoleAsync(user, role);
+                if (!roleResult.Succeeded)
+                {
+                    throw new InvalidOperationException(
+                        $"Không thể gán role {role} cho tài khoản mẫu {userName}: " +
+                        string.Join("; ", roleResult.Errors.Select(error => error.Description)));
+                }
+            }
+
             return user;
         }
 
@@ -425,10 +444,19 @@ public static class DbSeeder
         var result = await userManager.CreateAsync(user, password);
         if (!result.Succeeded)
         {
-            return null;
+            throw new InvalidOperationException(
+                $"Không thể tạo tài khoản mẫu {userName}: " +
+                string.Join("; ", result.Errors.Select(error => error.Description)));
         }
 
-        await userManager.AddToRoleAsync(user, role);
+        var addRoleResult = await userManager.AddToRoleAsync(user, role);
+        if (!addRoleResult.Succeeded)
+        {
+            throw new InvalidOperationException(
+                $"Không thể gán role {role} cho tài khoản mẫu {userName}: " +
+                string.Join("; ", addRoleResult.Errors.Select(error => error.Description)));
+        }
+
         return user;
     }
 }

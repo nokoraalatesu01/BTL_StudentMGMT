@@ -7,18 +7,76 @@
 }
 
 <!-- ===== TIÊU ĐỀ TRANG ===== -->
-<div class="mb-4">
-    <p class="mb-1" style="font-size:.82rem; color:#64748b;">
-        <span style="color:#94a3b8;">Đào tạo</span>
-        <span style="color:#cbd5e1; margin:0 6px;">/</span>
-        <span style="color:#1e293b; font-weight:700;">Quản lý thông tin sinh viên</span>
-    </p>
-    <h3 class="fw-bold mb-1" style="color:#0f172a; font-size:1.55rem; letter-spacing:-.02em;">
-        Quản lý thông tin sinh viên
-    </h3>
-    <p class="mb-0" style="font-size:.875rem; color:#64748b;">
-        Hệ thống danh sách sinh viên toàn trường, thêm mới, phân lớp và quản lý học tập
-    </p>
+<div class="page-header">
+    <div>
+        <p class="page-breadcrumb">
+            <span style="color:#94a3b8;">Đào tạo</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-cur">Sinh viên</span>
+        </p>
+        <h3 class="page-title">Quản lý thông tin sinh viên</h3>
+        <p class="page-subtitle">Danh sách sinh viên toàn trường, thêm mới, phân lớp và quản lý học tập.</p>
+    </div>
+    <div class="page-header-actions">
+        <button type="button" class="btn-action-secondary">
+            <i class="bi bi-download"></i> Xuất Excel
+        </button>
+        <a asp-action="Create" class="btn-action-primary">
+            <i class="bi bi-plus-lg"></i> Thêm sinh viên
+        </a>
+    </div>
+</div>
+
+<!-- ===== STAT CARDS ===== -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="content-card p-3 h-100">
+            <p style="font-size:.72rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">TỔNG SINH VIÊN</p>
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@Model.TotalItems</div>
+                    <div style="font-size:.78rem; color:#64748b; margin-top:2px;">Toàn hệ thống</div>
+                </div>
+                <div class="stat-icon-wrap blue"><i class="bi bi-people"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="content-card p-3 h-100">
+            <p style="font-size:.72rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">ĐANG HỌC</p>
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@(ViewBag.SoDangHoc ?? Model.Items.Count(s => s.TrangThai == "Đang học" || s.TrangThai == null))</div>
+                    <div style="font-size:.78rem; color:#16a34a; margin-top:2px; font-weight:600;">Đang theo học</div>
+                </div>
+                <div class="stat-icon-wrap green"><i class="bi bi-mortarboard"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="content-card p-3 h-100">
+            <p style="font-size:.72rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">ĐÃ XẾP LỚP</p>
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@Model.Items.Count(s => s.LopId != null)</div>
+                    <div style="font-size:.78rem; color:#64748b; margin-top:2px;">Có lớp hành chính</div>
+                </div>
+                <div class="stat-icon-wrap cyan"><i class="bi bi-collection"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="content-card p-3 h-100">
+            <p style="font-size:.72rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">CHƯA XẾP LỚP</p>
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@Model.Items.Count(s => s.LopId == null)</div>
+                    <div style="font-size:.78rem; color:#d97706; margin-top:2px; font-weight:600;">Cần phân lớp</div>
+                </div>
+                <div class="stat-icon-wrap amber"><i class="bi bi-exclamation-circle"></i></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @if (TempData["Msg"] != null)
@@ -38,31 +96,28 @@
     </div>
 }
 
-<!-- ===== BỘ LỌC + NÚT THÊM MỚI ===== -->
+<!-- ===== BỘ LỌC ===== -->
 <div class="content-card p-3 mb-3">
-    <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
+    <form method="get" class="d-flex flex-wrap gap-2 align-items-center filter-card-form">
 
         <!-- Ô tìm kiếm -->
         <div class="input-group" style="width:280px; min-width:200px;">
-            <span class="input-group-text bg-white border-end-0 pe-1 text-muted" style="border-color:#d1d5db;">
+            <span class="input-group-text border-end-0 pe-1">
                 <i class="bi bi-search" style="font-size:.85rem;"></i>
             </span>
             <input name="tuKhoa" value="@ViewBag.TuKhoa"
                    class="form-control border-start-0 ps-1"
-                   style="border-color:#d1d5db; font-size:.875rem;"
                    placeholder="Tìm theo tên, mã SV, lớp, email..." />
         </div>
 
         <!-- Lọc khoa/lớp -->
         <select name="lopId" asp-items="ViewBag.DanhSachLop"
-                class="form-select"
-                style="width:220px; min-width:160px; font-size:.875rem; border-color:#d1d5db;">
+                class="form-select" style="width:220px; min-width:160px;">
             <option value="">-- Tất cả Khoa / Viện / Lớp --</option>
         </select>
 
         <!-- Lọc trạng thái -->
-        <select name="trangThai" class="form-select"
-                style="width:155px; min-width:130px; font-size:.875rem; border-color:#d1d5db;">
+        <select name="trangThai" class="form-select" style="width:155px; min-width:130px;">
             <option value="">-- Trạng thái --</option>
             @foreach (var trangThai in BTL_StudentMGMT.Models.SinhVien.TrangThaiOptions)
             {
@@ -71,24 +126,11 @@
         </select>
 
         <!-- Nút Lọc -->
-        <button type="submit" class="btn d-inline-flex align-items-center gap-1 px-3"
-                style="border:1px solid #d1d5db; background:#fff; color:#374151; font-size:.875rem; font-weight:600; height:38px; border-radius:8px;">
-            Lọc
-        </button>
+        <button type="submit" class="btn-filter"><i class="bi bi-funnel"></i> Lọc</button>
 
         <!-- Reset -->
-        <a asp-action="Index" class="btn d-inline-flex align-items-center"
-           title="Đặt lại bộ lọc"
-           style="border:1px solid #d1d5db; background:#fff; color:#6b7280; font-size:.875rem; height:38px; border-radius:8px; padding:0 10px;">
+        <a asp-action="Index" class="btn-reset" title="Đặt lại bộ lọc">
             <i class="bi bi-arrow-counterclockwise"></i>
-        </a>
-
-        <!-- Thêm mới — đẩy sang phải -->
-        <a asp-action="Create"
-           class="btn d-inline-flex align-items-center gap-2 ms-auto text-white px-4"
-           style="background:#4f46e5; border:none; font-size:.875rem; font-weight:600; height:38px; border-radius:8px;">
-            <i class="bi bi-plus-lg" style="font-size:.9rem;"></i>
-            Thêm mới
         </a>
 
     </form>

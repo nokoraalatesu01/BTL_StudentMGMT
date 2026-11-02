@@ -1,7 +1,7 @@
 @model BTL_StudentMGMT.Models.DiemFormViewModel
 @{
     ViewData["Title"] = "Nhập điểm học phần";
-    Layout = User.IsInRole("Admin") ? "_AdminLayout" : "_GiangVienLayout";
+    Layout = (User.IsInRole("Admin") || User.IsInRole("PGV")) ? "_AdminLayout" : "_GiangVienLayout";
 }
 
 <div class="student-page-heading">
@@ -168,5 +168,20 @@
             inp.addEventListener('input', calculate);
         });
         calculate();
+
+        var svSelect = document.getElementById('SinhVienId');
+        var mhSelect = document.getElementById('MonHocId');
+        function checkAndReload() {
+            if (svSelect && mhSelect && svSelect.value > 0 && mhSelect.value > 0) {
+                var urlParams = new URLSearchParams(window.location.search);
+                var curSv = urlParams.get('sinhVienId');
+                var curMh = urlParams.get('monHocId');
+                if (curSv !== svSelect.value || curMh !== mhSelect.value) {
+                    window.location.href = '@Url.Action("NhapDiem", "BangDiem")?sinhVienId=' + svSelect.value + '&monHocId=' + mhSelect.value;
+                }
+            }
+        }
+        if (svSelect) svSelect.addEventListener('change', checkAndReload);
+        if (mhSelect) mhSelect.addEventListener('change', checkAndReload);
     </script>
 }

@@ -12,7 +12,11 @@ public static class NganhCatalog
         "Công nghệ thông tin",
         "Kinh tế - Vận tải",
         "Khoa học cơ bản",
-        "Lý luận chính trị"
+        "Lý luận chính trị",
+        "Khoa Công nghệ Thông tin",
+        "Khoa Điện tử - Viễn thông",
+        "Khoa Quản trị Kinh doanh",
+        "Khoa Ngôn ngữ Anh"
     ];
 
     public static IReadOnlyList<Nganh> Programs { get; } =

@@ -1,7 +1,7 @@
 @model List<BTL_StudentMGMT.Models.Diem>
 @{
     ViewData["Title"] = "Bảng điểm sinh viên";
-    Layout = User.IsInRole("Admin") ? "_AdminLayout" : "_GiangVienLayout";
+    Layout = (User.IsInRole("Admin") || User.IsInRole("PGV")) ? "_AdminLayout" : "_GiangVienLayout";
 
     // Thống kê
     int tongHocPhan   = Model.Count;
@@ -27,9 +27,9 @@
         </p>
     </div>
     <div class="d-flex gap-2 flex-shrink-0">
-        <button type="button" class="btn d-inline-flex align-items-center gap-2"
+        <button type="button" class="btn d-inline-flex align-items-center gap-2" onclick="window.print()" title="In hoặc lưu PDF bảng điểm"
                 style="border:1px solid #d1d5db; background:#fff; color:#374151; font-size:.875rem; font-weight:600; height:40px; border-radius:8px; padding:0 16px;">
-            <i class="bi bi-download" style="font-size:.85rem;"></i> Xuất bảng điểm
+            <i class="bi bi-printer" style="font-size:.85rem;"></i> In / Xuất bảng điểm
         </button>
         <a asp-action="NhapDiem"
            class="btn d-inline-flex align-items-center gap-2 text-white"
