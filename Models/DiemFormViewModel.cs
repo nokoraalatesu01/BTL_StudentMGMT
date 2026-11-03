@@ -7,10 +7,12 @@ public class DiemFormViewModel
     public int Id { get; set; }
 
     [Required(ErrorMessage = "Vui lòng chọn sinh viên")]
+    [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn sinh viên hợp lệ")]
     [Display(Name = "Sinh viên")]
     public int SinhVienId { get; set; }
 
     [Required(ErrorMessage = "Vui lòng chọn môn học")]
+    [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn môn học hợp lệ")]
     [Display(Name = "Môn học")]
     public int MonHocId { get; set; }
 

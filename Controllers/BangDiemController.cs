@@ -18,9 +18,10 @@ public class BangDiemController : Controller
     }
 
     // 1. Xem danh sách bảng điểm sinh viên
-    public IActionResult Index(int? sinhVienId)
+    public async Task<IActionResult> Index(int? sinhVienId)
     {
         var query = _db.Diems
+            .AsNoTracking()
             .Include(d => d.SinhVien)
             .Include(d => d.MonHoc)
             .AsQueryable();
@@ -30,26 +31,22 @@ public class BangDiemController : Controller
             query = query.Where(d => d.SinhVienId == sinhVienId.Value);
         }
 
-        var list = query
-            .OrderBy(d => d.SinhVien!.HoTen)
+        var list = await query
+            .OrderBy(d => d.SinhVien!.MaSinhVien)
             .ThenBy(d => d.MonHoc!.TenMon)
-            .ToList();
+            .ToListAsync();
 
+        await LoadDropdownsAsync(sinhVienId);
         ViewBag.SinhVienId = sinhVienId;
-        ViewBag.DanhSachSinhVien = new SelectList(
-            _db.SinhViens.OrderBy(s => s.HoTen).ToList(),
-            "Id",
-            "HoTen",
-            sinhVienId);
 
         return View(list);
     }
 
     // 2. Nhập điểm môn học (GET)
     [HttpGet]
-    public IActionResult NhapDiem(int? sinhVienId, int? monHocId)
+    public async Task<IActionResult> NhapDiem(int? sinhVienId, int? monHocId)
     {
-        LoadDropdowns(sinhVienId, monHocId);
+        await LoadDropdownsAsync(sinhVienId, monHocId);
 
         var model = new DiemFormViewModel
         {
@@ -60,9 +57,9 @@ public class BangDiemController : Controller
         // Nếu đã có kết quả nhập trước đó thì nạp lại giá trị cũ để chỉnh sửa.
         if (sinhVienId > 0 && monHocId > 0)
         {
-            var existing = _db.Diems
+            var existing = await _db.Diems
                 .AsNoTracking()
-                .FirstOrDefault(d => d.SinhVienId == sinhVienId && d.MonHocId == monHocId);
+                .FirstOrDefaultAsync(d => d.SinhVienId == sinhVienId && d.MonHocId == monHocId);
 
             if (existing != null)
             {
@@ -79,16 +76,26 @@ public class BangDiemController : Controller
     // 3. Nhập điểm môn học (POST)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult NhapDiem(DiemFormViewModel model)
+    public async Task<IActionResult> NhapDiem(DiemFormViewModel model)
     {
+        if (model.SinhVienId <= 0 || !await _db.SinhViens.AnyAsync(s => s.Id == model.SinhVienId))
+        {
+            ModelState.AddModelError(nameof(model.SinhVienId), "Sinh viên được chọn không tồn tại trong hệ thống.");
+        }
+
+        if (model.MonHocId <= 0 || !await _db.MonHocs.AnyAsync(m => m.Id == model.MonHocId))
+        {
+            ModelState.AddModelError(nameof(model.MonHocId), "Môn học được chọn không tồn tại trong hệ thống.");
+        }
+
         if (!ModelState.IsValid)
         {
-            LoadDropdowns(model.SinhVienId, model.MonHocId);
+            await LoadDropdownsAsync(model.SinhVienId, model.MonHocId);
             return View(model);
         }
 
         // Kiểm tra xem sinh viên đã có điểm môn này chưa
-        var diem = _db.Diems.FirstOrDefault(d =>
+        var diem = await _db.Diems.FirstOrDefaultAsync(d =>
             d.SinhVienId == model.SinhVienId && d.MonHocId == model.MonHocId);
 
         if (diem != null)
@@ -113,23 +120,35 @@ public class BangDiemController : Controller
             TempData["Msg"] = "Đã ghi nhận điểm học phần thành công!";
         }
 
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
         return RedirectToAction(nameof(Index), new { sinhVienId = model.SinhVienId });
     }
 
     // Hàm phụ nạp dữ liệu DropDownList
-    private void LoadDropdowns(int? selectedSinhVien = null, int? selectedMonHoc = null)
+    private async Task LoadDropdownsAsync(int? selectedSinhVien = null, int? selectedMonHoc = null)
     {
+        var sinhViens = await _db.SinhViens
+            .AsNoTracking()
+            .OrderBy(s => s.MaSinhVien)
+            .Select(s => new { s.Id, Display = s.MaSinhVien + " - " + s.HoTen })
+            .ToListAsync();
+
+        var monHocs = await _db.MonHocs
+            .AsNoTracking()
+            .OrderBy(m => m.MaMon)
+            .Select(m => new { m.Id, Display = m.MaMon + " - " + m.TenMon })
+            .ToListAsync();
+
         ViewBag.DanhSachSinhVien = new SelectList(
-            _db.SinhViens.OrderBy(s => s.HoTen).ToList(),
+            sinhViens,
             "Id",
-            "HoTen",
+            "Display",
             selectedSinhVien);
 
         ViewBag.DanhSachMonHoc = new SelectList(
-            _db.MonHocs.OrderBy(m => m.TenMon).ToList(),
+            monHocs,
             "Id",
-            "TenMon",
+            "Display",
             selectedMonHoc);
     }
 }

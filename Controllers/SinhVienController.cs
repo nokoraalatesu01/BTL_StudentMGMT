@@ -52,6 +52,11 @@ public class SinhVienController : Controller
                 TempData["Error"] = "Định dạng file không hợp lệ (.jpg, .jpeg, .png, .webp) hoặc vượt quá 5MB.";
             }
         }
+        else
+        {
+            TempData["Error"] = "Vui lòng chọn file hình ảnh hợp lệ để tải lên.";
+        }
+
         return RedirectToAction(nameof(HoSo));
     }
 
