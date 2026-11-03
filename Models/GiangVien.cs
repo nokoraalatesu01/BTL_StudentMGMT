@@ -19,4 +19,5 @@ public class GiangVien
     public ApplicationUser? User { get; set; }
     public int? DonViId { get; set; }
     public virtual DonVi? DonVi { get; set; }
+    public virtual ICollection<LopHocPhan> LopHocPhans { get; set; } = new List<LopHocPhan>();
 }

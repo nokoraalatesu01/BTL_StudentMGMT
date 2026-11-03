@@ -23,6 +23,7 @@ public class SinhVien
 
     // Bổ sung navigation từ schema mới (không ảnh hưởng code cũ)
     public virtual ICollection<DiemDanh> DiemDanhs { get; set; } = new List<DiemDanh>();
+    public virtual ICollection<DangKyHocPhan> DangKyHocPhans { get; set; } = new List<DangKyHocPhan>();
 
     public static IReadOnlyList<string> TrangThaiOptions { get; } =
     [

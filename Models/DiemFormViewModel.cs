@@ -6,6 +6,10 @@ public class DiemFormViewModel
 {
     public int Id { get; set; }
 
+    [Display(Name = "Lớp học phần")]
+    public int? LopHocPhanId { get; set; }
+    public string? TenLopHocPhan { get; set; }
+
     [Required(ErrorMessage = "Vui lòng chọn sinh viên")]
     [Display(Name = "Sinh viên")]
     public int SinhVienId { get; set; }

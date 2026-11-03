@@ -336,3 +336,4 @@ public class GiangVienController : Controller
         return RedirectToAction(nameof(Index));
     }
 }
+

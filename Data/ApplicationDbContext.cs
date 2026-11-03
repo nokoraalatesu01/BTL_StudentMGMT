@@ -26,10 +26,9 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<HocKy> HocKies => Set<HocKy>();
     public DbSet<KhoaTuyenSinh> KhoaTuyenSinhs => Set<KhoaTuyenSinh>();
     public DbSet<PhongHoc> PhongHocs => Set<PhongHoc>();
-    // public DbSet<LopHanhChinh> LopHanhChinhs => Set<LopHanhChinh>();
-    // public DbSet<LopHocPhan> LopHocPhans => Set<LopHocPhan>();
+    public DbSet<LopHocPhan> LopHocPhans => Set<LopHocPhan>();
     public DbSet<LichHoc> LichHocs => Set<LichHoc>();
-    // public DbSet<DangKyHocPhan> DangKyHocPhans => Set<DangKyHocPhan>();
+    public DbSet<DangKyHocPhan> DangKyHocPhans => Set<DangKyHocPhan>();
     public DbSet<ThanhPhanDiem> ThanhPhanDiems => Set<ThanhPhanDiem>();
     public DbSet<DiemThanhPhan> DiemThanhPhans => Set<DiemThanhPhan>();
     public DbSet<KetQuaHocTap> KetQuaHocTaps => Set<KetQuaHocTap>();
@@ -203,14 +202,18 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany(s => s.DiemDanhs)
                 .HasForeignKey(e => e.SinhVienId)
                 .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.LopHocPhan)
+                .WithMany(lhp => lhp.DiemDanhs)
+                .HasForeignKey(e => e.LopHocPhanId)
+                .OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.Lop)
                 .WithMany()
                 .HasForeignKey(e => e.LopId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.SetNull);
             entity.HasOne(e => e.MonHoc)
                 .WithMany()
                 .HasForeignKey(e => e.MonHocId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<LichGiangDay>(entity =>
@@ -234,19 +237,26 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasForeignKey(e => e.LopId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-        modelBuilder.Entity<Diem>()
-            .HasIndex(diem => new { diem.SinhVienId, diem.MonHocId })
-            .IsUnique();
-        modelBuilder.Entity<Diem>()
-            .HasOne(diem => diem.SinhVien)
-            .WithMany(sinhVien => sinhVien.Diems)
-            .HasForeignKey(diem => diem.SinhVienId)
-            .OnDelete(DeleteBehavior.Cascade);
-        modelBuilder.Entity<Diem>()
-            .HasOne(diem => diem.MonHoc)
-            .WithMany()
-            .HasForeignKey(diem => diem.MonHocId)
-            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Diem>(entity =>
+        {
+            entity.ToTable("Diems");
+            entity.HasKey(e => e.Id);
+            entity.HasOne(diem => diem.SinhVien)
+                .WithMany(sinhVien => sinhVien.Diems)
+                .HasForeignKey(diem => diem.SinhVienId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(diem => diem.MonHoc)
+                .WithMany()
+                .HasForeignKey(diem => diem.MonHocId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(diem => diem.LopHocPhan)
+                .WithMany(lhp => lhp.Diems)
+                .HasForeignKey(diem => diem.LopHocPhanId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(diem => new { diem.SinhVienId, diem.LopHocPhanId })
+                .IsUnique()
+                .HasFilter("[LopHocPhanId] IS NOT NULL");
+        });
 
         // === Cấu hình bổ sung từ schema QLSinhVienUTC ===
         modelBuilder.Entity<DonVi>(entity =>
@@ -315,18 +325,22 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         //     entity.HasOne(d => d.Nganh).WithMany(p => p.LopHanhChinhs).HasForeignKey(d => d.NganhId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_Lop_Nganh");
         // });
 
-        // modelBuilder.Entity<LopHocPhan>(entity =>
-        // {
-        //     entity.ToTable("LopHocPhan");
-        //     entity.HasIndex(e => new { e.HocKyId, e.MonHocId, e.TrangThai }, "IX_LHP_HocKy_Mon");
-        //     entity.HasIndex(e => e.MaLopHocPhan, "UQ_LHP_Ma").IsUnique();
-        //     entity.Property(e => e.MaLopHocPhan).HasMaxLength(30).IsUnicode(false);
-        //     entity.Property(e => e.Nhom).HasMaxLength(20).IsUnicode(false).HasDefaultValue("01", "DF_LHP_Nhom");
-        //     entity.Property(e => e.TrangThai).HasMaxLength(25).IsUnicode(false).HasDefaultValue("PLANNED", "DF_LHP_TrangThai");
-        //     entity.HasOne(d => d.GiangVien).WithMany(p => p.LopHocPhans).HasForeignKey(d => d.GiangVienId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_LHP_GV");
-        //     entity.HasOne(d => d.HocKy).WithMany(p => p.LopHocPhans).HasForeignKey(d => d.HocKyId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_LHP_HocKy");
-        //     entity.HasOne(d => d.MonHoc).WithMany(p => p.LopHocPhans).HasForeignKey(d => d.MonHocId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_LHP_Mon");
-        // });
+        modelBuilder.Entity<LopHocPhan>(entity =>
+        {
+            entity.ToTable("LopHocPhan");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.MaLopHocPhan).IsUnique();
+            entity.Property(e => e.MaLopHocPhan).HasMaxLength(30);
+            entity.Property(e => e.TenLopHocPhan).HasMaxLength(200);
+            entity.Property(e => e.Nhom).HasMaxLength(20).HasDefaultValue("01");
+            entity.Property(e => e.TrangThai).HasMaxLength(30).HasDefaultValue("OPEN");
+            entity.Property(e => e.Thu).HasMaxLength(20);
+            entity.Property(e => e.PhongHoc).HasMaxLength(50);
+            entity.Property(e => e.GhiChu).HasMaxLength(255);
+            entity.HasOne(d => d.GiangVien).WithMany(p => p.LopHocPhans).HasForeignKey(d => d.GiangVienId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(d => d.HocKy).WithMany(p => p.LopHocPhans).HasForeignKey(d => d.HocKyId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(d => d.MonHoc).WithMany(p => p.LopHocPhans).HasForeignKey(d => d.MonHocId).OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<LichHoc>(entity =>
         {
@@ -338,20 +352,17 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasOne(d => d.PhongHoc).WithMany(p => p.LichHocs).HasForeignKey(d => d.PhongHocId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_LichHoc_Phong");
         });
 
-        // modelBuilder.Entity<DangKyHocPhan>(entity =>
-        // {
-        //     entity.ToTable("DangKyHocPhan");
-        //     entity.HasIndex(e => new { e.LopHocPhanId, e.TrangThai }, "IX_DK_LHP_TrangThai");
-        //     entity.HasIndex(e => new { e.SinhVienId, e.TrangThai }, "IX_DK_SV_TrangThai");
-        //     entity.HasIndex(e => new { e.SinhVienId, e.LopHocPhanId }, "UQ_DK_SV_LHP").IsUnique();
-        //     entity.Property(e => e.GhiChu).HasMaxLength(300);
-        //     entity.Property(e => e.LanHoc).HasDefaultValue((byte)1, "DF_DK_LanHoc");
-        //     entity.Property(e => e.NgayDangKy).HasPrecision(0).HasDefaultValueSql("(sysutcdatetime())", "DF_DK_Ngay");
-        //     entity.Property(e => e.RowVer).IsRowVersion().IsConcurrencyToken();
-        //     entity.Property(e => e.TrangThai).HasMaxLength(20).IsUnicode(false).HasDefaultValue("ENROLLED", "DF_DK_TrangThai");
-        //     entity.HasOne(d => d.LopHocPhan).WithMany(p => p.DangKyHocPhans).HasForeignKey(d => d.LopHocPhanId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_DK_LHP");
-        //     entity.HasOne(d => d.SinhVien).WithMany(p => p.DangKyHocPhans).HasForeignKey(d => d.SinhVienId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_DK_SV");
-        // });
+        modelBuilder.Entity<DangKyHocPhan>(entity =>
+        {
+            entity.ToTable("DangKyHocPhan");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.SinhVienId, e.LopHocPhanId }, "UQ_DK_SV_LHP").IsUnique();
+            entity.Property(e => e.GhiChu).HasMaxLength(300);
+            entity.Property(e => e.LanHoc).HasDefaultValue(1);
+            entity.Property(e => e.TrangThai).HasMaxLength(30).HasDefaultValue("ENROLLED");
+            entity.HasOne(d => d.LopHocPhan).WithMany(p => p.DangKyHocPhans).HasForeignKey(d => d.LopHocPhanId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(d => d.SinhVien).WithMany(p => p.DangKyHocPhans).HasForeignKey(d => d.SinhVienId).OnDelete(DeleteBehavior.Cascade);
+        });
 
         modelBuilder.Entity<ThanhPhanDiem>(entity =>
         {

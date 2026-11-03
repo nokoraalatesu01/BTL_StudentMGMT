@@ -9,6 +9,10 @@ public class Diem
     public int MonHocId { get; set; }
     public MonHoc? MonHoc { get; set; }
 
+    // Liên kết với Lớp học phần đào tạo tín chỉ
+    public int? LopHocPhanId { get; set; }
+    public LopHocPhan? LopHocPhan { get; set; }
+
     public double DiemChuyenCan { get; set; }
     public double DiemGiuaKy { get; set; }
     public double DiemCuoiKy { get; set; }

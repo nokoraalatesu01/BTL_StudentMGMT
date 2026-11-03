@@ -213,6 +213,49 @@ namespace BTL_StudentMGMT.Migrations
                     b.ToTable("ChuongTrinhHocBong", (string)null);
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.DangKyHocPhan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("GhiChu")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("LanHoc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<int>("LopHocPhanId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayDangKy")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SinhVienId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("ENROLLED");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LopHocPhanId");
+
+                    b.HasIndex(new[] { "SinhVienId", "LopHocPhanId" }, "UQ_DK_SV_LHP")
+                        .IsUnique();
+
+                    b.ToTable("DangKyHocPhan", (string)null);
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.Diem", b =>
                 {
                     b.Property<int>("Id")
@@ -230,6 +273,9 @@ namespace BTL_StudentMGMT.Migrations
                     b.Property<double>("DiemGiuaKy")
                         .HasColumnType("float");
 
+                    b.Property<int?>("LopHocPhanId")
+                        .HasColumnType("int");
+
                     b.Property<int>("MonHocId")
                         .HasColumnType("int");
 
@@ -238,12 +284,15 @@ namespace BTL_StudentMGMT.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("LopHocPhanId");
+
                     b.HasIndex("MonHocId");
 
-                    b.HasIndex("SinhVienId", "MonHocId")
-                        .IsUnique();
+                    b.HasIndex("SinhVienId", "LopHocPhanId")
+                        .IsUnique()
+                        .HasFilter("[LopHocPhanId] IS NOT NULL");
 
-                    b.ToTable("Diems");
+                    b.ToTable("Diems", (string)null);
                 });
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.DiemDanh", b =>
@@ -258,7 +307,10 @@ namespace BTL_StudentMGMT.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<int>("LopId")
+                    b.Property<int?>("LopHocPhanId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LopId")
                         .HasColumnType("int");
 
                     b.Property<int>("MonHocId")
@@ -276,6 +328,8 @@ namespace BTL_StudentMGMT.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LopHocPhanId");
 
                     b.HasIndex("LopId");
 
@@ -686,6 +740,84 @@ namespace BTL_StudentMGMT.Migrations
                         .IsUnique();
 
                     b.ToTable("Lops");
+                });
+
+            modelBuilder.Entity("BTL_StudentMGMT.Models.LopHocPhan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("GhiChu")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int?>("GiangVienId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HocKyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MaLopHocPhan")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("MonHocId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nhom")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("01");
+
+                    b.Property<string>("PhongHoc")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("SiSoToiDa")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SoTiet")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TenLopHocPhan")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Thu")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("TietBatDau")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("OPEN");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GiangVienId");
+
+                    b.HasIndex("HocKyId");
+
+                    b.HasIndex("MaLopHocPhan")
+                        .IsUnique();
+
+                    b.HasIndex("MonHocId");
+
+                    b.ToTable("LopHocPhan", (string)null);
                 });
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.MonHoc", b =>
@@ -1117,8 +1249,32 @@ namespace BTL_StudentMGMT.Migrations
                     b.Navigation("NamHoc");
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.DangKyHocPhan", b =>
+                {
+                    b.HasOne("BTL_StudentMGMT.Models.LopHocPhan", "LopHocPhan")
+                        .WithMany("DangKyHocPhans")
+                        .HasForeignKey("LopHocPhanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BTL_StudentMGMT.Models.SinhVien", "SinhVien")
+                        .WithMany("DangKyHocPhans")
+                        .HasForeignKey("SinhVienId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LopHocPhan");
+
+                    b.Navigation("SinhVien");
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.Diem", b =>
                 {
+                    b.HasOne("BTL_StudentMGMT.Models.LopHocPhan", "LopHocPhan")
+                        .WithMany("Diems")
+                        .HasForeignKey("LopHocPhanId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("BTL_StudentMGMT.Models.MonHoc", "MonHoc")
                         .WithMany()
                         .HasForeignKey("MonHocId")
@@ -1131,6 +1287,8 @@ namespace BTL_StudentMGMT.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("LopHocPhan");
+
                     b.Navigation("MonHoc");
 
                     b.Navigation("SinhVien");
@@ -1138,16 +1296,20 @@ namespace BTL_StudentMGMT.Migrations
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.DiemDanh", b =>
                 {
+                    b.HasOne("BTL_StudentMGMT.Models.LopHocPhan", "LopHocPhan")
+                        .WithMany("DiemDanhs")
+                        .HasForeignKey("LopHocPhanId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("BTL_StudentMGMT.Models.Lop", "Lop")
                         .WithMany()
                         .HasForeignKey("LopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("BTL_StudentMGMT.Models.MonHoc", "MonHoc")
                         .WithMany()
                         .HasForeignKey("MonHocId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("BTL_StudentMGMT.Models.SinhVien", "SinhVien")
@@ -1157,6 +1319,8 @@ namespace BTL_StudentMGMT.Migrations
                         .IsRequired();
 
                     b.Navigation("Lop");
+
+                    b.Navigation("LopHocPhan");
 
                     b.Navigation("MonHoc");
 
@@ -1265,6 +1429,31 @@ namespace BTL_StudentMGMT.Migrations
                     b.Navigation("Nganh");
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.LopHocPhan", b =>
+                {
+                    b.HasOne("BTL_StudentMGMT.Models.GiangVien", "GiangVien")
+                        .WithMany("LopHocPhans")
+                        .HasForeignKey("GiangVienId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BTL_StudentMGMT.Models.HocKy", "HocKy")
+                        .WithMany("LopHocPhans")
+                        .HasForeignKey("HocKyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BTL_StudentMGMT.Models.MonHoc", "MonHoc")
+                        .WithMany("LopHocPhans")
+                        .HasForeignKey("MonHocId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("GiangVien");
+
+                    b.Navigation("HocKy");
+
+                    b.Navigation("MonHoc");
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.MonHoc", b =>
                 {
                     b.HasOne("BTL_StudentMGMT.Models.DonVi", "DonVi")
@@ -1367,9 +1556,33 @@ namespace BTL_StudentMGMT.Migrations
                     b.Navigation("Nganhs");
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.GiangVien", b =>
+                {
+                    b.Navigation("LopHocPhans");
+                });
+
+            modelBuilder.Entity("BTL_StudentMGMT.Models.HocKy", b =>
+                {
+                    b.Navigation("LopHocPhans");
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.Lop", b =>
                 {
                     b.Navigation("SinhViens");
+                });
+
+            modelBuilder.Entity("BTL_StudentMGMT.Models.LopHocPhan", b =>
+                {
+                    b.Navigation("DangKyHocPhans");
+
+                    b.Navigation("DiemDanhs");
+
+                    b.Navigation("Diems");
+                });
+
+            modelBuilder.Entity("BTL_StudentMGMT.Models.MonHoc", b =>
+                {
+                    b.Navigation("LopHocPhans");
                 });
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.NamHoc", b =>
@@ -1393,6 +1606,8 @@ namespace BTL_StudentMGMT.Migrations
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.SinhVien", b =>
                 {
+                    b.Navigation("DangKyHocPhans");
+
                     b.Navigation("DiemDanhs");
 
                     b.Navigation("Diems");
