@@ -59,6 +59,11 @@
                     <span class="nav-symbol" aria-hidden="true"><i class="bi bi-journal-text"></i></span>
                     <span>Bảng điểm của tôi</span>
                 </a>
+                <a asp-controller="SinhVien" asp-action="HocPhi"
+                   class="@(currentAction == "HocPhi" ? "active" : "")" aria-current="@(currentAction == "HocPhi" ? "page" : null)">
+                    <span class="nav-symbol" aria-hidden="true"><i class="bi bi-credit-card"></i></span>
+                    <span>Học phí / Thanh toán</span>
+                </a>
             </nav>
 
             <div class="student-sidebar-bottom">

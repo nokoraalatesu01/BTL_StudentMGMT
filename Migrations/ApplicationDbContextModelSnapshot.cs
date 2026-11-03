@@ -90,6 +90,84 @@ namespace BTL_StudentMGMT.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.BieuPhiHocPhi", b =>
+                {
+                    b.Property<int>("BieuPhiId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BieuPhiId"));
+
+                    b.Property<int?>("ChuongTrinhId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("DonGiaTinChi")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateOnly?>("HieuLucDen")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("HieuLucTu")
+                        .HasColumnType("date");
+
+                    b.Property<string>("LoaiTien")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(3)")
+                        .HasDefaultValue("VND");
+
+                    b.Property<int>("NamHocId")
+                        .HasColumnType("int");
+
+                    b.HasKey("BieuPhiId");
+
+                    b.HasIndex("ChuongTrinhId");
+
+                    b.HasIndex("NamHocId");
+
+                    b.ToTable("BieuPhiHocPhi", (string)null);
+                });
+
+            modelBuilder.Entity("BTL_StudentMGMT.Models.ChiTietHoaDonHocPhi", b =>
+                {
+                    b.Property<long>("ChiTietHoaDonId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ChiTietHoaDonId"));
+
+                    b.Property<decimal>("DonGia")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<long>("HoaDonId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("LoaiKhoanThu")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("MoTa")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<decimal>("SoLuong")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<decimal>("SoTienGiam")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.HasKey("ChiTietHoaDonId");
+
+                    b.HasIndex("HoaDonId");
+
+                    b.ToTable("ChiTietHoaDonHocPhi", (string)null);
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.ChuongTrinhDaoTao", b =>
                 {
                     b.Property<int>("Id")
@@ -440,6 +518,60 @@ namespace BTL_StudentMGMT.Migrations
                         .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("GiangViens");
+                });
+
+            modelBuilder.Entity("BTL_StudentMGMT.Models.HoaDonHocPhi", b =>
+                {
+                    b.Property<long>("HoaDonId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("HoaDonId"));
+
+                    b.Property<string>("GhiChu")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateOnly?>("HanThanhToan")
+                        .HasColumnType("date");
+
+                    b.Property<int>("HocKyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayLap")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)")
+                        .HasDefaultValueSql("(sysutcdatetime())");
+
+                    b.Property<int>("SinhVienId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SoHoaDon")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(40)");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("ISSUED");
+
+                    b.HasKey("HoaDonId");
+
+                    b.HasIndex("HocKyId");
+
+                    b.HasIndex(new[] { "SinhVienId", "HocKyId" }, "UQ_HoaDon_SV_HocKy")
+                        .IsUnique();
+
+                    b.HasIndex(new[] { "SoHoaDon" }, "UQ_HoaDon_So")
+                        .IsUnique();
+
+                    b.ToTable("HoaDonHocPhi", (string)null);
                 });
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.HocKy", b =>
@@ -949,6 +1081,81 @@ namespace BTL_StudentMGMT.Migrations
                     b.ToTable("ThanhPhanDiem", (string)null);
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.ThanhToan", b =>
+                {
+                    b.Property<long>("ThanhToanId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ThanhToanId"));
+
+                    b.Property<string>("AnhMinhChung")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("GhiChu")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<long>("HoaDonId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("IdempotencyKey")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("MaGiaoDich")
+                        .HasMaxLength(8)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<string>("NguonThanhToan")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PhuongThuc")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<decimal>("SoTien")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime>("ThoiGianThanhToan")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(0)
+                        .HasColumnType("datetime2(0)")
+                        .HasDefaultValueSql("(sysutcdatetime())");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("PENDING");
+
+                    b.HasKey("ThanhToanId");
+
+                    b.HasIndex(new[] { "HoaDonId", "TrangThai" }, "IX_ThanhToan_HD_TrangThai");
+
+                    b.HasIndex(new[] { "HoaDonId" }, "UQ_ThanhToan_HD_Pending")
+                        .IsUnique()
+                        .HasFilter("[TrangThai] = 'PENDING'");
+
+                    b.HasIndex(new[] { "IdempotencyKey" }, "UQ_ThanhToan_Idempotency")
+                        .IsUnique()
+                        .HasFilter("[IdempotencyKey] IS NOT NULL");
+
+                    b.HasIndex(new[] { "MaGiaoDich" }, "UQ_ThanhToan_MaGiaoDich")
+                        .IsUnique()
+                        .HasFilter("[MaGiaoDich] IS NOT NULL");
+
+                    b.ToTable("ThanhToan", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -1082,6 +1289,31 @@ namespace BTL_StudentMGMT.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.BieuPhiHocPhi", b =>
+                {
+                    b.HasOne("BTL_StudentMGMT.Models.ChuongTrinhDaoTao", null)
+                        .WithMany()
+                        .HasForeignKey("ChuongTrinhId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BTL_StudentMGMT.Models.NamHoc", null)
+                        .WithMany()
+                        .HasForeignKey("NamHocId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("BTL_StudentMGMT.Models.ChiTietHoaDonHocPhi", b =>
+                {
+                    b.HasOne("BTL_StudentMGMT.Models.HoaDonHocPhi", "HoaDon")
+                        .WithMany("ChiTietHoaDonHocPhis")
+                        .HasForeignKey("HoaDonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HoaDon");
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.ChuongTrinhDaoTao", b =>
                 {
                     b.HasOne("BTL_StudentMGMT.Models.DonVi", "DonViChuyenMon")
@@ -1200,6 +1432,25 @@ namespace BTL_StudentMGMT.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.HoaDonHocPhi", b =>
+                {
+                    b.HasOne("BTL_StudentMGMT.Models.HocKy", "HocKy")
+                        .WithMany()
+                        .HasForeignKey("HocKyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BTL_StudentMGMT.Models.SinhVien", "SinhVien")
+                        .WithMany()
+                        .HasForeignKey("SinhVienId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("HocKy");
+
+                    b.Navigation("SinhVien");
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.HocKy", b =>
                 {
                     b.HasOne("BTL_StudentMGMT.Models.NamHoc", "NamHoc")
@@ -1301,6 +1552,17 @@ namespace BTL_StudentMGMT.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.ThanhToan", b =>
+                {
+                    b.HasOne("BTL_StudentMGMT.Models.HoaDonHocPhi", "HoaDon")
+                        .WithMany("ThanhToans")
+                        .HasForeignKey("HoaDonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("HoaDon");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1365,6 +1627,13 @@ namespace BTL_StudentMGMT.Migrations
                     b.Navigation("MonHocs");
 
                     b.Navigation("Nganhs");
+                });
+
+            modelBuilder.Entity("BTL_StudentMGMT.Models.HoaDonHocPhi", b =>
+                {
+                    b.Navigation("ChiTietHoaDonHocPhis");
+
+                    b.Navigation("ThanhToans");
                 });
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.Lop", b =>
