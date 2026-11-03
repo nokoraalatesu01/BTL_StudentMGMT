@@ -28,6 +28,12 @@ public class DangKyHocPhan
     [Display(Name = "Lần học")]
     public int LanHoc { get; set; } = 1;
 
+    // HOC_LAN_DAU, HOC_LAI, HOC_CAI_THIEN
+    [Required]
+    [StringLength(30)]
+    [Display(Name = "Loại đăng ký")]
+    public string LoaiDangKy { get; set; } = "HOC_LAN_DAU";
+
     [StringLength(300)]
     [Display(Name = "Ghi chú")]
     public string? GhiChu { get; set; }

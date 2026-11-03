@@ -564,11 +564,17 @@ public static class DbSeeder
         }
         await db.SaveChangesAsync();
 
-        // 15. Cập nhật LopHocPhanId cho Điểm và Điểm danh
+        // 15. Cập nhật LopHocPhanId cho Điểm và Điểm danh (chỉ gán nếu sinh viên chưa có bản ghi trong LHP đó)
         if (lhpWeb01 != null && mINT301Entity != null)
         {
             var diemsWeb = await db.Diems.Where(d => d.MonHocId == mINT301Entity.Id && d.LopHocPhanId == null).ToListAsync();
-            foreach (var d in diemsWeb) d.LopHocPhanId = lhpWeb01.Id;
+            foreach (var d in diemsWeb)
+            {
+                if (!await db.Diems.AnyAsync(x => x.SinhVienId == d.SinhVienId && x.LopHocPhanId == lhpWeb01.Id))
+                {
+                    d.LopHocPhanId = lhpWeb01.Id;
+                }
+            }
 
             var ddWeb = await db.DiemDanhs.Where(d => d.MonHocId == mINT301Entity.Id && d.LopHocPhanId == null).ToListAsync();
             foreach (var dd in ddWeb) dd.LopHocPhanId = lhpWeb01.Id;
@@ -578,22 +584,138 @@ public static class DbSeeder
         if (lhpCtdl01 != null && mINT201Entity != null)
         {
             var diemsCtdl = await db.Diems.Where(d => d.MonHocId == mINT201Entity.Id && d.LopHocPhanId == null).ToListAsync();
-            foreach (var d in diemsCtdl) d.LopHocPhanId = lhpCtdl01.Id;
+            foreach (var d in diemsCtdl)
+            {
+                if (!await db.Diems.AnyAsync(x => x.SinhVienId == d.SinhVienId && x.LopHocPhanId == lhpCtdl01.Id))
+                {
+                    d.LopHocPhanId = lhpCtdl01.Id;
+                }
+            }
             await db.SaveChangesAsync();
         }
 
         if (lhpSql01 != null && mINT205Entity != null)
         {
             var diemsSql = await db.Diems.Where(d => d.MonHocId == mINT205Entity.Id && d.LopHocPhanId == null).ToListAsync();
-            foreach (var d in diemsSql) d.LopHocPhanId = lhpSql01.Id;
+            foreach (var d in diemsSql)
+            {
+                if (!await db.Diems.AnyAsync(x => x.SinhVienId == d.SinhVienId && x.LopHocPhanId == lhpSql01.Id))
+                {
+                    d.LopHocPhanId = lhpSql01.Id;
+                }
+            }
             await db.SaveChangesAsync();
         }
 
         if (lhpKtvm01 != null && mBUS101Entity != null)
         {
             var diemsKtvm = await db.Diems.Where(d => d.MonHocId == mBUS101Entity.Id && d.LopHocPhanId == null).ToListAsync();
-            foreach (var d in diemsKtvm) d.LopHocPhanId = lhpKtvm01.Id;
+            foreach (var d in diemsKtvm)
+            {
+                if (!await db.Diems.AnyAsync(x => x.SinhVienId == d.SinhVienId && x.LopHocPhanId == lhpKtvm01.Id))
+                {
+                    d.LopHocPhanId = lhpKtvm01.Id;
+                }
+            }
             await db.SaveChangesAsync();
+        }
+
+        // 16. Chuẩn hóa & Seed dữ liệu mô phỏng nghiệp vụ Học lại, Học cải thiện, Thi lại
+        // a) Cập nhật các bản ghi hiện tại
+        var currentDiems = await db.Diems.ToListAsync();
+        foreach (var d in currentDiems)
+        {
+            if (d.HocKyId == null) d.HocKyId = hocKy1.HocKyId;
+            if (string.IsNullOrEmpty(d.LoaiHoc)) d.LoaiHoc = "HOC_LAN_DAU";
+            d.TrangThai = d.DiemTongKet >= 4.0 ? "DAT" : "KHONG_DAT";
+        }
+        await db.SaveChangesAsync();
+
+        // b) Kịch bản 1: SV202401 (Nguyễn Văn Hưng) từng trượt môn INT201 lần 1, sau đó học lại đạt 9.2
+        if (svHung != null && mINT201Entity != null)
+        {
+            var diemHungHocLai = await db.Diems.FirstOrDefaultAsync(d => d.SinhVienId == svHung.Id && d.MonHocId == mINT201Entity.Id && d.LanHoc == 2);
+            var diemHungLan1 = await db.Diems.FirstOrDefaultAsync(d => d.SinhVienId == svHung.Id && d.MonHocId == mINT201Entity.Id && d.LanHoc == 1);
+
+            if (diemHungLan1 != null && diemHungHocLai == null)
+            {
+                // Chuyển bản ghi đạt hiện tại thành lần 2 (Học lại)
+                diemHungLan1.LoaiHoc = "HOC_LAI";
+                diemHungLan1.LanHoc = 2;
+                diemHungLan1.SuDungTinhTichLuy = true;
+                diemHungLan1.GhiChu = "Học lại lần 2 do lần 1 không đạt (F)";
+
+                // Thêm bản ghi lịch sử lần 1 (bị F)
+                db.Diems.Add(new Diem
+                {
+                    SinhVienId = svHung.Id,
+                    MonHocId = mINT201Entity.Id,
+                    HocKyId = hocKy1.HocKyId,
+                    LoaiHoc = "HOC_LAN_DAU",
+                    LanHoc = 1,
+                    LanThi = 1,
+                    DiemChuyenCan = 4.0,
+                    DiemGiuaKy = 3.0,
+                    DiemCuoiKy = 3.0,
+                    TrangThai = "KHONG_DAT",
+                    SuDungTinhTichLuy = false,
+                    GhiChu = "Học lần đầu không đạt (F = 3.1 điểm)",
+                    NgayCapNhat = DateTime.UtcNow.AddMonths(-5),
+                    NguoiCapNhat = "HeThong"
+                });
+                await db.SaveChangesAsync();
+            }
+        }
+
+        // c) Kịch bản 2: SV202403 (Lê Hoàng Long) đã đạt BUS101 lần 1 (4.8 điểm - D+), học cải thiện lần 2 đạt 8.0 (B+)
+        if (svLong != null && mBUS101Entity != null)
+        {
+            var diemLongCaiThien = await db.Diems.FirstOrDefaultAsync(d => d.SinhVienId == svLong.Id && d.MonHocId == mBUS101Entity.Id && d.LanHoc == 2);
+            var diemLongLan1 = await db.Diems.FirstOrDefaultAsync(d => d.SinhVienId == svLong.Id && d.MonHocId == mBUS101Entity.Id && d.LanHoc == 1);
+
+            if (diemLongLan1 != null && diemLongCaiThien == null)
+            {
+                // Bản ghi hiện tại đang là 8.0, chuyển thành lần 2 (Cải thiện)
+                diemLongLan1.LoaiHoc = "HOC_CAI_THIEN";
+                diemLongLan1.LanHoc = 2;
+                diemLongLan1.SuDungTinhTichLuy = true;
+                diemLongLan1.GhiChu = "Học cải thiện điểm (lần 1 đạt D+ 4.7 điểm)";
+
+                // Thêm bản ghi lịch sử lần 1
+                db.Diems.Add(new Diem
+                {
+                    SinhVienId = svLong.Id,
+                    MonHocId = mBUS101Entity.Id,
+                    HocKyId = hocKy1.HocKyId,
+                    LoaiHoc = "HOC_LAN_DAU",
+                    LanHoc = 1,
+                    LanThi = 1,
+                    DiemChuyenCan = 5.0,
+                    DiemGiuaKy = 5.0,
+                    DiemCuoiKy = 4.5,
+                    TrangThai = "DAT",
+                    SuDungTinhTichLuy = false, // Không tính vì đã có lần học cải thiện đạt 8.0 cao hơn
+                    GhiChu = "Học lần đầu đạt D+ (4.7 điểm)",
+                    NgayCapNhat = DateTime.UtcNow.AddMonths(-5),
+                    NguoiCapNhat = "HeThong"
+                });
+                await db.SaveChangesAsync();
+            }
+        }
+
+        // d) Kịch bản 3: SV202402 (Trần Thị Mai Anh) môn INT301 thi lần 1 bị điểm 3.0, thi lại lần 2 đạt 8.8
+        if (svMaiAnh != null && mINT301Entity != null)
+        {
+            var diemMaiAnhWeb = await db.Diems.FirstOrDefaultAsync(d => d.SinhVienId == svMaiAnh.Id && d.MonHocId == mINT301Entity.Id);
+            if (diemMaiAnhWeb != null && diemMaiAnhWeb.LanThi == 1 && !diemMaiAnhWeb.DiemCuoiKyLan2.HasValue)
+            {
+                diemMaiAnhWeb.LanThi = 2;
+                diemMaiAnhWeb.DiemCuoiKy = 3.0; // Thi lần 1
+                diemMaiAnhWeb.DiemCuoiKyLan2 = 8.8; // Thi lại lần 2 đạt điểm cao
+                diemMaiAnhWeb.GhiChu = "Thi lại kết thúc học phần lần 2 (L1: 3.0, L2: 8.8)";
+                diemMaiAnhWeb.SuDungTinhTichLuy = true;
+                await db.SaveChangesAsync();
+            }
         }
     }
 

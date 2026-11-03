@@ -128,16 +128,15 @@
                     tl.from('.student-page-heading', { y: -20, autoAlpha: 0, duration: 0.55 }, 0.1);
                 }
 
-                // Staggered Stat Cards
+                // Staggered Stat Cards - Đảm bảo thẻ luôn rõ nét 100%, không bị kẹt độ mờ
                 var statCards = gsap.utils.toArray('.student-stat-card');
                 if (statCards.length > 0) {
+                    gsap.set(statCards, { clearProps: "opacity,visibility" });
                     tl.from(statCards, {
-                        y: 30,
-                        scale: 0.94,
-                        autoAlpha: 0,
-                        duration: 0.55,
-                        stagger: 0.08,
-                        ease: "back.out(1.4)"
+                        y: 16,
+                        duration: 0.45,
+                        stagger: 0.06,
+                        ease: "power2.out"
                     }, 0.2);
                 }
 
@@ -145,10 +144,9 @@
                 var panels = gsap.utils.toArray('.student-panel');
                 if (panels.length > 0) {
                     tl.from(panels, {
-                        y: 25,
-                        autoAlpha: 0,
-                        duration: 0.6,
-                        stagger: 0.12,
+                        y: 20,
+                        duration: 0.5,
+                        stagger: 0.1,
                         ease: "power2.out"
                     }, 0.35);
                 }
@@ -165,43 +163,39 @@
                     }, 0.45);
                 }
 
-                // Animated Number Counter cho GPA
+                // Animated Number Counter cho GPA (chỉ khi có element riêng và là số thuần túy)
                 statCards.forEach(function (card) {
-                    var strong = card.querySelector('strong');
-                    if (strong) {
-                        var text = strong.innerText.trim();
+                    var gpaEl = card.querySelector('.stat-value-gpa');
+                    if (gpaEl && gpaEl.childNodes.length === 1 && gpaEl.childNodes[0].nodeType === 3) {
+                        var text = gpaEl.innerText.trim();
                         var numMatch = text.match(/^(\d+(\.\d+)?)$/);
                         if (numMatch) {
                             var targetNum = parseFloat(numMatch[1]);
                             var counter = { val: 0 };
                             gsap.to(counter, {
                                 val: targetNum,
-                                duration: 1.2,
+                                duration: 1.0,
                                 ease: "power2.out",
-                                delay: 0.4,
+                                delay: 0.3,
                                 onUpdate: function () {
-                                    strong.innerText = targetNum % 1 !== 0 ? counter.val.toFixed(2) : Math.round(counter.val);
+                                    gpaEl.innerText = targetNum % 1 !== 0 ? counter.val.toFixed(2) : Math.round(counter.val);
                                 }
                             });
                         }
                     }
                 });
 
-                // Micro-interactions trên Stat Cards
+                // Micro-interactions trên Icon của Stat Cards (CSS đã xử lý hover card)
                 statCards.forEach(function (card) {
                     var icon = card.querySelector('.student-stat-icon');
-                    card.addEventListener('mouseenter', function () {
-                        gsap.to(card, { y: -5, duration: 0.25, ease: "power2.out" });
-                        if (icon) {
-                            gsap.to(icon, { scale: 1.14, rotation: 6, duration: 0.3, ease: "back.out(2)" });
-                        }
-                    });
-                    card.addEventListener('mouseleave', function () {
-                        gsap.to(card, { y: 0, duration: 0.25, ease: "power2.out" });
-                        if (icon) {
-                            gsap.to(icon, { scale: 1, rotation: 0, duration: 0.25, ease: "power2.out" });
-                        }
-                    });
+                    if (icon) {
+                        card.addEventListener('mouseenter', function () {
+                            gsap.to(icon, { scale: 1.12, duration: 0.25, ease: "back.out(2)" });
+                        });
+                        card.addEventListener('mouseleave', function () {
+                            gsap.to(icon, { scale: 1, duration: 0.2, ease: "power2.out" });
+                        });
+                    }
                 });
 
                 // Micro-interactions trên Sidebar Nav Links

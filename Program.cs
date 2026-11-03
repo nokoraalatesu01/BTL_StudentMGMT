@@ -33,6 +33,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddScoped<IGiangVienSecurityService, GiangVienSecurityService>();
 
 var app = builder.Build();
 

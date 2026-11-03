@@ -230,6 +230,13 @@ namespace BTL_StudentMGMT.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(1);
 
+                    b.Property<string>("LoaiDangKy")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("HOC_LAN_DAU");
+
                     b.Property<int>("LopHocPhanId")
                         .HasColumnType("int");
 
@@ -270,8 +277,35 @@ namespace BTL_StudentMGMT.Migrations
                     b.Property<double>("DiemCuoiKy")
                         .HasColumnType("float");
 
+                    b.Property<double?>("DiemCuoiKyLan2")
+                        .HasColumnType("float");
+
                     b.Property<double>("DiemGiuaKy")
                         .HasColumnType("float");
+
+                    b.Property<string>("GhiChu")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("HocKyId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LanHoc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<int>("LanThi")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<string>("LoaiHoc")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("HOC_LAN_DAU");
 
                     b.Property<int?>("LopHocPhanId")
                         .HasColumnType("int");
@@ -279,10 +313,31 @@ namespace BTL_StudentMGMT.Migrations
                     b.Property<int>("MonHocId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("NgayCapNhat")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NguoiCapNhat")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<int>("SinhVienId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("SuDungTinhTichLuy")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("DAT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("HocKyId");
 
                     b.HasIndex("LopHocPhanId");
 
@@ -291,6 +346,8 @@ namespace BTL_StudentMGMT.Migrations
                     b.HasIndex("SinhVienId", "LopHocPhanId")
                         .IsUnique()
                         .HasFilter("[LopHocPhanId] IS NOT NULL");
+
+                    b.HasIndex("SinhVienId", "MonHocId", "SuDungTinhTichLuy");
 
                     b.ToTable("Diems", (string)null);
                 });
@@ -1270,6 +1327,11 @@ namespace BTL_StudentMGMT.Migrations
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.Diem", b =>
                 {
+                    b.HasOne("BTL_StudentMGMT.Models.HocKy", "HocKy")
+                        .WithMany()
+                        .HasForeignKey("HocKyId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("BTL_StudentMGMT.Models.LopHocPhan", "LopHocPhan")
                         .WithMany("Diems")
                         .HasForeignKey("LopHocPhanId")
@@ -1286,6 +1348,8 @@ namespace BTL_StudentMGMT.Migrations
                         .HasForeignKey("SinhVienId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("HocKy");
 
                     b.Navigation("LopHocPhan");
 

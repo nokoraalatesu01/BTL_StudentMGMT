@@ -38,7 +38,19 @@ public class SinhVien
     {
         get
         {
-            if (Diems.Count == 0)
+            // Chỉ tính trên các bản ghi được đánh dấu tính tích lũy (SuDungTinhTichLuy == true)
+            // Mỗi môn học chỉ tính đúng 1 lần kết quả tích lũy chuẩn
+            var validDiems = Diems.Where(d => d.SuDungTinhTichLuy).ToList();
+            if (validDiems.Count == 0 && Diems.Count > 0)
+            {
+                // Fallback: Group by MonHocId lấy điểm cao nhất
+                validDiems = Diems
+                    .GroupBy(d => d.MonHocId)
+                    .Select(g => g.OrderByDescending(d => d.DiemTongKet).First())
+                    .ToList();
+            }
+
+            if (validDiems.Count == 0)
             {
                 return null;
             }
@@ -46,7 +58,7 @@ public class SinhVien
             double tongDiem = 0;
             double tongTinChi = 0;
 
-            foreach (var diem in Diems)
+            foreach (var diem in validDiems)
             {
                 var tinChi = diem.MonHoc?.SoTinChi > 0 ? diem.MonHoc.SoTinChi : 1;
                 tongDiem += diem.DiemTongKet * tinChi;
@@ -54,6 +66,51 @@ public class SinhVien
             }
 
             return tongTinChi == 0 ? null : Math.Round(tongDiem / tongTinChi, 2);
+        }
+    }
+
+    [NotMapped]
+    public int TongTinChiTichLuy
+    {
+        get
+        {
+            var validDiems = Diems.Where(d => d.SuDungTinhTichLuy && d.DiemTongKet >= 4.0).ToList();
+            if (validDiems.Count == 0 && Diems.Count > 0)
+            {
+                validDiems = Diems
+                    .Where(d => d.DiemTongKet >= 4.0)
+                    .GroupBy(d => d.MonHocId)
+                    .Select(g => g.OrderByDescending(d => d.DiemTongKet).First())
+                    .ToList();
+            }
+            return validDiems.Sum(d => d.MonHoc?.SoTinChi > 0 ? d.MonHoc.SoTinChi : 1);
+        }
+    }
+
+    [NotMapped]
+    public int SoMonDaDat
+    {
+        get
+        {
+            // Đếm số môn học duy nhất đã đạt (>= 4.0)
+            return Diems
+                .Where(d => d.DiemTongKet >= 4.0)
+                .Select(d => d.MonHocId)
+                .Distinct()
+                .Count();
+        }
+    }
+
+    [NotMapped]
+    public int TongSoMonHoc
+    {
+        get
+        {
+            // Đếm số môn học duy nhất đã học
+            return Diems
+                .Select(d => d.MonHocId)
+                .Distinct()
+                .Count();
         }
     }
 

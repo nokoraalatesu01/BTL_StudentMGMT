@@ -253,9 +253,26 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany(lhp => lhp.Diems)
                 .HasForeignKey(diem => diem.LopHocPhanId)
                 .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(diem => diem.HocKy)
+                .WithMany()
+                .HasForeignKey(diem => diem.HocKyId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.Property(e => e.LoaiHoc).HasMaxLength(30).HasDefaultValue("HOC_LAN_DAU");
+            entity.Property(e => e.TrangThai).HasMaxLength(30).HasDefaultValue("DAT");
+            entity.Property(e => e.LanHoc).HasDefaultValue(1);
+            entity.Property(e => e.LanThi).HasDefaultValue(1);
+            entity.Property(e => e.SuDungTinhTichLuy).HasDefaultValue(true);
+            entity.Property(e => e.GhiChu).HasMaxLength(500);
+            entity.Property(e => e.NguoiCapNhat).HasMaxLength(100);
+
+            // Ràng buộc Unique Composite Index:
+            // Trong cùng một Lớp học phần, một sinh viên chỉ có 1 kết quả học tập
             entity.HasIndex(diem => new { diem.SinhVienId, diem.LopHocPhanId })
                 .IsUnique()
                 .HasFilter("[LopHocPhanId] IS NOT NULL");
+
+            // Index tối ưu truy vấn lịch sử học tập & tính GPA tích lũy
+            entity.HasIndex(diem => new { diem.SinhVienId, diem.MonHocId, diem.SuDungTinhTichLuy });
         });
 
         // === Cấu hình bổ sung từ schema QLSinhVienUTC ===
@@ -359,6 +376,7 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => new { e.SinhVienId, e.LopHocPhanId }, "UQ_DK_SV_LHP").IsUnique();
             entity.Property(e => e.GhiChu).HasMaxLength(300);
             entity.Property(e => e.LanHoc).HasDefaultValue(1);
+            entity.Property(e => e.LoaiDangKy).HasMaxLength(30).HasDefaultValue("HOC_LAN_DAU");
             entity.Property(e => e.TrangThai).HasMaxLength(30).HasDefaultValue("ENROLLED");
             entity.HasOne(d => d.LopHocPhan).WithMany(p => p.DangKyHocPhans).HasForeignKey(d => d.LopHocPhanId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(d => d.SinhVien).WithMany(p => p.DangKyHocPhans).HasForeignKey(d => d.SinhVienId).OnDelete(DeleteBehavior.Cascade);

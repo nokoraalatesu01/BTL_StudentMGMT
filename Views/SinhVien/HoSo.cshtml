@@ -37,18 +37,18 @@
         <div class="student-avatar-wrapper position-relative">
             @if (!string.IsNullOrEmpty(Model.HinhAnh))
             {
-                <img src="@Model.HinhAnh" alt="@displayName" class="student-avatar large object-fit-cover shadow-sm" />
+                <img src="@Model.HinhAnh" alt="@displayName" class="student-avatar large object-fit-cover shadow-sm" style="cursor:pointer;" onclick="document.getElementById('fileAnhInput').click();" title="Nhấn để đổi ảnh đại diện" />
             }
             else
             {
-                <div class="student-avatar large" aria-hidden="true">@nameInitial</div>
+                <div class="student-avatar large" aria-hidden="true" style="cursor:pointer;" onclick="document.getElementById('fileAnhInput').click();" title="Nhấn để tải lên ảnh đại diện">@nameInitial</div>
             }
             <form asp-action="CapNhatAnhDaiDien" method="post" enctype="multipart/form-data" id="avatarUploadForm" class="avatar-upload-form">
                 @Html.AntiForgeryToken()
                 <label for="fileAnhInput" class="avatar-change-btn" title="Thay đổi ảnh đại diện">
                     <i class="bi bi-camera-fill"></i>
                 </label>
-                <input type="file" id="fileAnhInput" name="fileAnh" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="document.getElementById('avatarUploadForm').submit();" />
+                <input type="file" id="fileAnhInput" name="fileAnh" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="if(this.files.length>0) document.getElementById('avatarUploadForm').submit();" />
             </form>
         </div>
         <div>
