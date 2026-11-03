@@ -1,0 +1,80 @@
+@model BTL_StudentMGMT.Models.SinhVienHocPhiViewModel
+@{
+    ViewData["Title"] = "Học phí / Thanh toán";
+}
+<section class="student-page">
+    <div class="student-page-heading">
+        <div><p class="text-uppercase small text-muted mb-1">Tài chính sinh viên</p><h1>Học phí / Thanh toán</h1><p>Theo dõi hóa đơn, công nợ và trạng thái xác nhận chuyển khoản.</p></div>
+    </div>
+    @if (TempData["Msg"] is string success) { <div class="alert alert-success">@success</div> }
+    @if (TempData["Error"] is string error) { <div class="alert alert-danger">@error</div> }
+
+    <div class="student-chip red mb-4">Tổng công nợ: @Model.TongCongNo.ToString("N0") ₫</div>
+    @if (Model.HoaDons.Count == 0)
+    {
+        <div class="student-table-wrap p-4 text-center text-muted">Hiện chưa có hóa đơn học phí.</div>
+    }
+    @foreach (var item in Model.HoaDons)
+    {
+        <article class="student-table-wrap mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 p-3">
+                <div>
+                    <h2 class="h5 mb-1">@item.HoaDon.HocKy.TenHocKy · @item.HoaDon.HocKy.NamHoc.MaNamHoc</h2>
+                    <div class="small text-muted">Hóa đơn @item.HoaDon.SoHoaDon · Hạn thanh toán: @(item.HoaDon.HanThanhToan?.ToString("dd/MM/yyyy") ?? "Chưa đặt hạn")</div>
+                </div>
+                <span class="student-chip @(item.HoaDon.TrangThai == "PAID" ? "green" : item.HoaDon.TrangThai == "CANCELLED" ? "red" : "")">@item.HoaDon.TrangThai</span>
+            </div>
+            <div class="table-responsive">
+                <table class="student-table">
+                    <thead><tr><th>Khoản thu</th><th>Tổng tiền</th><th>Đã thanh toán</th><th>Còn nợ</th></tr></thead>
+                    <tbody>
+                    @foreach (var detail in item.HoaDon.ChiTietHoaDonHocPhis)
+                    {
+                        <tr><td>@detail.MoTa</td><td>@item.TongTien.ToString("N0") ₫</td><td>@item.DaThanhToan.ToString("N0") ₫</td><td>@item.ConNo.ToString("N0") ₫</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            @if (item.HoaDon.ThanhToans.Count > 0)
+            {
+                <div class="p-3">
+                    <h3 class="h6">Lịch sử thanh toán</h3>
+                    <div class="table-responsive">
+                        <table class="student-table">
+                            <thead><tr><th>Mã chuyển khoản</th><th>Số tiền</th><th>Thời gian</th><th>Trạng thái</th><th>Biên lai</th></tr></thead>
+                            <tbody>
+                            @foreach (var payment in item.HoaDon.ThanhToans)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@payment.MaGiaoDich</td>
+                                    <td>@payment.SoTien.ToString("N0") ₫</td>
+                                    <td>@payment.ThoiGianThanhToan.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@payment.TrangThai @if (!string.IsNullOrWhiteSpace(payment.GhiChu)) { <span class="small text-muted">— @payment.GhiChu</span> }</td>
+                                    <td>@if (!string.IsNullOrEmpty(payment.AnhMinhChung)) { <a asp-action="XemBienLai" asp-route-id="@payment.ThanhToanId">Xem</a> }</td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            @if (item.ConNo > 0 && item.HoaDon.TrangThai is not "CANCELLED" and not "PAID"
+                && !item.HoaDon.ThanhToans.Any(payment => payment.TrangThai == "PENDING"))
+            {
+                <div class="p-3 border-top">
+                    <p class="mb-2">Chuyển khoản đúng số tiền còn nợ và tải ảnh biên lai. Ghi <strong>mã giao dịch</strong> do hệ thống cấp vào nội dung chuyển khoản; giao dịch chỉ được ghi nhận sau khi Admin/PGV xác nhận.</p>
+                    <form asp-action="GuiYeuCauThanhToan" method="post" enctype="multipart/form-data" class="d-flex flex-wrap align-items-end gap-2">
+                        <input type="hidden" name="HoaDonId" value="@item.HoaDon.HoaDonId" />
+                        <input type="hidden" name="IdempotencyKey" value="@item.IdempotencyKey" />
+                        <div><label class="form-label" for="proof-@item.HoaDon.HoaDonId">Ảnh biên lai (JPG/PNG/WEBP, tối đa 5MB)</label><input id="proof-@item.HoaDon.HoaDonId" type="file" name="AnhMinhChung" accept=".jpg,.jpeg,.png,.webp" required /></div>
+                        <button class="student-logout" type="submit"><i class="bi bi-send"></i><span>Gửi yêu cầu xác nhận</span></button>
+                    </form>
+                </div>
+            }
+            else if (item.HoaDon.ThanhToans.Any(payment => payment.TrangThai == "PENDING"))
+            {
+                <div class="p-3 border-top text-muted">Yêu cầu chuyển khoản đang chờ nhà trường xác nhận.</div>
+            }
+        </article>
+    }
+</section>
