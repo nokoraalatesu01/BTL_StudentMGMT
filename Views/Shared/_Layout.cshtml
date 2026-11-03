@@ -36,7 +36,7 @@
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-1">
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            @if (User.IsInRole("Admin"))
+                            @if (User.IsInRole("Admin") || User.IsInRole("PGV"))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" ? "active" : "")"
@@ -114,6 +114,10 @@
                                     @if (User.IsInRole("Admin"))
                                     {
                                         <span class="badge bg-danger text-white rounded-pill" style="font-size: 0.65rem;">Admin</span>
+                                    }
+                                    else if (User.IsInRole("PGV"))
+                                    {
+                                        <span class="badge bg-warning text-dark rounded-pill" style="font-size: 0.65rem;">Phòng Giáo vụ</span>
                                     }
                                     else if (User.IsInRole("GiangVien"))
                                     {

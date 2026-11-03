@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BTL_StudentMGMT.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,PGV")]
 public class QuanLyDonViController : Controller
 {
     private const int PageSize = 10;

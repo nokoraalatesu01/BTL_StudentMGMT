@@ -24,9 +24,9 @@ public class GiangVienController : Controller
     }
 
     // 1. Trang tổng quan giảng viên
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        var user = _userManager.GetUserAsync(User).Result;
+        var user = await _userManager.GetUserAsync(User);
         GiangVien? giangVien = null;
 
         if (user != null)
@@ -119,9 +119,9 @@ public class GiangVienController : Controller
     }
 
     // 4. Lịch giảng dạy & Thời khóa biểu của giảng viên (Chức năng 4)
-    public IActionResult LichGiangDay()
+    public async Task<IActionResult> LichGiangDay()
     {
-        var user = _userManager.GetUserAsync(User).Result;
+        var user = await _userManager.GetUserAsync(User);
         GiangVien? giangVien = null;
         if (user != null)
         {
@@ -250,9 +250,9 @@ public class GiangVienController : Controller
 
     // 7. Cập nhật thông tin giảng viên (GET)
     [HttpGet]
-    public IActionResult CapNhatThongTin()
+    public async Task<IActionResult> CapNhatThongTin()
     {
-        var user = _userManager.GetUserAsync(User).Result;
+        var user = await _userManager.GetUserAsync(User);
         if (user == null)
         {
             return RedirectToAction("Login", "Account");
@@ -282,7 +282,7 @@ public class GiangVienController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CapNhatThongTin(CapNhatGiangVienViewModel model)
     {
-        var user = _userManager.GetUserAsync(User).Result;
+        var user = await _userManager.GetUserAsync(User);
         if (user == null)
         {
             return RedirectToAction("Login", "Account");
@@ -315,12 +315,12 @@ public class GiangVienController : Controller
         user.HoTen = giangVien.HoTen;
         user.Email = giangVien.Email;
         user.PhoneNumber = giangVien.SoDienThoai;
-        _userManager.UpdateAsync(user).Wait();
+        await _userManager.UpdateAsync(user);
 
         if (!string.IsNullOrEmpty(model.MatKhauMoi))
         {
-            var resetToken = _userManager.GeneratePasswordResetTokenAsync(user).Result;
-            var passResult = _userManager.ResetPasswordAsync(user, resetToken, model.MatKhauMoi).Result;
+            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var passResult = await _userManager.ResetPasswordAsync(user, resetToken, model.MatKhauMoi);
             if (!passResult.Succeeded)
             {
                 foreach (var err in passResult.Errors)
@@ -331,7 +331,7 @@ public class GiangVienController : Controller
             }
         }
 
-        _db.SaveChanges();
+        await _db.SaveChangesAsync();
         TempData["Msg"] = "Cập nhật thông tin cá nhân thành công!";
         return RedirectToAction(nameof(Index));
     }

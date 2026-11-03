@@ -10,7 +10,7 @@ using Microsoft.Data.SqlClient;
 
 namespace BTL_StudentMGMT.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,PGV")]
 public class QuanLyGiangVienController : Controller
 {
     private const int PageSize = 10;
@@ -203,10 +203,34 @@ public class QuanLyGiangVienController : Controller
             return NotFound();
         }
 
+        if (await _db.LichGiangDays.AnyAsync(l => l.GiangVienId == id))
+        {
+            TempData["Error"] = "Không thể xóa giảng viên đang có lịch giảng dạy phân công.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        await using var transaction = await _db.Database.BeginTransactionAsync();
         _db.GiangViens.Remove(giangVien);
         _fileUploadService.DeleteFile(giangVien.HinhAnh);
         await _db.SaveChangesAsync();
-        TempData["Msg"] = "Đã xóa giảng viên.";
+
+        if (giangVien.UserId != null)
+        {
+            var user = await _userManager.FindByIdAsync(giangVien.UserId);
+            if (user != null)
+            {
+                var deleteResult = await _userManager.DeleteAsync(user);
+                if (!deleteResult.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+                    TempData["Error"] = $"Không thể xóa tài khoản giảng viên: {string.Join("; ", deleteResult.Errors.Select(error => error.Description))}";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+        }
+
+        await transaction.CommitAsync();
+        TempData["Msg"] = "Đã xóa giảng viên và tài khoản liên kết (nếu có).";
         return RedirectToAction(nameof(Index));
     }
 

@@ -1,1 +1,446 @@
-/* Portal UI shared components */
+/* ============================================================
+   PORTAL-UI.CSS  –  Shared design system (Admin + GiangVien)
+   Loaded after sinhvien.css, overrides / extends where needed
+   ============================================================ */
+
+/* ---------- Design tokens ---------- */
+:root {
+    --pu-blue:        #2563eb;
+    --pu-blue-hover:  #1d4ed8;
+    --pu-navy:        #1e3a8a;
+    --pu-blue-light:  #eff6ff;
+
+    --pu-bg-app:      #f4f7fb;
+    --pu-bg-card:     #ffffff;
+    --pu-border:      #e2e8f0;
+    --pu-border-mid:  #d1d5db;
+    --pu-shadow-sm:   0 2px 8px rgba(0,0,0,.05);
+    --pu-shadow-md:   0 8px 24px -4px rgba(0,0,0,.08);
+
+    --pu-text-dark:   #0f172a;
+    --pu-text-body:   #1e293b;
+    --pu-text-muted:  #64748b;
+    --pu-text-faint:  #94a3b8;
+
+    --pu-radius-sm:   8px;
+    --pu-radius-md:   12px;
+    --pu-radius-lg:   16px;
+
+    --pu-green:       #16a34a;
+    --pu-green-light: #dcfce7;
+    --pu-amber:       #d97706;
+    --pu-amber-light: #fef3c7;
+    --pu-purple:      #7c3aed;
+    --pu-purple-light:#ede9fe;
+    --pu-red:         #dc2626;
+    --pu-red-light:   #fee2e2;
+    --pu-cyan:        #0284c7;
+    --pu-cyan-light:  #e0f2fe;
+    --pu-rose:        #e11d48;
+    --pu-rose-light:  #ffe4e6;
+    --pu-teal:        #0d9488;
+    --pu-teal-light:  #ccfbf1;
+    --pu-ink:         #334155;
+    --pu-ink-light:   #f1f5f9;
+}
+
+/* ---------- Content card ---------- */
+.content-card {
+    background: var(--pu-bg-card);
+    border: 1px solid var(--pu-border);
+    border-radius: var(--pu-radius-lg);
+    box-shadow: var(--pu-shadow-sm);
+    transition: box-shadow .22s ease, border-color .22s ease;
+}
+.content-card.hover-effect:hover {
+    box-shadow: var(--pu-shadow-md);
+    border-color: #cbd5e1;
+}
+
+/* ---------- Dashboard stat cards (Admin/Index) ---------- */
+.stat-card {
+    background: var(--pu-bg-card);
+    border: 1px solid var(--pu-border);
+    border-radius: var(--pu-radius-md);
+    padding: 20px 20px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--pu-shadow-sm);
+    transition: box-shadow .22s ease, transform .22s ease;
+    height: 100%;
+}
+.stat-card:hover {
+    box-shadow: var(--pu-shadow-md);
+    transform: translateY(-3px);
+}
+
+/* Icon badge inside stat-card */
+.stat-ico {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--pu-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+}
+.stat-ico.blue   { background: var(--pu-blue-light);   color: var(--pu-blue); }
+.stat-ico.teal   { background: var(--pu-teal-light);   color: var(--pu-teal); }
+.stat-ico.violet { background: var(--pu-purple-light); color: var(--pu-purple); }
+.stat-ico.amber  { background: var(--pu-amber-light);  color: var(--pu-amber); }
+.stat-ico.rose   { background: var(--pu-rose-light);   color: var(--pu-rose); }
+.stat-ico.ink    { background: var(--pu-ink-light);    color: var(--pu-ink); }
+.stat-ico.green  { background: var(--pu-green-light);  color: var(--pu-green); }
+.stat-ico.red    { background: var(--pu-red-light);    color: var(--pu-red); }
+
+/* Text group inside stat-card */
+.stat-body {
+    flex: 1;
+    min-width: 0;
+}
+.stat-label {
+    font-size: .74rem;
+    font-weight: 700;
+    color: var(--pu-text-faint);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.stat-card .num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--pu-text-dark);
+    line-height: 1.1;
+    margin-top: 0;
+}
+
+/* Chart card (bar chart on Admin/Index) */
+.chart-card {
+    padding: 22px 24px;
+}
+.chart-card h5 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--pu-text-dark);
+    margin-bottom: 4px;
+}
+.chart-card .chart-sub {
+    font-size: .82rem;
+    color: var(--pu-text-muted);
+    margin-bottom: 16px;
+}
+
+/* ---------- Stat-icon-wrap (management index pages) ---------- */
+.stat-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+.stat-icon-wrap.blue    { background: var(--pu-blue-light);   color: var(--pu-blue); }
+.stat-icon-wrap.green   { background: var(--pu-green-light);  color: var(--pu-green); }
+.stat-icon-wrap.amber   { background: var(--pu-amber-light);  color: var(--pu-amber); }
+.stat-icon-wrap.purple  { background: var(--pu-purple-light); color: var(--pu-purple); }
+.stat-icon-wrap.red     { background: var(--pu-red-light);    color: var(--pu-red); }
+.stat-icon-wrap.cyan    { background: var(--pu-cyan-light);   color: var(--pu-cyan); }
+.stat-icon-wrap.teal    { background: var(--pu-teal-light);   color: var(--pu-teal); }
+.stat-icon-wrap.rose    { background: var(--pu-rose-light);   color: var(--pu-rose); }
+.stat-icon-wrap.ink     { background: var(--pu-ink-light);    color: var(--pu-ink); }
+
+/* ---------- Custom table container ---------- */
+.custom-table-container {
+    background: var(--pu-bg-card);
+    border: 1px solid var(--pu-border);
+    border-radius: var(--pu-radius-lg);
+    box-shadow: var(--pu-shadow-sm);
+    overflow: hidden;
+}
+
+.custom-table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: collapse;
+}
+
+.custom-table thead th {
+    background: #f8fafc;
+    color: var(--pu-text-muted);
+    font-size: .74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .065em;
+    padding: .9rem 1.1rem;
+    border-bottom: 1px solid var(--pu-border);
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.custom-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color .12s ease;
+}
+.custom-table tbody tr:last-child { border-bottom: none; }
+.custom-table tbody tr:hover { background-color: #f8fafc; }
+
+.custom-table tbody td {
+    padding: .85rem 1.1rem;
+    vertical-align: middle;
+    font-size: .875rem;
+    color: var(--pu-text-body);
+}
+
+/* Table footer (pagination row) */
+.table-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .6rem 1.1rem;
+    border-top: 1px solid #f1f5f9;
+    background: #fafbfc;
+    font-size: .82rem;
+    color: var(--pu-text-muted);
+}
+
+/* ---------- Pagination buttons ---------- */
+.sv-page-btn {
+    min-width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--pu-radius-sm) !important;
+    border: 1px solid var(--pu-border) !important;
+    color: #374151 !important;
+    font-size: .82rem;
+    font-weight: 600;
+    background: #fff;
+    padding: 0 8px;
+    transition: all .15s ease;
+    text-decoration: none;
+}
+.sv-page-btn:hover    { background: #f1f5f9 !important; border-color: #cbd5e1 !important; }
+.sv-page-active       { background: var(--pu-blue) !important; color: #fff !important; border-color: var(--pu-blue) !important; }
+.page-item.disabled .sv-page-btn { color: #cbd5e1 !important; }
+
+/* ---------- Badge variants ---------- */
+.badge-gender-nam {
+    background: var(--pu-cyan-light); color: var(--pu-cyan);
+    font-size: .74rem; font-weight: 700; padding: 3px 10px;
+    border-radius: 20px; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;
+}
+.badge-gender-nu {
+    background: var(--pu-rose-light); color: var(--pu-rose);
+    font-size: .74rem; font-weight: 700; padding: 3px 10px;
+    border-radius: 20px; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;
+}
+
+.badge-status-danghoc,
+.badge-status-totnghiep,
+.badge-status-baoluu,
+.badge-status-dinhchi {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: .74rem; font-weight: 700; padding: 3px 10px;
+    border-radius: 6px; white-space: nowrap;
+}
+.badge-status-danghoc   { background: var(--pu-green-light);  color: var(--pu-green); }
+.badge-status-totnghiep { background: var(--pu-purple-light); color: var(--pu-purple); }
+.badge-status-baoluu    { background: var(--pu-amber-light);  color: var(--pu-amber); }
+.badge-status-dinhchi   { background: var(--pu-red-light);    color: var(--pu-red); }
+
+.sv-status-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.badge-status-danghoc   .sv-status-dot { background: var(--pu-green); }
+.badge-status-totnghiep .sv-status-dot { background: var(--pu-purple); }
+.badge-status-baoluu    .sv-status-dot { background: var(--pu-amber); }
+.badge-status-dinhchi   .sv-status-dot { background: var(--pu-red); }
+
+.badge-rank-chuadiem,
+.badge-rank-gioi,
+.badge-rank-kha,
+.badge-rank-trungbinh {
+    font-size: .72rem; font-weight: 700; padding: 3px 8px;
+    border-radius: 4px; white-space: nowrap;
+}
+.badge-rank-chuadiem  { background: var(--pu-ink-light);    color: var(--pu-text-muted); }
+.badge-rank-gioi      { background: var(--pu-green-light);  color: var(--pu-green); }
+.badge-rank-kha       { background: var(--pu-cyan-light);   color: var(--pu-cyan); }
+.badge-rank-trungbinh { background: var(--pu-amber-light);  color: var(--pu-amber); }
+
+/* ---------- Avatar ---------- */
+.avatar-online-box {
+    position: relative; width: 36px; height: 36px; display: inline-block;
+}
+.avatar-round {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .9rem; font-weight: 700;
+}
+.avatar-round.gray   { background: #f1f5f9; color: #64748b; }
+.avatar-round.pink   { background: var(--pu-rose-light);   color: var(--pu-rose); }
+.avatar-round.cyan   { background: var(--pu-cyan-light);   color: var(--pu-cyan); }
+.avatar-round.purple { background: var(--pu-purple-light); color: var(--pu-purple); }
+.avatar-round.green  { background: var(--pu-green-light);  color: var(--pu-green); }
+.dot-online {
+    position: absolute; bottom: 0; right: 0;
+    width: 9px; height: 9px; background: #22c55e;
+    border: 2px solid #fff; border-radius: 50%;
+}
+
+/* ---------- Form controls (unified height 40px in admin pages) ---------- */
+.admin-content .form-control,
+.admin-content .form-select {
+    height: 40px;
+    min-height: 40px;
+    border-color: var(--pu-border-mid);
+    border-radius: var(--pu-radius-sm);
+    font-size: .875rem;
+    color: var(--pu-text-body);
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.admin-content .form-control:focus,
+.admin-content .form-select:focus {
+    border-color: var(--pu-blue);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    outline: none;
+}
+.admin-content .input-group-text {
+    border-color: var(--pu-border-mid);
+    background: #fff;
+    color: var(--pu-text-muted);
+    font-size: .875rem;
+}
+.admin-content .input-group:focus-within .input-group-text,
+.admin-content .input-group:focus-within .form-control {
+    border-color: var(--pu-blue);
+}
+
+/* ---------- Icon action buttons ---------- */
+.icon-action-btn {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 1.05rem;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: all .15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+}
+.icon-action-btn:hover        { background: #f1f5f9; color: #1e293b; }
+.icon-action-btn.delete:hover { color: var(--pu-red); background: var(--pu-red-light); }
+.icon-action-btn.edit:hover   { color: var(--pu-blue); background: var(--pu-blue-light); }
+
+/* ---------- Filter card form controls (unified height 38px) ---------- */
+.filter-card-form .form-control,
+.filter-card-form .form-select {
+    height: 38px;
+    min-height: 38px;
+    font-size: .875rem;
+    border-color: var(--pu-border-mid);
+    border-radius: var(--pu-radius-sm);
+}
+.filter-card-form .input-group-text {
+    background: #fff;
+    border-color: var(--pu-border-mid);
+    color: var(--pu-text-muted);
+}
+
+/* ---------- Page header layout helpers ---------- */
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.page-title {
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: var(--pu-text-dark);
+    letter-spacing: -.02em;
+    margin-bottom: .2rem;
+}
+.page-subtitle {
+    font-size: .875rem;
+    color: var(--pu-text-muted);
+    margin-bottom: 0;
+}
+.page-breadcrumb {
+    font-size: .8rem;
+    color: var(--pu-text-muted);
+    margin-bottom: .3rem;
+}
+.page-breadcrumb .bc-sep { color: #cbd5e1; margin: 0 5px; }
+.page-breadcrumb .bc-cur {
+    color: var(--pu-blue);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: .72rem;
+    letter-spacing: .07em;
+}
+.page-header-actions {
+    display: flex;
+    gap: .5rem;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+/* ---------- Shared primary / secondary action buttons ---------- */
+.btn-action-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 18px;
+    height: 40px;
+    background: var(--pu-blue);
+    color: #fff;
+    border: none;
+    border-radius: var(--pu-radius-sm);
+    font-size: .875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .18s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.btn-action-primary:hover { background: var(--pu-blue-hover); color: #fff; }
+
+.btn-action-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 16px;
+    height: 40px;
+    background: #fff;
+    color: #374151;
+    border: 1px solid var(--pu-border-mid);
+    border-radius: var(--pu-radius-sm);
+    font-size: .875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .18s ease, border-color .18s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.btn-action-secondary:hover { background: #f8fafc; border-color: #9ca3af; color: #111827; }
+
+/* ---------- Admin content font override ---------- */
+.admin-content {
+    font-family: 'Be Vietnam Pro', 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+}
