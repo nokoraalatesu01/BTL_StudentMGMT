@@ -6,15 +6,100 @@
 
 <div class="student-page-heading">
     <div>
-        <p class="student-eyebrow">QUẢN LÝ ĐÀO TẠO</p>
+        <p class="student-eyebrow">QUẢN LÝ ĐÀO TẠO TÍN CHỈ</p>
         <h1>Nhập bảng điểm học phần</h1>
-        <p>Ghi nhận điểm chuyên cần, giữa kỳ và thi kết thúc môn cho sinh viên.</p>
+        <p>Ghi nhận điểm quá trình, thi kết thúc môn, hỗ trợ thi lại, học lại và học cải thiện điểm.</p>
     </div>
     <a class="student-back-link" asp-action="Index"><i class="bi bi-arrow-left" aria-hidden="true"></i> Về bảng điểm</a>
 </div>
 
 <div class="row justify-content-center">
-    <div class="col-lg-8">
+    <div class="col-lg-9">
+        <!-- LỊCH SỬ CÁC LẦN HỌC TRƯỚC (NẾU CÓ) -->
+        @if (Model.LichSuDiemMonHoc != null && Model.LichSuDiemMonHoc.Count > 0)
+        {
+            <div class="content-card p-3 mb-4" style="border-left: 4px solid #f59e0b; background: #fffdfa;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-clock-history text-warning fs-5"></i>
+                        <span class="fw-bold" style="color: #92400e; font-size: .92rem;">
+                            LỊCH SỬ KẾT QUẢ CÁC LẦN HỌC TRƯỚC CỦA MÔN NÀY
+                        </span>
+                    </div>
+                    <span class="badge" style="background: #fef3c7; color: #b45309;">
+                        Đã học @Model.LichSuDiemMonHoc.Count lần
+                    </span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0" style="font-size: .82rem;">
+                        <thead>
+                            <tr class="text-muted">
+                                <th>Lớp học phần / Học kỳ</th>
+                                <th class="text-center">Loại học</th>
+                                <th class="text-center">Lần học</th>
+                                <th class="text-center">CC</th>
+                                <th class="text-center">GK</th>
+                                <th class="text-center">CK</th>
+                                <th class="text-center">Tổng kết</th>
+                                <th class="text-center">Chữ</th>
+                                <th class="text-center">Kết quả</th>
+                                <th class="text-center">Tích lũy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ls in Model.LichSuDiemMonHoc)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@(ls.LopHocPhan?.MaLopHocPhan ?? "Học phần chung")</strong>
+                                        <div class="text-muted small">@(ls.HocKy?.TenHocKy ?? "")</div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border">@ls.TenLoaiHoc</span>
+                                    </td>
+                                    <td class="text-center font-monospace">@ls.LanHoc</td>
+                                    <td class="text-center">@ls.DiemChuyenCan.ToString("0.0")</td>
+                                    <td class="text-center">@ls.DiemGiuaKy.ToString("0.0")</td>
+                                    <td class="text-center">
+                                        @if (ls.LanThi == 2 && ls.DiemCuoiKyLan2.HasValue)
+                                        {
+                                            <span>L1: @ls.DiemCuoiKy.ToString("0.0") | <strong>L2: @ls.DiemCuoiKyLan2.Value.ToString("0.0")</strong></span>
+                                        }
+                                        else
+                                        {
+                                            <span>@ls.DiemCuoiKy.ToString("0.0")</span>
+                                        }
+                                    </td>
+                                    <td class="text-center"><strong>@ls.DiemTongKet.ToString("0.0")</strong></td>
+                                    <td class="text-center"><span class="badge @(ls.IsDat ? "bg-primary" : "bg-danger")">@ls.DiemChu</span></td>
+                                    <td class="text-center">
+                                        @if (ls.IsDat)
+                                        {
+                                            <span class="text-success fw-bold"><i class="bi bi-check-circle"></i> Đạt</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger fw-bold"><i class="bi bi-x-circle"></i> Chưa đạt</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (ls.SuDungTinhTichLuy)
+                                        {
+                                            <span class="badge bg-success">Tính GPA</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Bỏ qua</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
         <section class="student-panel p-4 mb-4">
             <div class="student-panel-heading mb-4">
                 <div>
@@ -25,32 +110,86 @@
             </div>
 
             <form method="post" asp-action="NhapDiem">
+                <input type="hidden" asp-for="Id" />
                 <div asp-validation-summary="ModelOnly" class="student-notice mb-3" style="background:#fee2e2; border-color:#fca5a5; color:#991b1b;"></div>
 
                 <div class="row g-3 mb-4">
+                    <!-- Chọn Lớp học phần -->
+                    <div class="col-md-6">
+                        <div class="gv-form-group">
+                            <label asp-for="LopHocPhanId">Lớp học phần *</label>
+                            <select asp-for="LopHocPhanId" asp-items="ViewBag.DanhSachLopHocPhan" class="gv-form-select" id="selectLhp">
+                                <option value="">-- Chọn Lớp học phần --</option>
+                            </select>
+                            <span asp-validation-for="LopHocPhanId" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Chọn môn học -->
+                    <div class="col-md-6">
+                        <div class="gv-form-group">
+                            <label asp-for="MonHocId">Môn học *</label>
+                            <select asp-for="MonHocId" asp-items="ViewBag.DanhSachMonHoc" class="gv-form-select" id="selectMonHoc">
+                                <option value="">-- Chọn Môn học --</option>
+                            </select>
+                            <span asp-validation-for="MonHocId" class="text-danger small"></span>
+                        </div>
+                    </div>
+
                     <!-- Chọn sinh viên -->
-                    <div class="col-12">
+                    <div class="col-md-6">
                         <div class="gv-form-group">
                             <label asp-for="SinhVienId">Sinh viên *</label>
-                            <select asp-for="SinhVienId" asp-items="ViewBag.DanhSachSinhVien" class="gv-form-select">
+                            <select asp-for="SinhVienId" asp-items="ViewBag.DanhSachSinhVien" class="gv-form-select" id="selectSinhVien">
                                 <option value="">-- Chọn Sinh Viên Cần Nhập Điểm --</option>
                             </select>
                             <span asp-validation-for="SinhVienId" class="text-danger small"></span>
                         </div>
                     </div>
 
-                    <!-- Chọn môn học -->
-                    <div class="col-12">
+                    <!-- Học kỳ -->
+                    <div class="col-md-6">
                         <div class="gv-form-group">
-                            <label asp-for="MonHocId">Môn học / Học phần *</label>
-                            <select asp-for="MonHocId" asp-items="ViewBag.DanhSachMonHoc" class="gv-form-select">
-                                <option value="">-- Chọn Môn Học / Học Phần --</option>
+                            <label asp-for="HocKyId">Học kỳ</label>
+                            <select asp-for="HocKyId" asp-items="ViewBag.DanhSachHocKy" class="gv-form-select">
+                                <option value="">-- Theo Lớp học phần --</option>
                             </select>
-                            <span asp-validation-for="MonHocId" class="text-danger small"></span>
                         </div>
                     </div>
 
-                    <!-- 3 Cột điểm -->
+                    <!-- Cấu hình Loại học & Lần học & Lần thi -->
+                    <div class="col-md-4">
+                        <div class="gv-form-group">
+                            <label asp-for="LoaiHoc">Loại hình thức học *</label>
+                            <select asp-for="LoaiHoc" class="gv-form-select" id="selectLoaiHoc">
+                                <option value="HOC_LAN_DAU">Học lần đầu</option>
+                                <option value="HOC_LAI">Học lại (do trượt môn F)</option>
+                                <option value="HOC_CAI_THIEN">Học cải thiện (nâng điểm D, C...)</option>
+                            </select>
+                            <span asp-validation-for="LoaiHoc" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="gv-form-group">
+                            <label asp-for="LanHoc">Số lần học</label>
+                            <input asp-for="LanHoc" type="number" min="1" max="10" class="gv-form-control" />
+                            <span asp-validation-for="LanHoc" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="gv-form-group">
+                            <label asp-for="LanThi">Lần thi kết thúc môn</label>
+                            <select asp-for="LanThi" class="gv-form-select" id="selectLanThi">
+                                <option value="1">Lần thi 1 (Chính thức)</option>
+                                <option value="2">Lần thi 2 (Thi lại kết thúc HP)</option>
+                            </select>
+                            <span asp-validation-for="LanThi" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Các cột điểm -->
                     <div class="col-md-4">
                         <div class="gv-form-group">
                             <label asp-for="DiemChuyenCan">Điểm chuyên cần (10%) *</label>
@@ -69,9 +208,28 @@
 
                     <div class="col-md-4">
                         <div class="gv-form-group">
-                            <label asp-for="DiemCuoiKy">Thi hết môn (60%) *</label>
+                            <label asp-for="DiemCuoiKy">Thi hết môn lần 1 (60%) *</label>
                             <input asp-for="DiemCuoiKy" type="number" step="0.1" min="0" max="10" class="gv-form-control score-input" id="inpCK" placeholder="0 - 10" />
                             <span asp-validation-for="DiemCuoiKy" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Điểm thi lần 2 (nếu có) -->
+                    <div class="col-md-6" id="divThiLan2" style="@(Model.LanThi == 2 || Model.DiemCuoiKyLan2.HasValue ? "" : "display:none;")">
+                        <div class="gv-form-group p-3 rounded-3" style="background:#fff1f2; border:1px solid #fecdd3;">
+                            <label asp-for="DiemCuoiKyLan2" class="text-danger fw-bold">
+                                <i class="bi bi-arrow-repeat"></i> Điểm thi kết thúc môn lần 2 (Thi lại)
+                            </label>
+                            <input asp-for="DiemCuoiKyLan2" type="number" step="0.1" min="0" max="10" class="gv-form-control score-input" id="inpCK2" placeholder="Nhập điểm thi lại..." />
+                            <small class="text-muted d-block mt-1">Hệ thống sẽ tự động tính tổng kết theo điểm thi lần 2 này.</small>
+                            <span asp-validation-for="DiemCuoiKyLan2" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="gv-form-group">
+                            <label asp-for="GhiChu">Ghi chú nghiệp vụ</label>
+                            <input asp-for="GhiChu" class="gv-form-control" placeholder="Lý do học lại, cải thiện hoặc thi lại..." />
                         </div>
                     </div>
                 </div>
@@ -104,84 +262,91 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
     <script>
-        function calculate() {
-            var ccRaw = document.getElementById('inpCC').value.trim();
-            var gkRaw = document.getElementById('inpGK').value.trim();
-            var ckRaw = document.getElementById('inpCK').value.trim();
+        document.addEventListener("DOMContentLoaded", function () {
+            const inpCC = document.getElementById("inpCC");
+            const inpGK = document.getElementById("inpGK");
+            const inpCK = document.getElementById("inpCK");
+            const inpCK2 = document.getElementById("inpCK2");
+            const selectLanThi = document.getElementById("selectLanThi");
+            const divThiLan2 = document.getElementById("divThiLan2");
 
-            var elChu = document.getElementById('txtDiemChu');
-            var elDg = document.getElementById('txtDanhGia');
-            var elTk = document.getElementById('txtTongKet');
+            const txtTongKet = document.getElementById("txtTongKet");
+            const txtDiemChu = document.getElementById("txtDiemChu");
+            const txtDanhGia = document.getElementById("txtDanhGia");
 
-            if (ccRaw === '' || gkRaw === '' || ckRaw === '') {
-                elTk.innerText = '—';
-                elChu.innerText = 'Chưa nhập';
-                elChu.className = 'gv-badge gv-badge-gray';
-                elDg.innerText = 'Chưa nhập đủ điểm';
-                elDg.className = 'gv-badge gv-badge-gray';
-                return;
-            }
-
-            var cc = parseFloat(ccRaw);
-            var gk = parseFloat(gkRaw);
-            var ck = parseFloat(ckRaw);
-
-            if (isNaN(cc) || isNaN(gk) || isNaN(ck)) {
-                elTk.innerText = '—';
-                elChu.innerText = 'Chưa nhập';
-                elChu.className = 'gv-badge gv-badge-gray';
-                elDg.innerText = 'Chưa nhập đủ điểm';
-                elDg.className = 'gv-badge gv-badge-gray';
-                return;
-            }
-
-            var tk = (cc * 0.1) + (gk * 0.3) + (ck * 0.6);
-            tk = Math.round(tk * 10) / 10;
-            elTk.innerText = tk.toFixed(1);
-
-            var chu = "F";
-            var pass = false;
-            if (tk >= 9.0) { chu = "A+"; pass = true; }
-            else if (tk >= 8.5) { chu = "A"; pass = true; }
-            else if (tk >= 8.0) { chu = "B+"; pass = true; }
-            else if (tk >= 7.0) { chu = "B"; pass = true; }
-            else if (tk >= 6.5) { chu = "C+"; pass = true; }
-            else if (tk >= 5.5) { chu = "C"; pass = true; }
-            else if (tk >= 5.0) { chu = "D+"; pass = true; }
-            else if (tk >= 4.0) { chu = "D"; pass = true; }
-
-            elChu.innerText = chu;
-            elChu.className = pass ? "gv-badge gv-badge-green" : "gv-badge gv-badge-red";
-
-            if (pass) {
-                elDg.innerText = "✓ Đạt học phần";
-                elDg.className = "gv-badge gv-badge-green";
-            } else {
-                elDg.innerText = "✗ Cần học lại";
-                elDg.className = "gv-badge gv-badge-red";
-            }
-        }
-
-        document.querySelectorAll('.score-input').forEach(function(inp) {
-            inp.addEventListener('input', calculate);
-        });
-        calculate();
-
-        var svSelect = document.getElementById('SinhVienId');
-        var mhSelect = document.getElementById('MonHocId');
-        function checkAndReload() {
-            if (svSelect && mhSelect && svSelect.value > 0 && mhSelect.value > 0) {
-                var urlParams = new URLSearchParams(window.location.search);
-                var curSv = urlParams.get('sinhVienId');
-                var curMh = urlParams.get('monHocId');
-                if (curSv !== svSelect.value || curMh !== mhSelect.value) {
-                    window.location.href = '@Url.Action("NhapDiem", "BangDiem")?sinhVienId=' + svSelect.value + '&monHocId=' + mhSelect.value;
+            // Tự động tải lại trang khi thay đổi Lớp học phần hoặc Sinh viên để phân tích lịch sử
+            const selectLhp = document.getElementById("selectLhp");
+            const selectSv = document.getElementById("selectSinhVien");
+            function reloadForm() {
+                const lhpId = selectLhp ? selectLhp.value : '';
+                const svId = selectSv ? selectSv.value : '';
+                if (lhpId || svId) {
+                    window.location.href = `@Url.Action("NhapDiem")?lopHocPhanId=${lhpId}&sinhVienId=${svId}`;
                 }
             }
-        }
-        if (svSelect) svSelect.addEventListener('change', checkAndReload);
-        if (mhSelect) mhSelect.addEventListener('change', checkAndReload);
+            if (selectLhp) selectLhp.addEventListener("change", reloadForm);
+            if (selectSv) selectSv.addEventListener("change", reloadForm);
+
+            // Bật/tắt ô nhập thi lần 2
+            if (selectLanThi) {
+                selectLanThi.addEventListener("change", function () {
+                    if (this.value === "2") {
+                        divThiLan2.style.display = "block";
+                    } else {
+                        divThiLan2.style.display = "none";
+                    }
+                    calcScore();
+                });
+            }
+
+            function calcScore() {
+                const cc = parseFloat(inpCC.value);
+                const gk = parseFloat(inpGK.value);
+                let ck = parseFloat(inpCK.value);
+
+                if (selectLanThi && selectLanThi.value === "2" && inpCK2 && !isNaN(parseFloat(inpCK2.value))) {
+                    ck = parseFloat(inpCK2.value);
+                }
+
+                if (!isNaN(cc) && !isNaN(gk) && !isNaN(ck)) {
+                    const tk = Math.round((cc * 0.1 + gk * 0.3 + ck * 0.6) * 100) / 100;
+                    txtTongKet.innerText = tk.toFixed(1);
+
+                    let chu = "F";
+                    let cls = "gv-badge-red";
+                    let danhGia = "Không đạt (Học lại)";
+                    let danhGiaCls = "gv-badge-red";
+
+                    if (tk >= 9.0) { chu = "A+"; cls = "gv-badge-green"; danhGia = "Đạt xuất sắc"; danhGiaCls = "gv-badge-green"; }
+                    else if (tk >= 8.5) { chu = "A"; cls = "gv-badge-green"; danhGia = "Đạt giỏi"; danhGiaCls = "gv-badge-green"; }
+                    else if (tk >= 8.0) { chu = "B+"; cls = "gv-badge-blue"; danhGia = "Đạt khá giỏi"; danhGiaCls = "gv-badge-blue"; }
+                    else if (tk >= 7.0) { chu = "B"; cls = "gv-badge-blue"; danhGia = "Đạt khá"; danhGiaCls = "gv-badge-blue"; }
+                    else if (tk >= 6.5) { chu = "C+"; cls = "gv-badge-yellow"; danhGia = "Đạt trung bình khá"; danhGiaCls = "gv-badge-yellow"; }
+                    else if (tk >= 5.5) { chu = "C"; cls = "gv-badge-yellow"; danhGia = "Đạt trung bình"; danhGiaCls = "gv-badge-yellow"; }
+                    else if (tk >= 5.0) { chu = "D+"; cls = "gv-badge-yellow"; danhGia = "Đạt trung bình yếu"; danhGiaCls = "gv-badge-yellow"; }
+                    else if (tk >= 4.0) { chu = "D"; cls = "gv-badge-yellow"; danhGia = "Đạt (Khuyến nghị cải thiện)"; danhGiaCls = "gv-badge-yellow"; }
+
+                    txtDiemChu.innerText = chu;
+                    txtDiemChu.className = "gv-badge " + cls;
+
+                    txtDanhGia.innerText = danhGia;
+                    txtDanhGia.className = "gv-badge " + danhGiaCls;
+                } else {
+                    txtTongKet.innerText = "—";
+                    txtDiemChu.innerText = "Chưa nhập";
+                    txtDiemChu.className = "gv-badge gv-badge-gray";
+                    txtDanhGia.innerText = "Chưa nhập đủ điểm";
+                    txtDanhGia.className = "gv-badge gv-badge-gray";
+                }
+            }
+
+            [inpCC, inpGK, inpCK, inpCK2].forEach(inp => {
+                if (inp) inp.addEventListener("input", calcScore);
+            });
+
+            calcScore();
+        });
     </script>
 }

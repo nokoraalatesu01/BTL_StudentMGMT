@@ -13,6 +13,8 @@ public class AdminDashboardViewModel
     public int TongNganh { get; set; }
     public int TongLop { get; set; }
     public int TongMonHoc { get; set; }
+    public int TongLopHocPhan { get; set; }
+    public int TongDangKyHocPhan { get; set; }
     public int TongTaiKhoan { get; set; }
     public int SinhVienChuaCoLop { get; set; }
     public int SinhVienChuaCoTaiKhoan { get; set; }

@@ -23,32 +23,32 @@
 </section>
 
 <section class="student-stat-grid" aria-label="Thông tin học tập">
-    <article class="student-stat-card">
-        <span class="student-stat-icon student-icon-blue" aria-hidden="true"><i class="bi bi-person-badge"></i></span>
+    <article class="student-stat-card stat-card-masv">
+        <span class="student-stat-icon student-icon-blue" aria-hidden="true"><i class="bi bi-person-vcard"></i></span>
         <div>
-            <p>Mã sinh viên</p>
-            <strong>@Model.MaSinhVien</strong>
+            <p>MÃ SINH VIÊN</p>
+            <strong class="stat-value-masv">@Model.MaSinhVien</strong>
         </div>
     </article>
     <article class="student-stat-card">
         <span class="student-stat-icon student-icon-green" aria-hidden="true"><i class="bi bi-collection"></i></span>
         <div>
-            <p>Lớp hành chính</p>
+            <p>LỚP HÀNH CHÍNH</p>
             <strong>@(Model.TenLop ?? "Chưa xếp lớp")</strong>
         </div>
     </article>
     <article class="student-stat-card">
         <span class="student-stat-icon student-icon-violet" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
         <div>
-            <p>Ngành đào tạo</p>
+            <p>NGÀNH ĐÀO TẠO</p>
             <strong>@(Model.TenNganh ?? "Chưa xác định")</strong>
         </div>
     </article>
-    <article class="student-stat-card">
-        <span class="student-stat-icon student-icon-amber" aria-hidden="true"><i class="bi bi-graph-up-arrow"></i></span>
+    <article class="student-stat-card stat-card-gpa">
+        <span class="student-stat-icon student-icon-amber" aria-hidden="true"><i class="bi bi-award-fill"></i></span>
         <div>
-            <p>GPA (Hệ 10)</p>
-            <strong>@(Model.Gpa.HasValue ? Model.Gpa.Value.ToString("0.00") : "Chưa có điểm")</strong>
+            <p>GPA TÍCH LŨY (HỆ 10)</p>
+            <strong class="stat-value-gpa">@(Model.Gpa.HasValue ? Model.Gpa.Value.ToString("0.00") : "Chưa có điểm")</strong>
         </div>
     </article>
 </section>

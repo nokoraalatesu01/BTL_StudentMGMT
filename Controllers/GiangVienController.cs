@@ -358,4 +358,39 @@ public class GiangVienController : Controller
         TempData["Msg"] = "Cập nhật thông tin cá nhân thành công!";
         return RedirectToAction(nameof(Index));
     }
+
+    // 10. Đổi ảnh đại diện nhanh cho giảng viên
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CapNhatAnhDaiDien(IFormFile? fileAnh, string? returnUrl = null)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return RedirectToAction(nameof(Index));
+
+        var giangVien = await _db.GiangViens.FirstOrDefaultAsync(g => g.UserId == user.Id);
+        if (giangVien == null) return RedirectToAction(nameof(Index));
+
+        if (fileAnh != null && fileAnh.Length > 0)
+        {
+            var avatarPath = await _fileUploadService.UploadAvatarAsync(fileAnh, giangVien.HinhAnh);
+            if (!string.IsNullOrEmpty(avatarPath))
+            {
+                giangVien.HinhAnh = avatarPath;
+                await _db.SaveChangesAsync();
+                TempData["Msg"] = "Cập nhật ảnh hồ sơ giảng viên thành công!";
+            }
+            else
+            {
+                TempData["Error"] = "Định dạng file không hợp lệ (.jpg, .jpeg, .png, .webp) hoặc vượt quá 5MB.";
+            }
+        }
+
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl);
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
 }
+

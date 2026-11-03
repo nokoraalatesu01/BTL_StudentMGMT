@@ -8,4 +8,5 @@ public class MonHoc
     public int SoTinChi { get; set; } = 3;
     public int? DonViId { get; set; }
     public virtual DonVi? DonVi { get; set; }
+    public virtual ICollection<LopHocPhan> LopHocPhans { get; set; } = new List<LopHocPhan>();
 }

@@ -1,0 +1,156 @@
+@model BTL_StudentMGMT.Models.LopHocPhanFormViewModel
+@{
+    var isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Cập nhật lớp học phần" : "Thêm mới lớp học phần";
+}
+
+<div class="mb-4">
+    <p class="mb-1" style="font-size:.8rem; color:#64748b;">
+        <a asp-action="Index" style="color:#64748b; text-decoration:none;">LỚP HỌC PHẦN</a>
+        <span style="color:#cbd5e1; margin:0 6px;">/</span>
+        <span style="color:#2563eb; font-weight:700; text-transform:uppercase; font-size:.72rem; letter-spacing:.07em;">@(isEdit ? "CẬP NHẬT" : "THÊM MỚI")</span>
+    </p>
+    <div class="d-flex align-items-center justify-content-between">
+        <div>
+            <h3 class="fw-bold mb-1" style="color:#0f172a; font-size:1.55rem; letter-spacing:-.02em;">
+                @(isEdit ? "Cập nhật lớp học phần" : "Thêm mới lớp học phần")
+            </h3>
+            <p class="mb-0" style="font-size:.875rem; color:#64748b;">
+                Thiết lập thông tin môn học, thời khóa biểu và phân công giảng viên cho lớp học phần tín chỉ.
+            </p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary" style="border-radius:8px; font-weight:600;">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4" style="background:#fff; max-width:960px;">
+    <div class="card-body p-4 p-md-5">
+        <form asp-action="@(isEdit ? "Edit" : "Create")" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 mb-4"></div>
+
+            <h5 class="fw-bold mb-3 pb-2 border-bottom" style="color:#1e293b; font-size:1.05rem;">
+                <i class="bi bi-info-circle me-2 text-primary"></i>Thông tin lớp học phần
+            </h5>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label asp-for="MaLopHocPhan" class="form-label fw-semibold" style="font-size:.875rem;"></label>
+                    <input asp-for="MaLopHocPhan" class="form-control" placeholder="VD: INT301.01" />
+                    <span asp-validation-for="MaLopHocPhan" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-8">
+                    <label asp-for="TenLopHocPhan" class="form-label fw-semibold" style="font-size:.875rem;"></label>
+                    <input asp-for="TenLopHocPhan" class="form-control" placeholder="VD: Lập trình Web ASP.NET Core - Nhóm 01" />
+                    <span asp-validation-for="TenLopHocPhan" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="MonHocId" class="form-label fw-semibold" style="font-size:.875rem;"></label>
+                    <select asp-for="MonHocId" class="form-select" asp-items="ViewBag.DanhSachMonHoc">
+                        <option value="">-- Chọn môn học --</option>
+                    </select>
+                    <span asp-validation-for="MonHocId" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="HocKyId" class="form-label fw-semibold" style="font-size:.875rem;"></label>
+                    <select asp-for="HocKyId" class="form-select" asp-items="ViewBag.DanhSachHocKy">
+                        <option value="">-- Chọn học kỳ --</option>
+                    </select>
+                    <span asp-validation-for="HocKyId" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="GiangVienId" class="form-label fw-semibold" style="font-size:.875rem;"></label>
+                    <select asp-for="GiangVienId" class="form-select" asp-items="ViewBag.DanhSachGiangVien">
+                        <option value="">-- Chưa phân công --</option>
+                    </select>
+                    <span asp-validation-for="GiangVienId" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="Nhom" class="form-label fw-semibold" style="font-size:.875rem;"></label>
+                    <input asp-for="Nhom" class="form-control" placeholder="01" />
+                    <span asp-validation-for="Nhom" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="SiSoToiDa" class="form-label fw-semibold" style="font-size:.875rem;"></label>
+                    <input asp-for="SiSoToiDa" type="number" class="form-control" min="1" max="200" />
+                    <span asp-validation-for="SiSoToiDa" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <h5 class="fw-bold mb-3 pb-2 border-bottom" style="color:#1e293b; font-size:1.05rem;">
+                <i class="bi bi-calendar-week me-2 text-primary"></i>Lịch học và phòng học
+            </h5>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label asp-for="Thu" class="form-label fw-semibold" style="font-size:.875rem;"></label>
+                    <select asp-for="Thu" class="form-select">
+                        <option value="Thứ 2">Thứ 2</option>
+                        <option value="Thứ 3">Thứ 3</option>
+                        <option value="Thứ 4">Thứ 4</option>
+                        <option value="Thứ 5">Thứ 5</option>
+                        <option value="Thứ 6">Thứ 6</option>
+                        <option value="Thứ 7">Thứ 7</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="TietBatDau" class="form-label fw-semibold" style="font-size:.875rem;"></label>
+                    <input asp-for="TietBatDau" type="number" class="form-control" min="1" max="12" />
+                    <span asp-validation-for="TietBatDau" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="SoTiet" class="form-label fw-semibold" style="font-size:.875rem;"></label>
+                    <input asp-for="SoTiet" type="number" class="form-control" min="1" max="6" />
+                    <span asp-validation-for="SoTiet" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="PhongHoc" class="form-label fw-semibold" style="font-size:.875rem;"></label>
+                    <input asp-for="PhongHoc" class="form-control" placeholder="VD: P.302-A1" />
+                    <span asp-validation-for="PhongHoc" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="TrangThai" class="form-label fw-semibold" style="font-size:.875rem;"></label>
+                    <select asp-for="TrangThai" class="form-select">
+                        <option value="OPEN">OPEN - Đang mở đăng ký</option>
+                        <option value="CLOSED">CLOSED - Đã khóa đăng ký</option>
+                        <option value="FINISHED">FINISHED - Đã kết thúc học phần</option>
+                    </select>
+                    <span asp-validation-for="TrangThai" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="GhiChu" class="form-label fw-semibold" style="font-size:.875rem;"></label>
+                    <input asp-for="GhiChu" class="form-control" placeholder="Ghi chú thêm về lớp học phần..." />
+                    <span asp-validation-for="GhiChu" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-3 pt-3 border-top">
+                <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold" style="border-radius:8px;">
+                    <i class="bi bi-save me-1"></i> @(isEdit ? "Lưu thay đổi" : "Tạo lớp học phần")
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 fw-semibold" style="border-radius:8px;">
+                    Hủy bỏ
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

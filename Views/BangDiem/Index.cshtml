@@ -4,26 +4,31 @@
     Layout = (User.IsInRole("Admin") || User.IsInRole("PGV")) ? "_AdminLayout" : "_GiangVienLayout";
 
     // Thống kê
-    int tongHocPhan   = Model.Count;
-    int soHocPhanDat  = Model.Count(d => d.DiemTongKet >= 4.0);
-    double tiLeDat    = tongHocPhan == 0 ? 0 : Math.Round(soHocPhanDat * 100.0 / tongHocPhan, 1);
-    double diemTbHocKy = tongHocPhan == 0 ? 0
-        : Math.Round(Model.Average(d => d.DiemTongKet), 2);
-    int soHocPhanAPlus = Model.Count(d => d.DiemTongKet >= 9.0);  // A+
-    int soHocPhanA     = Model.Count(d => d.DiemTongKet >= 8.5);  // A/A+
+    int tongLuotDiem   = Model.Count;
+    int soLuotDat      = Model.Count(d => d.DiemTongKet >= 4.0);
+    double tiLeDat     = tongLuotDiem == 0 ? 0 : Math.Round(soLuotDat * 100.0 / tongLuotDiem, 1);
+    
+    // Điểm TB tích lũy (chỉ tính các bản ghi SuDungTinhTichLuy == true)
+    var tichLuyList = Model.Where(d => d.SuDungTinhTichLuy).ToList();
+    double diemTbTichLuy = tichLuyList.Count == 0 ? 0
+        : Math.Round(tichLuyList.Average(d => d.DiemTongKet), 2);
+
+    int soHocLai = Model.Count(d => d.LoaiHoc == "HOC_LAI");
+    int soCaiThien = Model.Count(d => d.LoaiHoc == "HOC_CAI_THIEN");
+    int soThiLai = Model.Count(d => d.LanThi > 1 || d.DiemCuoiKyLan2.HasValue);
 }
 
 <!-- ===== HEADER ===== -->
 <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
     <div>
         <p class="mb-1" style="font-size:.75rem; font-weight:700; letter-spacing:.08em; color:#6366f1; text-transform:uppercase;">
-            QUẢN LÝ ĐÀO TẠO
+            QUẢN LÝ ĐÀO TẠO TÍN CHỈ
         </p>
         <h3 class="fw-bold mb-1" style="color:#0f172a; font-size:1.55rem; letter-spacing:-.02em;">
-            Bảng điểm sinh viên
+            Bảng điểm sinh viên & Lịch sử học tập
         </h3>
         <p class="mb-0" style="font-size:.875rem; color:#64748b;">
-            Theo dõi và quản lý kết quả học tập chi tiết từng môn học của sinh viên.
+            Quản lý kết quả học tập chi tiết, bảo toàn lịch sử học lại, thi lại và học cải thiện theo quy chế tín chỉ.
         </p>
     </div>
     <div class="d-flex gap-2 flex-shrink-0">
@@ -48,6 +53,15 @@
     </div>
 }
 
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>@TempData["Error"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <!-- ===== STAT CARDS ===== -->
 <div class="row g-3 mb-4">
     <!-- Tổng lượt điểm -->
@@ -58,8 +72,8 @@
             </p>
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@tongHocPhan</div>
-                    <div style="font-size:.78rem; color:#64748b; margin-top:2px;">học phần</div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@tongLuotDiem</div>
+                    <div style="font-size:.78rem; color:#64748b; margin-top:2px;">lượt đánh giá</div>
                 </div>
                 <div style="width:44px; height:44px; border-radius:10px; background:#eff6ff; display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:1.2rem; flex-shrink:0;">
                     <i class="bi bi-clipboard-data"></i>
@@ -72,12 +86,12 @@
     <div class="col-6 col-lg-3">
         <div class="content-card p-3 h-100">
             <p style="font-size:.72rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">
-                TỈ LỆ ĐẠT
+                TỈ LỆ ĐẠT YÊU CẦU
             </p>
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@tiLeDat%</div>
-                    <div style="font-size:.78rem; color:#64748b; margin-top:2px;">@soHocPhanDat / @tongHocPhan học phần</div>
+                    <div style="font-size:.78rem; color:#64748b; margin-top:2px;">@soLuotDat / @tongLuotDiem lượt đạt</div>
                 </div>
                 <div style="width:44px; height:44px; border-radius:10px; background:#dcfce7; display:flex; align-items:center; justify-content:center; color:#16a34a; font-size:1.2rem; flex-shrink:0;">
                     <i class="bi bi-check-circle"></i>
@@ -86,16 +100,16 @@
         </div>
     </div>
 
-    <!-- Điểm TB học kỳ -->
+    <!-- Điểm TB tích lũy -->
     <div class="col-6 col-lg-3">
         <div class="content-card p-3 h-100">
             <p style="font-size:.72rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">
-                ĐIỂM TB HỌC KỲ
+                ĐIỂM TB TÍCH LŨY (GPA)
             </p>
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@diemTbHocKy.ToString("0.00")</div>
-                    <div style="font-size:.78rem; color:#64748b; margin-top:2px;">/ 10</div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@diemTbTichLuy.ToString("0.00")</div>
+                    <div style="font-size:.78rem; color:#64748b; margin-top:2px;">/ 10 (Chuẩn tích lũy)</div>
                 </div>
                 <div style="width:44px; height:44px; border-radius:10px; background:#fef3c7; display:flex; align-items:center; justify-content:center; color:#d97706; font-size:1.2rem; flex-shrink:0;">
                     <i class="bi bi-star"></i>
@@ -104,22 +118,21 @@
         </div>
     </div>
 
-    <!-- Học phần loại A/A+ -->
+    <!-- Học lại / Cải thiện / Thi lại -->
     <div class="col-6 col-lg-3">
         <div class="content-card p-3 h-100">
             <p style="font-size:.72rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">
-                HỌC PHẦN LOẠI A/A+
+                HỌC LẠI & CẢI THIỆN
             </p>
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@soHocPhanA <span style="font-size:1rem; color:#64748b;">môn</span></div>
-                    @{
-                        double pctA = tongHocPhan == 0 ? 0 : Math.Round(soHocPhanA * 100.0 / tongHocPhan, 1);
-                    }
-                    <div style="font-size:.78rem; color:#64748b; margin-top:2px;">(@pctA%)</div>
+                    <div style="font-size:1.6rem; font-weight:800; color:#0f172a; line-height:1.1;">
+                        <span class="text-warning">@soHocLai</span> / <span class="text-primary">@soCaiThien</span> / <span class="text-danger">@soThiLai</span>
+                    </div>
+                    <div style="font-size:.75rem; color:#64748b; margin-top:2px;">Học lại / Cải thiện / Thi lại</div>
                 </div>
                 <div style="width:44px; height:44px; border-radius:10px; background:#ede9fe; display:flex; align-items:center; justify-content:center; color:#7c3aed; font-size:1.2rem; flex-shrink:0;">
-                    <i class="bi bi-award"></i>
+                    <i class="bi bi-arrow-repeat"></i>
                 </div>
             </div>
         </div>
@@ -129,30 +142,40 @@
 <!-- ===== BỘ LỌC ===== -->
 <div class="content-card p-3 mb-3">
     <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
+        <!-- Lọc Lớp học phần -->
+        <div class="d-flex align-items-center gap-2" style="position:relative; min-width:240px; flex:1;">
+            <i class="bi bi-collection" style="position:absolute; left:12px; color:#94a3b8; font-size:.9rem; pointer-events:none;"></i>
+            <select name="lopHocPhanId" asp-items="ViewBag.DanhSachLopHocPhan"
+                    class="form-select"
+                    style="padding-left:34px; font-size:.875rem; border-color:#d1d5db; color:#374151;">
+                <option value="">-- Tất cả Lớp học phần --</option>
+            </select>
+        </div>
 
         <!-- Lọc sinh viên -->
-        <div class="d-flex align-items-center gap-2" style="position:relative; min-width:280px; flex:1;">
+        <div class="d-flex align-items-center gap-2" style="position:relative; min-width:240px; flex:1;">
             <i class="bi bi-person" style="position:absolute; left:12px; color:#94a3b8; font-size:.9rem; pointer-events:none;"></i>
             <select name="sinhVienId" asp-items="ViewBag.DanhSachSinhVien"
                     class="form-select"
                     style="padding-left:34px; font-size:.875rem; border-color:#d1d5db; color:#374151;">
-                <option value="">-- Xem bảng điểm của tất cả sinh viên --</option>
+                <option value="">-- Tất cả sinh viên --</option>
             </select>
         </div>
 
-        <!-- Học kỳ (hiển thị tĩnh theo ảnh) -->
-        <div class="d-flex align-items-center gap-2" style="position:relative; min-width:220px;">
-            <i class="bi bi-calendar3" style="position:absolute; left:12px; color:#94a3b8; font-size:.85rem; pointer-events:none; z-index:1;"></i>
-            <select class="form-select" disabled
-                    style="padding-left:34px; font-size:.875rem; border-color:#d1d5db; color:#374151; background:#f8fafc; cursor:default;">
-                <option>Học kỳ 1 (2025 – 2026)</option>
+        <!-- Lọc Loại học -->
+        <div class="d-flex align-items-center gap-2" style="position:relative; min-width:180px;">
+            <select name="loaiHoc" class="form-select" style="font-size:.875rem; border-color:#d1d5db; color:#374151;">
+                <option value="">-- Tất cả loại học --</option>
+                <option value="HOC_LAN_DAU" selected="@(ViewBag.LoaiHoc == "HOC_LAN_DAU")">Học lần đầu</option>
+                <option value="HOC_LAI" selected="@(ViewBag.LoaiHoc == "HOC_LAI")">Học lại</option>
+                <option value="HOC_CAI_THIEN" selected="@(ViewBag.LoaiHoc == "HOC_CAI_THIEN")">Học cải thiện</option>
             </select>
         </div>
 
         <!-- Lọc điểm -->
         <button type="submit" class="btn d-inline-flex align-items-center gap-2"
                 style="border:1px solid #d1d5db; background:#fff; color:#374151; font-size:.875rem; font-weight:600; height:38px; border-radius:8px; padding:0 16px;">
-            <i class="bi bi-funnel" style="font-size:.85rem;"></i> Lọc điểm
+            <i class="bi bi-funnel" style="font-size:.85rem;"></i> Lọc kết quả
         </button>
 
         <!-- Tất cả (reset) -->
@@ -166,16 +189,14 @@
 
 <!-- ===== BẢNG KẾT QUẢ HỌC TẬP ===== -->
 <div class="custom-table-container">
-    <!-- Header bảng -->
-    <div class="d-flex align-items-center justify-content-between px-3 py-2"
-         style="border-bottom:1px solid #f1f5f9;">
+    <div class="d-flex align-items-center justify-content-between px-3 py-2" style="border-bottom:1px solid #f1f5f9;">
         <div class="d-flex align-items-center gap-2">
             <i class="bi bi-list-ul" style="color:#6366f1; font-size:1rem;"></i>
             <span style="font-size:.75rem; font-weight:700; letter-spacing:.07em; color:#475569; text-transform:uppercase;">
-                KẾT QUẢ HỌC TẬP
+                KẾT QUẢ HỌC TẬP & LỊCH SỬ HỌC PHẦN
             </span>
             <span style="font-size:.78rem; color:#94a3b8; margin-left:4px;">
-                · Danh sách điểm học phần (@Model.Count bản ghi)
+                · @Model.Count bản ghi
             </span>
         </div>
         <div class="d-flex align-items-center gap-2">
@@ -192,12 +213,16 @@
                 <tr>
                     <th>MÃ SV</th>
                     <th>HỌ VÀ TÊN SV</th>
-                    <th>TÊN HỌC PHẦN</th>
+                    <th>MÔN HỌC & LỚP HP</th>
+                    <th class="text-center">LOẠI HỌC / LẦN</th>
                     <th class="text-center">SỐ TC</th>
                     <th class="text-center">CC (10%)</th>
                     <th class="text-center">GK (30%)</th>
                     <th class="text-center">CK (60%)</th>
                     <th class="text-center" style="color:#2563eb;">TỔNG KẾT</th>
+                    <th class="text-center">ĐIỂM CHỮ</th>
+                    <th class="text-center">TÍCH LŨY</th>
+                    <th class="text-end">THAO TÁC</th>
                 </tr>
             </thead>
             <tbody>
@@ -205,11 +230,16 @@
                 {
                     string maSV = d.SinhVien?.MaSinhVien ?? "—";
                     string hoTen = d.SinhVien?.HoTen ?? "—";
+                    string lopHanhChinh = d.SinhVien?.Lop?.TenLop ?? "";
 
                     <tr>
                         <!-- MÃ SV -->
                         <td>
                             <span style="font-weight:700; color:#2563eb; font-size:.875rem;">@maSV</span>
+                            @if (!string.IsNullOrEmpty(lopHanhChinh))
+                            {
+                                <div style="font-size:.72rem; color:#64748b;">@lopHanhChinh</div>
+                            }
                         </td>
 
                         <!-- HỌ TÊN -->
@@ -217,12 +247,49 @@
                             <span style="font-weight:600; color:#1e293b; font-size:.875rem;">@hoTen</span>
                         </td>
 
-                        <!-- TÊN HỌC PHẦN -->
+                        <!-- TÊN HỌC PHẦN & LỚP HP -->
                         <td>
                             <div style="font-weight:600; color:#1e293b; font-size:.875rem;">
                                 @d.MonHoc?.TenMon
                             </div>
-                            <small style="color:#94a3b8; font-size:.78rem;">Mã HP: @d.MonHoc?.MaMon</small>
+                            <div class="d-flex align-items-center gap-1 mt-1">
+                                <span class="badge" style="background:#f1f5f9; color:#475569; font-size:.72rem; font-weight:600;">@d.MonHoc?.MaMon</span>
+                                @if (d.LopHocPhan != null)
+                                {
+                                    <span class="badge" style="background:#e0f2fe; color:#0369a1; font-size:.72rem; font-weight:600;">@d.LopHocPhan.MaLopHocPhan</span>
+                                }
+                            </div>
+                        </td>
+
+                        <!-- LOẠI HỌC / LẦN HỌC / THI -->
+                        <td class="text-center">
+                            @if (d.LoaiHoc == "HOC_LAI")
+                            {
+                                <span class="badge" style="background:#ffedd5; color:#c2410c; font-size:.75rem; font-weight:700; padding:4px 8px;">
+                                    <i class="bi bi-arrow-repeat"></i> Học lại (Lần @d.LanHoc)
+                                </span>
+                            }
+                            else if (d.LoaiHoc == "HOC_CAI_THIEN")
+                            {
+                                <span class="badge" style="background:#f3e8ff; color:#7e22ce; font-size:.75rem; font-weight:700; padding:4px 8px;">
+                                    <i class="bi bi-arrow-up-circle"></i> Cải thiện (Lần @d.LanHoc)
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge" style="background:#f0fdf4; color:#15803d; font-size:.75rem; font-weight:700; padding:4px 8px;">
+                                    Lần đầu
+                                </span>
+                            }
+
+                            @if (d.LanThi > 1 || d.DiemCuoiKyLan2.HasValue)
+                            {
+                                <div class="mt-1">
+                                    <span class="badge" style="background:#fee2e2; color:#b91c1c; font-size:.7rem; font-weight:700;">
+                                        Thi lần 2
+                                    </span>
+                                </div>
+                            }
                         </td>
 
                         <!-- SỐ TC -->
@@ -241,15 +308,59 @@
                         </td>
 
                         <!-- CK -->
-                        <td class="text-center" style="color:#475569; font-size:.875rem;">
-                            @d.DiemCuoiKy.ToString("0.0")
+                        <td class="text-center" style="font-size:.875rem;">
+                            @if (d.LanThi == 2 && d.DiemCuoiKyLan2.HasValue)
+                            {
+                                <span style="color:#94a3b8; text-decoration:line-through; font-size:.78rem;">@d.DiemCuoiKy.ToString("0.0")</span>
+                                <strong style="color:#b91c1c;">@d.DiemCuoiKyLan2.Value.ToString("0.0")</strong>
+                            }
+                            else
+                            {
+                                <span style="color:#475569;">@d.DiemCuoiKy.ToString("0.0")</span>
+                            }
                         </td>
 
                         <!-- TỔNG KẾT -->
                         <td class="text-center">
-                            <span style="font-weight:800; color:#2563eb; font-size:1.05rem;">
+                            <span style="font-weight:800; color:@(d.IsDat ? "#2563eb" : "#dc2626"); font-size:1.05rem;">
                                 @d.DiemTongKet.ToString("0.0")
                             </span>
+                        </td>
+
+                        <!-- ĐIỂM CHỮ -->
+                        <td class="text-center">
+                            <span class="badge" style="background:@(d.IsDat ? "#e0e7ff" : "#fee2e2"); color:@(d.IsDat ? "#4338ca" : "#991b1b"); font-size:.8rem; font-weight:800; min-width:32px;">
+                                @d.DiemChu
+                            </span>
+                        </td>
+
+                        <!-- TÍCH LŨY GPA -->
+                        <td class="text-center">
+                            @if (d.SuDungTinhTichLuy)
+                            {
+                                <span class="badge" style="background:#dcfce7; color:#15803d; font-size:.72rem; font-weight:700; padding:4px 8px;" title="Điểm này được sử dụng để tính vào GPA tích lũy">
+                                    <i class="bi bi-check-lg"></i> Tính GPA
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge" style="background:#f1f5f9; color:#94a3b8; font-size:.72rem; font-weight:600; padding:4px 8px;" title="Điểm cũ hoặc chưa đạt - không tính vào GPA tích lũy">
+                                    Không tính
+                                </span>
+                            }
+                        </td>
+
+                        <!-- THAO TÁC -->
+                        <td class="text-end">
+                            <a asp-action="NhapDiem"
+                               asp-route-lopHocPhanId="@d.LopHocPhanId"
+                               asp-route-sinhVienId="@d.SinhVienId"
+                               asp-route-monHocId="@d.MonHocId"
+                               class="btn btn-sm"
+                               style="background:#f8fafc; border:1px solid #e2e8f0; color:#334155; font-weight:600; font-size:.78rem;"
+                               title="Cập nhật điểm hoặc nhập điểm thi lại">
+                                <i class="bi bi-pencil-square"></i> Sửa / Thi lại
+                            </a>
                         </td>
                     </tr>
                 }
@@ -257,64 +368,13 @@
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="8" class="text-center py-5" style="color:#94a3b8;">
+                        <td colspan="12" class="text-center py-5" style="color:#94a3b8;">
                             <i class="bi bi-inbox fs-2 d-block mb-2" style="color:#cbd5e1;"></i>
-                            <span style="font-size:.9rem;">Chưa có dữ liệu bảng điểm. Bấm <strong>"Nhập điểm môn học"</strong> để thêm.</span>
+                            <span style="font-size:.9rem;">Chưa có dữ liệu bảng điểm phù hợp bộ lọc. Bấm <strong>"Nhập điểm môn học"</strong> để ghi nhận.</span>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
-
-    <!-- Footer bảng -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2"
-         style="border-top:1px solid #f1f5f9; background:#fafbfc;">
-        <div style="font-size:.82rem; color:#64748b;">
-            Hiển thị <strong style="color:#1e293b;">1 – @Model.Count</strong>
-            trên tổng số <strong style="color:#1e293b;">@Model.Count</strong> bản ghi
-            &nbsp;|&nbsp;
-            <span style="color:#94a3b8;">Số dòng:
-                <select class="form-select d-inline-block"
-                        style="width:auto; height:28px; padding:0 8px; font-size:.78rem; border-color:#e2e8f0; display:inline-block !important;">
-                    <option>10</option>
-                    <option>20</option>
-                    <option>50</option>
-                </select>
-            </span>
-        </div>
-
-        <nav>
-            <ul class="pagination pagination-sm mb-0 gap-1">
-                <li class="page-item disabled">
-                    <span class="page-link sv-page-btn" style="color:#cbd5e1;">&lsaquo; Trước</span>
-                </li>
-                <li class="page-item active">
-                    <span class="page-link sv-page-btn sv-page-active">1</span>
-                </li>
-                <li class="page-item disabled">
-                    <span class="page-link sv-page-btn" style="color:#cbd5e1;">Sau &rsaquo;</span>
-                </li>
-            </ul>
-        </nav>
-    </div>
 </div>
-
-@section Scripts {
-<style>
-    .sv-page-btn {
-        min-width:34px; height:34px;
-        display:inline-flex; align-items:center; justify-content:center;
-        border-radius:8px !important;
-        border:1px solid #e2e8f0 !important;
-        color:#374151 !important;
-        font-size:.82rem; font-weight:600;
-        background:#fff; padding:0 10px;
-        transition:all .15s ease;
-    }
-    .sv-page-btn:hover  { background:#f1f5f9 !important; }
-    .sv-page-active     { background:#2563eb !important; color:#fff !important; border-color:#2563eb !important; }
-    .page-item.disabled .sv-page-btn { color:#cbd5e1 !important; }
-    .admin-content { font-family: 'Plus Jakarta Sans', "Segoe UI", sans-serif; }
-</style>
-}

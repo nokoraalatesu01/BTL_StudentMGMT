@@ -13,20 +13,40 @@
         <h1>Xin chào, @displayName</h1>
         <p>Đây là trang tổng quan công tác giảng dạy và quản lý sinh viên của bạn.</p>
     </div>
-    @if (!string.IsNullOrEmpty(Model?.HinhAnh))
-    {
-        <img src="@Model.HinhAnh" alt="@displayName" class="student-avatar object-fit-cover shadow-sm" />
-    }
-    else
-    {
-        <div class="student-avatar" aria-hidden="true">@nameInitial</div>
-    }
+    <div class="student-avatar-wrapper position-relative">
+        @if (!string.IsNullOrEmpty(Model?.HinhAnh))
+        {
+            <img src="@Model.HinhAnh" alt="@displayName" class="student-avatar object-fit-cover shadow-sm" style="cursor:pointer;" onclick="document.getElementById('gvFileAnhInput').click();" title="Nhấn để đổi ảnh đại diện" />
+        }
+        else
+        {
+            <div class="student-avatar" aria-hidden="true" style="cursor:pointer;" onclick="document.getElementById('gvFileAnhInput').click();" title="Nhấn để tải lên ảnh đại diện">@nameInitial</div>
+        }
+        <form asp-action="CapNhatAnhDaiDien" method="post" enctype="multipart/form-data" id="gvAvatarForm" class="avatar-upload-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+            <label for="gvFileAnhInput" class="avatar-change-btn" title="Cập nhật ảnh đại diện hồ sơ">
+                <i class="bi bi-camera-fill"></i>
+            </label>
+            <input type="file" id="gvFileAnhInput" name="fileAnh" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="if(this.files.length>0) document.getElementById('gvAvatarForm').submit();" />
+        </form>
+    </div>
 </section>
 
 @if (TempData["Msg"] != null)
 {
-    <div class="student-notice mb-3" style="background: #eaf6f0; border-color: #badccf; color: #205c47;">
-        <strong>Thông báo:</strong> @TempData["Msg"]
+    <div class="alert alert-success alert-dismissible fade show rounded-3 mb-3 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-check-circle-fill"></i>
+        <div>@TempData["Msg"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-3 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>@TempData["Error"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
     </div>
 }
 

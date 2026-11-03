@@ -82,6 +82,10 @@ public class SinhVienController : Controller
                 .ThenInclude(lop => lop!.Nganh)
             .Include(item => item.Diems)
                 .ThenInclude(diem => diem.MonHoc)
+            .Include(item => item.Diems)
+                .ThenInclude(diem => diem.LopHocPhan)
+            .Include(item => item.Diems)
+                .ThenInclude(diem => diem.HocKy)
             .FirstOrDefaultAsync(item => item.UserId == userId);
 
         if (student == null)
@@ -106,151 +110,524 @@ public class SinhVienController : Controller
         return View(model);
     }
 
-    public async Task<IActionResult> HocPhi()
+    // 4. Màn hình đăng ký học phần (Tín chỉ)
+    public async Task<IActionResult> DangKyHocPhan()
     {
-        var student = await GetCurrentStudentAsync();
+        var userId = _userManager.GetUserId(User);
+        if (userId == null) return View("Unlinked");
+
+        var student = await _db.SinhViens
+            .Include(s => s.Lop)
+            .FirstOrDefaultAsync(s => s.UserId == userId);
+
         if (student == null) return View("Unlinked");
 
-        var invoices = await _db.HoaDonHocPhis.AsNoTracking()
-            .Where(invoice => invoice.SinhVienId == student.Id)
-            .Include(invoice => invoice.HocKy).ThenInclude(semester => semester.NamHoc)
-            .Include(invoice => invoice.ChiTietHoaDonHocPhis)
-            .Include(invoice => invoice.ThanhToans.OrderByDescending(payment => payment.ThoiGianThanhToan))
-            .OrderByDescending(invoice => invoice.NgayLap)
+        // Lấy các lớp học phần đang mở đăng ký
+        var lhpList = await _db.LopHocPhans
+            .Include(l => l.MonHoc)
+            .Include(l => l.GiangVien)
+            .Include(l => l.HocKy)
+            .Include(l => l.DangKyHocPhans)
+            .Where(l => l.TrangThai == "OPEN")
+            .OrderBy(l => l.MonHoc!.TenMon)
+            .ThenBy(l => l.Nhom)
             .ToListAsync();
 
-        return View(new SinhVienHocPhiViewModel
+        var registeredList = await _db.DangKyHocPhans
+            .Include(dk => dk.LopHocPhan)
+                .ThenInclude(l => l.MonHoc)
+            .Include(dk => dk.LopHocPhan)
+                .ThenInclude(l => l.GiangVien)
+            .Where(dk => dk.SinhVienId == student.Id && dk.TrangThai == "ENROLLED")
+            .ToListAsync();
+
+        var registeredLhpIds = registeredList.Select(dk => dk.LopHocPhanId).ToHashSet();
+
+        var vm = new SinhVienDangKyHocPhanViewModel
         {
-            HoaDons = invoices.Select(invoice => new HocPhiHoaDonListItemViewModel
+            SinhVien = student,
+            LopHocPhansMo = lhpList.Select(l => new LopHocPhanDangKyItemViewModel
             {
-                HoaDon = invoice,
-                IdempotencyKey = Guid.NewGuid().ToString("N"),
-                TongTien = GetInvoiceTotal(invoice),
-                DaThanhToan = invoice.ThanhToans
-                    .Where(payment => payment.TrangThai == "COMPLETED")
-                    .Sum(payment => payment.SoTien)
+                LopHocPhanId = l.Id,
+                MaLopHocPhan = l.MaLopHocPhan,
+                TenLopHocPhan = l.TenLopHocPhan,
+                MaMon = l.MonHoc?.MaMon ?? "",
+                TenMon = l.MonHoc?.TenMon ?? "",
+                SoTinChi = l.MonHoc?.SoTinChi ?? 0,
+                TenGiangVien = l.GiangVien?.HoTen,
+                LichHoc = $"{l.Thu}, Tiết {l.TietBatDau} - {l.TietBatDau + l.SoTiet - 1}",
+                PhongHoc = l.PhongHoc,
+                SiSoHienTai = l.DangKyHocPhans.Count(dk => dk.TrangThai == "ENROLLED"),
+                SiSoToiDa = l.SiSoToiDa,
+                DaDangKy = registeredLhpIds.Contains(l.Id)
+            }).ToList(),
+            LopHocPhanDaDangKy = registeredList.Select(dk => new LopHocPhanDangKyItemViewModel
+            {
+                LopHocPhanId = dk.LopHocPhanId,
+                MaLopHocPhan = dk.LopHocPhan.MaLopHocPhan,
+                TenLopHocPhan = dk.LopHocPhan.TenLopHocPhan,
+                MaMon = dk.LopHocPhan.MonHoc?.MaMon ?? "",
+                TenMon = dk.LopHocPhan.MonHoc?.TenMon ?? "",
+                SoTinChi = dk.LopHocPhan.MonHoc?.SoTinChi ?? 0,
+                TenGiangVien = dk.LopHocPhan.GiangVien?.HoTen,
+                LichHoc = $"{dk.LopHocPhan.Thu}, Tiết {dk.LopHocPhan.TietBatDau} - {dk.LopHocPhan.TietBatDau + dk.LopHocPhan.SoTiet - 1}",
+                PhongHoc = dk.LopHocPhan.PhongHoc,
+                SiSoHienTai = 0,
+                SiSoToiDa = dk.LopHocPhan.SiSoToiDa,
+                DaDangKy = true,
+                NgayDangKy = dk.NgayDangKy
             }).ToList()
-        });
+        };
+
+        return View(vm);
     }
 
+    // 5. Xác nhận đăng ký lớp học phần (POST)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> GuiYeuCauThanhToan(GuiYeuCauThanhToanViewModel model)
+    public async Task<IActionResult> XacNhanDangKy(int lopHocPhanId)
     {
-        var student = await GetCurrentStudentAsync();
-        if (student == null) return View("Unlinked");
-        if (!ModelState.IsValid)
+        var userId = _userManager.GetUserId(User);
+        if (userId == null) return RedirectToAction(nameof(DangKyHocPhan));
+
+        var student = await _db.SinhViens.FirstOrDefaultAsync(s => s.UserId == userId);
+        if (student == null) return RedirectToAction(nameof(DangKyHocPhan));
+
+        var lhp = await _db.LopHocPhans
+            .Include(l => l.MonHoc)
+            .Include(l => l.DangKyHocPhans)
+            .FirstOrDefaultAsync(l => l.Id == lopHocPhanId);
+
+        if (lhp == null)
         {
-            TempData["Error"] = "Vui lòng chọn ảnh biên lai chuyển khoản hợp lệ.";
-            return RedirectToAction(nameof(HocPhi));
+            TempData["Error"] = "Lớp học phần không tồn tại.";
+            return RedirectToAction(nameof(DangKyHocPhan));
         }
 
-        var existingRequest = await _db.ThanhToans.AsNoTracking()
-            .Where(payment => payment.IdempotencyKey == model.IdempotencyKey)
-            .Select(payment => new { payment.HoaDonId, payment.HoaDon.SinhVienId })
-            .FirstOrDefaultAsync();
-        if (existingRequest != null)
+        if (lhp.TrangThai != "OPEN")
         {
-            if (existingRequest.HoaDonId != model.HoaDonId || existingRequest.SinhVienId != student.Id)
+            TempData["Error"] = "Lớp học phần đã đóng đăng ký hoặc kết thúc.";
+            return RedirectToAction(nameof(DangKyHocPhan));
+        }
+
+        // Kiểm tra đã đăng ký lớp học phần này chưa
+        var daDangKy = await _db.DangKyHocPhans.AnyAsync(dk =>
+            dk.SinhVienId == student.Id &&
+            dk.LopHocPhanId == lopHocPhanId &&
+            dk.TrangThai == "ENROLLED");
+
+        if (daDangKy)
+        {
+            TempData["Error"] = "Bạn đã đăng ký lớp học phần này rồi.";
+            return RedirectToAction(nameof(DangKyHocPhan));
+        }
+
+        // Kiểm tra sĩ số tối đa
+        var count = lhp.DangKyHocPhans.Count(dk => dk.TrangThai == "ENROLLED");
+        if (count >= lhp.SiSoToiDa)
+        {
+            TempData["Error"] = "Lớp học phần đã đầy sĩ số (hết chỗ). Vui lòng chọn nhóm lớp khác.";
+            return RedirectToAction(nameof(DangKyHocPhan));
+        }
+
+        // Kiểm tra đã đăng ký nhóm khác của cùng môn học trong cùng học kỳ chưa
+        var daDangKyCungMon = await _db.DangKyHocPhans
+            .Include(dk => dk.LopHocPhan)
+            .AnyAsync(dk =>
+                dk.SinhVienId == student.Id &&
+                dk.LopHocPhan.MonHocId == lhp.MonHocId &&
+                dk.LopHocPhan.HocKyId == lhp.HocKyId &&
+                dk.TrangThai == "ENROLLED");
+
+        if (daDangKyCungMon)
+        {
+            TempData["Error"] = $"Bạn đã đăng ký một nhóm khác của môn '{lhp.MonHoc?.TenMon}' trong học kỳ này.";
+            return RedirectToAction(nameof(DangKyHocPhan));
+        }
+
+        // Kiểm tra trùng lịch học với các môn đã đăng ký
+        var currentEnrollments = await _db.DangKyHocPhans
+            .Include(dk => dk.LopHocPhan)
+            .Where(dk => dk.SinhVienId == student.Id && dk.TrangThai == "ENROLLED")
+            .Select(dk => dk.LopHocPhan)
+            .ToListAsync();
+
+        var tietKetThuc = lhp.TietBatDau + lhp.SoTiet - 1;
+        var trungLich = currentEnrollments.FirstOrDefault(other =>
+            other.Thu == lhp.Thu &&
+            ((lhp.TietBatDau >= other.TietBatDau && lhp.TietBatDau < other.TietBatDau + other.SoTiet) ||
+             (tietKetThuc > other.TietBatDau && tietKetThuc <= other.TietBatDau + other.SoTiet)));
+
+        if (trungLich != null)
+        {
+            TempData["Error"] = $"Trùng lịch học: Lớp này học vào {lhp.Thu} (tiết {lhp.TietBatDau}-{tietKetThuc}), trùng với môn '{trungLich.TenLopHocPhan}'.";
+            return RedirectToAction(nameof(DangKyHocPhan));
+        }
+
+        // Phân tích lịch sử học môn này để tự động xác định loại đăng ký và số lần học
+        var previousAttempts = await _db.Diems
+            .Where(d => d.SinhVienId == student.Id && d.MonHocId == lhp.MonHocId)
+            .OrderByDescending(d => d.LanHoc)
+            .ToListAsync();
+
+        string loaiDangKy = "HOC_LAN_DAU";
+        int lanHoc = 1;
+        string? ghiChuDk = null;
+
+        if (previousAttempts.Count > 0)
+        {
+            var lastAttempt = previousAttempts.First();
+            lanHoc = previousAttempts.Max(d => d.LanHoc) + 1;
+            if (lastAttempt.DiemTongKet < 4.0)
             {
-                return BadRequest();
+                loaiDangKy = "HOC_LAI";
+                ghiChuDk = $"Đăng ký học lại do lần {lastAttempt.LanHoc} không đạt ({lastAttempt.DiemTongKet} điểm)";
             }
-
-            TempData["Msg"] = "Yêu cầu này đã được gửi trước đó.";
-            return RedirectToAction(nameof(HocPhi));
+            else
+            {
+                loaiDangKy = "HOC_CAI_THIEN";
+                ghiChuDk = $"Đăng ký học cải thiện điểm (lần {lastAttempt.LanHoc} đã đạt {lastAttempt.DiemTongKet} điểm)";
+            }
+        }
+        else
+        {
+            var prevDk = await _db.DangKyHocPhans
+                .Include(dk => dk.LopHocPhan)
+                .Where(dk => dk.SinhVienId == student.Id && dk.LopHocPhan.MonHocId == lhp.MonHocId && dk.LopHocPhanId != lopHocPhanId)
+                .CountAsync();
+            if (prevDk > 0)
+            {
+                lanHoc = prevDk + 1;
+                loaiDangKy = "HOC_LAI";
+            }
         }
 
-        var invoice = await _db.HoaDonHocPhis
-            .Where(item => item.HoaDonId == model.HoaDonId && item.SinhVienId == student.Id)
-            .Include(item => item.ChiTietHoaDonHocPhis)
-            .Include(item => item.ThanhToans)
-            .FirstOrDefaultAsync();
-        if (invoice == null) return NotFound();
-        if (invoice.TrangThai is "CANCELLED" or "PAID")
+        // Thực hiện ghi danh
+        var existingRecord = await _db.DangKyHocPhans.FirstOrDefaultAsync(dk =>
+            dk.SinhVienId == student.Id && dk.LopHocPhanId == lopHocPhanId);
+
+        if (existingRecord != null)
         {
-            TempData["Error"] = "Hóa đơn này không còn khoản cần thanh toán.";
-            return RedirectToAction(nameof(HocPhi));
+            existingRecord.TrangThai = "ENROLLED";
+            existingRecord.LoaiDangKy = loaiDangKy;
+            existingRecord.LanHoc = lanHoc;
+            existingRecord.GhiChu = ghiChuDk;
+            existingRecord.NgayDangKy = DateTime.UtcNow;
+        }
+        else
+        {
+            _db.DangKyHocPhans.Add(new DangKyHocPhan
+            {
+                SinhVienId = student.Id,
+                LopHocPhanId = lopHocPhanId,
+                LoaiDangKy = loaiDangKy,
+                LanHoc = lanHoc,
+                GhiChu = ghiChuDk,
+                NgayDangKy = DateTime.UtcNow,
+                TrangThai = "ENROLLED"
+            });
         }
 
-        if (invoice.ThanhToans.Any(payment => payment.TrangThai == "PENDING"))
-        {
-            TempData["Error"] = "Hóa đơn đã có yêu cầu thanh toán đang chờ xác nhận.";
-            return RedirectToAction(nameof(HocPhi));
-        }
-
-        var total = GetInvoiceTotal(invoice);
-        var paid = invoice.ThanhToans.Where(payment => payment.TrangThai == "COMPLETED").Sum(payment => payment.SoTien);
-        var amountDue = Math.Max(0, total - paid);
-        if (amountDue <= 0)
-        {
-            TempData["Error"] = "Hóa đơn này không còn khoản cần thanh toán.";
-            return RedirectToAction(nameof(HocPhi));
-        }
-
-        var proofFile = model.AnhMinhChung!;
-        if (proofFile.Length == 0 || proofFile.Length > 5 * 1024 * 1024
-            || !new[] { ".jpg", ".jpeg", ".png", ".webp" }.Contains(Path.GetExtension(proofFile.FileName).ToLowerInvariant()))
-        {
-            TempData["Error"] = "Ảnh biên lai phải có định dạng JPG, PNG hoặc WEBP và không quá 5MB.";
-            return RedirectToAction(nameof(HocPhi));
-        }
-
-        var proofName = await _fileUploadService.UploadPaymentProofAsync(proofFile);
-        if (proofName == null)
-        {
-            TempData["Error"] = "Không thể tải ảnh biên lai. Vui lòng kiểm tra định dạng và dung lượng tệp.";
-            return RedirectToAction(nameof(HocPhi));
-        }
-
-        var transactionCode = await GenerateTransactionCodeAsync();
-        _db.ThanhToans.Add(new ThanhToan
-        {
-            HoaDonId = invoice.HoaDonId,
-            MaGiaoDich = transactionCode,
-            SoTien = amountDue,
-            ThoiGianThanhToan = DateTime.UtcNow,
-            PhuongThuc = "CHUYEN_KHOAN",
-            TrangThai = "PENDING",
-            NguonThanhToan = "STUDENT_PORTAL",
-            IdempotencyKey = model.IdempotencyKey,
-            AnhMinhChung = proofName
-        });
-        try
-        {
-            await _db.SaveChangesAsync();
-        }
-        catch (DbUpdateException exception) when (exception.InnerException is SqlException { Number: 2601 or 2627 })
-        {
-            _fileUploadService.DeletePaymentProof(proofName);
-            TempData["Error"] = "Một yêu cầu thanh toán cho hóa đơn này vừa được gửi. Vui lòng tải lại trang.";
-            return RedirectToAction(nameof(HocPhi));
-        }
-
-        TempData["Msg"] = $"Đã gửi yêu cầu. Hãy ghi mã {transactionCode} trong nội dung chuyển khoản và chờ nhà trường xác nhận.";
-        return RedirectToAction(nameof(HocPhi));
+        await _db.SaveChangesAsync();
+        TempData["Success"] = $"Đăng ký thành công lớp học phần '{lhp.TenLopHocPhan}'!";
+        return RedirectToAction(nameof(DangKyHocPhan));
     }
 
-    [HttpGet]
-    public async Task<IActionResult> XemBienLai(long id)
+    // 6. Hủy đăng ký lớp học phần (POST)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> HuyDangKy(int lopHocPhanId)
     {
-        var student = await GetCurrentStudentAsync();
-        if (student == null) return Forbid();
-        var proofName = await _db.ThanhToans.AsNoTracking()
-            .Where(payment => payment.ThanhToanId == id && payment.HoaDon.SinhVienId == student.Id)
-            .Select(payment => payment.AnhMinhChung)
-            .FirstOrDefaultAsync();
-        if (proofName == null) return NotFound();
+        var userId = _userManager.GetUserId(User);
+        if (userId == null) return RedirectToAction(nameof(DangKyHocPhan));
 
-        var stream = await _fileUploadService.OpenPaymentProofAsync(proofName);
-        if (stream == null) return NotFound();
-        var contentType = Path.GetExtension(proofName).ToLowerInvariant() switch
+        var student = await _db.SinhViens.FirstOrDefaultAsync(s => s.UserId == userId);
+        if (student == null) return RedirectToAction(nameof(DangKyHocPhan));
+
+        var dk = await _db.DangKyHocPhans
+            .Include(d => d.LopHocPhan)
+            .FirstOrDefaultAsync(d => d.SinhVienId == student.Id && d.LopHocPhanId == lopHocPhanId && d.TrangThai == "ENROLLED");
+
+        if (dk == null)
         {
-            ".jpg" or ".jpeg" => "image/jpeg",
-            ".png" => "image/png",
-            ".webp" => "image/webp",
-            _ => "application/octet-stream"
+            TempData["Error"] = "Bản ghi đăng ký không tồn tại.";
+            return RedirectToAction(nameof(DangKyHocPhan));
+        }
+
+        if (dk.LopHocPhan.TrangThai != "OPEN")
+        {
+            TempData["Error"] = "Lớp học phần đã khóa đăng ký, không thể hủy.";
+            return RedirectToAction(nameof(DangKyHocPhan));
+        }
+
+        _db.DangKyHocPhans.Remove(dk);
+        await _db.SaveChangesAsync();
+
+        TempData["Success"] = $"Đã hủy đăng ký lớp học phần '{dk.LopHocPhan.TenLopHocPhan}'.";
+        return RedirectToAction(nameof(DangKyHocPhan));
+    }
+
+    // 7. Thời khóa biểu cá nhân của sinh viên
+    public async Task<IActionResult> ThoiKhoaBieu(int? hocKyId, string? ngay)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId == null) return View("Unlinked");
+
+        var student = await _db.SinhViens
+            .Include(s => s.Lop)
+                .ThenInclude(l => l.Nganh)
+            .FirstOrDefaultAsync(s => s.UserId == userId);
+        if (student == null) return View("Unlinked");
+
+        // 1. Lấy danh sách tất cả học kỳ để sinh viên lựa chọn
+        var allHocKies = await _db.HocKies
+            .Include(h => h.NamHoc)
+            .OrderByDescending(h => h.NgayBatDau)
+            .ToListAsync();
+
+        HocKy? selectedHocKy = null;
+        if (hocKyId.HasValue && hocKyId.Value > 0)
+        {
+            selectedHocKy = allHocKies.FirstOrDefault(h => h.HocKyId == hocKyId.Value);
+        }
+
+        if (selectedHocKy == null)
+        {
+            var todayOnly = DateOnly.FromDateTime(DateTime.Today);
+            selectedHocKy = allHocKies.FirstOrDefault(h => h.TrangThai == "DANG_MO" || (todayOnly >= h.NgayBatDau && todayOnly <= h.NgayKetThuc))
+                         ?? allHocKies.FirstOrDefault();
+        }
+
+        // 2. Xác định tuần học đang xem
+        DateTime targetDate = DateTime.Today;
+        if (!string.IsNullOrWhiteSpace(ngay) && DateTime.TryParseExact(ngay, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsedDate))
+        {
+            targetDate = parsedDate;
+        }
+        else if (selectedHocKy != null)
+        {
+            var todayOnly = DateOnly.FromDateTime(DateTime.Today);
+            if (todayOnly < selectedHocKy.NgayBatDau || todayOnly > selectedHocKy.NgayKetThuc)
+            {
+                targetDate = selectedHocKy.NgayBatDau.ToDateTime(TimeOnly.MinValue);
+            }
+        }
+
+        // Tìm ngày Thứ Hai của tuần đang xem
+        int diffFromMonday = (7 + (int)targetDate.DayOfWeek - (int)DayOfWeek.Monday) % 7;
+        DateTime monday = targetDate.Date.AddDays(-diffFromMonday);
+        DateTime sunday = monday.AddDays(6);
+
+        // 3. Lấy các lớp học phần sinh viên đã đăng ký hợp lệ (ENROLLED và lớp chưa bị CANCELLED)
+        var query = _db.DangKyHocPhans
+            .Include(dk => dk.LopHocPhan)
+                .ThenInclude(l => l.MonHoc)
+            .Include(dk => dk.LopHocPhan)
+                .ThenInclude(l => l.GiangVien)
+            .Include(dk => dk.LopHocPhan)
+                .ThenInclude(l => l.HocKy)
+                    .ThenInclude(h => h.NamHoc)
+            .Where(dk => dk.SinhVienId == student.Id 
+                      && dk.TrangThai == "ENROLLED" 
+                      && dk.LopHocPhan.TrangThai != "CANCELLED");
+
+        if (selectedHocKy != null)
+        {
+            query = query.Where(dk => dk.LopHocPhan.HocKyId == selectedHocKy.HocKyId);
+        }
+
+        var registeredList = await query.ToListAsync();
+
+        // 4. Xây dựng danh sách các ngày trong tuần (Thứ 2 đến Thứ 7)
+        var cacThuConfig = new (string Thu, string TenRutGon, DateTime Ngay)[]
+        {
+            ("Thứ 2", "T2", monday),
+            ("Thứ 3", "T3", monday.AddDays(1)),
+            ("Thứ 4", "T4", monday.AddDays(2)),
+            ("Thứ 5", "T5", monday.AddDays(3)),
+            ("Thứ 6", "T6", monday.AddDays(4)),
+            ("Thứ 7", "T7", monday.AddDays(5))
         };
-        return File(stream, contentType);
+
+        var ngayTrongTuanList = new List<NgayTrongTuanViewModel>();
+        var dateMap = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var item in cacThuConfig)
+        {
+            dateMap[item.Thu] = item.Ngay;
+            var soLopTrongNgay = registeredList.Count(dk => string.Equals(dk.LopHocPhan.Thu, item.Thu, StringComparison.OrdinalIgnoreCase));
+            ngayTrongTuanList.Add(new NgayTrongTuanViewModel
+            {
+                Thu = item.Thu,
+                TenRutGon = item.TenRutGon,
+                Ngay = item.Ngay,
+                LaHomNay = item.Ngay.Date == DateTime.Today,
+                TongSoLop = soLopTrongNgay
+            });
+        }
+
+        // 5. Kiểm tra trùng lịch học giữa các lớp học phần đã đăng ký
+        var danhSachTrungLich = new List<TrungLichItemViewModel>();
+        var trungLichLhpIds = new HashSet<int>();
+        var trungLichReasons = new Dictionary<int, string>();
+
+        var groupedByThu = registeredList.GroupBy(dk => dk.LopHocPhan.Thu ?? string.Empty);
+        foreach (var grp in groupedByThu)
+        {
+            if (string.IsNullOrWhiteSpace(grp.Key)) continue;
+            var listInThu = grp.ToList();
+            for (int i = 0; i < listInThu.Count; i++)
+            {
+                for (int j = i + 1; j < listInThu.Count; j++)
+                {
+                    var a = listInThu[i].LopHocPhan;
+                    var b = listInThu[j].LopHocPhan;
+                    var aEnd = a.TietBatDau + a.SoTiet - 1;
+                    var bEnd = b.TietBatDau + b.SoTiet - 1;
+
+                    // Kiểm tra khoảng tiết giao nhau
+                    if (Math.Max(a.TietBatDau, b.TietBatDau) <= Math.Min(aEnd, bEnd))
+                    {
+                        var tietGiaoStart = Math.Max(a.TietBatDau, b.TietBatDau);
+                        var tietGiaoEnd = Math.Min(aEnd, bEnd);
+                        var chuoiTietGiao = tietGiaoStart == tietGiaoEnd ? $"Tiết {tietGiaoStart}" : $"Tiết {tietGiaoStart}–{tietGiaoEnd}";
+
+                        trungLichLhpIds.Add(a.Id);
+                        trungLichLhpIds.Add(b.Id);
+
+                        var msgA = $"Trùng {chuoiTietGiao} với lớp {b.TenLopHocPhan} ({b.MaLopHocPhan})";
+                        var msgB = $"Trùng {chuoiTietGiao} với lớp {a.TenLopHocPhan} ({a.MaLopHocPhan})";
+                        trungLichReasons[a.Id] = msgA;
+                        trungLichReasons[b.Id] = msgB;
+
+                        danhSachTrungLich.Add(new TrungLichItemViewModel
+                        {
+                            Thu = grp.Key,
+                            LopA = a.MaLopHocPhan,
+                            MonA = a.MonHoc?.TenMon ?? a.TenLopHocPhan,
+                            TietA = $"Tiết {a.TietBatDau}–{aEnd}",
+                            LopB = b.MaLopHocPhan,
+                            MonB = b.MonHoc?.TenMon ?? b.TenLopHocPhan,
+                            TietB = $"Tiết {b.TietBatDau}–{bEnd}",
+                            TietTrung = chuoiTietGiao
+                        });
+                    }
+                }
+            }
+        }
+
+        // 6. Xây dựng ma trận thời khóa biểu và danh sách card chi tiết
+        var maTran = new Dictionary<string, List<ThoiKhoaBieuCardViewModel>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var c in cacThuConfig)
+        {
+            for (int ca = 1; ca <= 4; ca++)
+            {
+                maTran[$"{c.Thu}_Ca{ca}"] = new List<ThoiKhoaBieuCardViewModel>();
+            }
+        }
+
+        var tatCaCards = new List<ThoiKhoaBieuCardViewModel>();
+
+        foreach (var dk in registeredList)
+        {
+            var lhp = dk.LopHocPhan;
+            if (string.IsNullOrWhiteSpace(lhp.Thu)) continue;
+
+            var thuChuan = lhp.Thu.Trim();
+            DateTime? ngayHoc = dateMap.ContainsKey(thuChuan) ? dateMap[thuChuan] : null;
+            var tietKetThuc = lhp.TietBatDau + lhp.SoTiet - 1;
+            var khungGio = CaHocHelper.GetKhungGio(lhp.TietBatDau, lhp.SoTiet);
+            var cacCaGiao = CaHocHelper.GetCacCaGiaoNhau(lhp.TietBatDau, tietKetThuc);
+            var isConflict = trungLichLhpIds.Contains(lhp.Id);
+            var reason = isConflict && trungLichReasons.ContainsKey(lhp.Id) ? trungLichReasons[lhp.Id] : null;
+
+            int caGoc = cacCaGiao.Count > 0 ? cacCaGiao.Min() : 1;
+
+            // Thêm vào danh sách phẳng (mỗi lớp 1 card đại diện)
+            tatCaCards.Add(new ThoiKhoaBieuCardViewModel
+            {
+                LopHocPhanId = lhp.Id,
+                MaLopHocPhan = lhp.MaLopHocPhan,
+                TenLopHocPhan = lhp.TenLopHocPhan,
+                MaMon = lhp.MonHoc?.MaMon ?? string.Empty,
+                TenMon = lhp.MonHoc?.TenMon ?? lhp.TenLopHocPhan,
+                SoTinChi = lhp.MonHoc?.SoTinChi ?? 0,
+                GiangVien = lhp.GiangVien?.HoTen ?? "Chưa phân công",
+                EmailGiangVien = lhp.GiangVien?.Email,
+                SoDienThoaiGiangVien = lhp.GiangVien?.SoDienThoai,
+                Thu = thuChuan,
+                NgayHoc = ngayHoc,
+                TietBatDau = lhp.TietBatDau,
+                SoTiet = lhp.SoTiet,
+                KhungGio = khungGio,
+                PhongHoc = lhp.PhongHoc ?? "Chưa xếp phòng",
+                CaHoc = caGoc,
+                CaHocGoc = caGoc,
+                LaCaKeoDai = false,
+                BiTrungLich = isConflict,
+                LyDoTrungLich = reason,
+                GhiChu = lhp.GhiChu
+            });
+
+            // Phân bổ vào ma trận 4 ca (nếu kéo dài qua nhiều ca, hiển thị ở cả các ca liên quan)
+            foreach (var ca in cacCaGiao)
+            {
+                var key = $"{thuChuan}_Ca{ca}";
+                if (maTran.ContainsKey(key))
+                {
+                    maTran[key].Add(new ThoiKhoaBieuCardViewModel
+                    {
+                        LopHocPhanId = lhp.Id,
+                        MaLopHocPhan = lhp.MaLopHocPhan,
+                        TenLopHocPhan = lhp.TenLopHocPhan,
+                        MaMon = lhp.MonHoc?.MaMon ?? string.Empty,
+                        TenMon = lhp.MonHoc?.TenMon ?? lhp.TenLopHocPhan,
+                        SoTinChi = lhp.MonHoc?.SoTinChi ?? 0,
+                        GiangVien = lhp.GiangVien?.HoTen ?? "Chưa phân công",
+                        EmailGiangVien = lhp.GiangVien?.Email,
+                        SoDienThoaiGiangVien = lhp.GiangVien?.SoDienThoai,
+                        Thu = thuChuan,
+                        NgayHoc = ngayHoc,
+                        TietBatDau = lhp.TietBatDau,
+                        SoTiet = lhp.SoTiet,
+                        KhungGio = khungGio,
+                        PhongHoc = lhp.PhongHoc ?? "Chưa xếp phòng",
+                        CaHoc = ca,
+                        CaHocGoc = caGoc,
+                        LaCaKeoDai = ca != caGoc,
+                        BiTrungLich = isConflict,
+                        LyDoTrungLich = reason,
+                        GhiChu = lhp.GhiChu
+                    });
+                }
+            }
+        }
+
+        // Sắp xếp các buổi học trong từng ô theo Tiết bắt đầu
+        foreach (var k in maTran.Keys.ToList())
+        {
+            maTran[k] = maTran[k].OrderBy(x => x.TietBatDau).ToList();
+        }
+
+        // 7. Tổng hợp ViewModel hoàn chỉnh
+        var viewModel = new SinhVienThoiKhoaBieuViewModel
+        {
+            SinhVien = student,
+            HocKyHienTai = selectedHocKy,
+            DanhSachHocKy = allHocKies,
+            NgayDauTuan = monday,
+            NgayCuoiTuan = sunday,
+            ChuoiTuanHienThi = $"Tuần {monday:dd/MM/yyyy} – {sunday:dd/MM/yyyy}",
+            TongLopHocPhan = registeredList.Count,
+            TongBuoiHocTrongTuan = tatCaCards.Count,
+            TongTinChiDangKy = registeredList.Sum(x => x.LopHocPhan.MonHoc?.SoTinChi ?? 0),
+            CacNgayTrongTuan = ngayTrongTuanList,
+            DanhSachTrungLich = danhSachTrungLich,
+            MaTranThoiKhoaBieu = maTran,
+            TatCaLopHoc = tatCaCards.OrderBy(x => x.Thu).ThenBy(x => x.TietBatDau).ToList()
+        };
+
+        return View(viewModel);
     }
 
     private async Task<SinhVienPortalViewModel?> LoadCurrentStudentAsync()
@@ -300,8 +677,8 @@ public class SinhVienController : Controller
             HinhAnh = student.HinhAnh,
             Gpa = gpa,
             XepLoai = student.XepLoai,
-            SoMonDaDat = student.Diems.Count(diem => diem.DiemTongKet >= 4.0),
-            SoMon = student.Diems.Count
+            SoMonDaDat = student.SoMonDaDat,
+            SoMon = student.TongSoMonHoc
         };
     }
 
