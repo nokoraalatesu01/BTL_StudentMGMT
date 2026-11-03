@@ -127,7 +127,9 @@ public class SinhVien
 
             if (gpa >= 8.5) return "Giỏi";
             if (gpa >= 7.0) return "Khá";
-            return "Trung bình";
+            if (gpa >= 5.0) return "Trung bình";
+            if (gpa >= 4.0) return "Yếu";
+            return "Kém";
         }
     }
 }

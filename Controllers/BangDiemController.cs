@@ -51,6 +51,7 @@ public class BangDiemController : Controller
         }
 
         var query = _db.Diems
+            .AsNoTracking()
             .Include(d => d.SinhVien)
                 .ThenInclude(s => s!.Lop)
             .Include(d => d.MonHoc)

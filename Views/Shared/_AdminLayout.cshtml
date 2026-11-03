@@ -55,6 +55,10 @@
                     <span class="nav-symbol" aria-hidden="true"><i class="bi bi-people"></i></span>
                     <span>Quản lý sinh viên</span>
                 </a>
+                <a asp-controller="QuanLyHocPhi" asp-action="Index" class="@(currentController == "QuanLyHocPhi" ? "active" : "")" aria-current="@(currentController == "QuanLyHocPhi" ? "page" : null)">
+                    <span class="nav-symbol" aria-hidden="true"><i class="bi bi-cash-coin"></i></span>
+                    <span>Quản lý học phí</span>
+                </a>
                 <a asp-controller="QuanLyGiangVien" asp-action="Index" class="@(currentController == "QuanLyGiangVien" ? "active" : "")" aria-current="@(currentController == "QuanLyGiangVien" ? "page" : null)">
                     <span class="nav-symbol" aria-hidden="true"><i class="bi bi-person-workspace"></i></span>
                     <span>Quản lý giảng viên</span>

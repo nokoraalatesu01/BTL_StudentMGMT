@@ -4,7 +4,9 @@ using BTL_StudentMGMT.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace BTL_StudentMGMT.Controllers;
 
@@ -52,6 +54,11 @@ public class SinhVienController : Controller
                 TempData["Error"] = "Định dạng file không hợp lệ (.jpg, .jpeg, .png, .webp) hoặc vượt quá 5MB.";
             }
         }
+        else
+        {
+            TempData["Error"] = "Vui lòng chọn file hình ảnh hợp lệ để tải lên.";
+        }
+
         return RedirectToAction(nameof(HoSo));
     }
 
@@ -673,5 +680,32 @@ public class SinhVienController : Controller
             SoMonDaDat = student.SoMonDaDat,
             SoMon = student.TongSoMonHoc
         };
+    }
+
+    private async Task<SinhVien?> GetCurrentStudentAsync()
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId == null) return null;
+        return await _db.SinhViens.FirstOrDefaultAsync(student => student.UserId == userId);
+    }
+
+    private static decimal GetInvoiceTotal(HoaDonHocPhi invoice) =>
+        invoice.ChiTietHoaDonHocPhis.Sum(item => Math.Max(0, item.SoLuong * item.DonGia - item.SoTienGiam));
+
+    private async Task<string> GenerateTransactionCodeAsync()
+    {
+        const string letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for (var attempt = 0; attempt < 10; attempt++)
+        {
+            var code = new string(Enumerable.Range(0, 8)
+                .Select(_ => letters[RandomNumberGenerator.GetInt32(letters.Length)])
+                .ToArray());
+            if (!await _db.ThanhToans.AnyAsync(payment => payment.MaGiaoDich == code))
+            {
+                return code;
+            }
+        }
+
+        throw new InvalidOperationException("Không thể tạo mã giao dịch duy nhất sau nhiều lần thử.");
     }
 }
