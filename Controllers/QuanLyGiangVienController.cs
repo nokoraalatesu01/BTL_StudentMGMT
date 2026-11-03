@@ -178,6 +178,19 @@ public class QuanLyGiangVienController : Controller
         giangVien.SoDienThoai = model.SoDienThoai;
         giangVien.DonViId = model.DonViId;
 
+        // Đồng bộ thông tin sang tài khoản đăng nhập nếu đã liên kết
+        if (giangVien.UserId != null)
+        {
+            var user = await _userManager.FindByIdAsync(giangVien.UserId);
+            if (user != null)
+            {
+                user.HoTen = giangVien.HoTen;
+                user.Email = giangVien.Email;
+                user.PhoneNumber = giangVien.SoDienThoai;
+                await _userManager.UpdateAsync(user);
+            }
+        }
+
         try
         {
             await _db.SaveChangesAsync();
@@ -201,6 +214,12 @@ public class QuanLyGiangVienController : Controller
         if (giangVien == null)
         {
             return NotFound();
+        }
+
+        if (giangVien.UserId == _userManager.GetUserId(User))
+        {
+            TempData["Error"] = "Không thể xóa hồ sơ đang gắn với tài khoản đang đăng nhập hiện tại.";
+            return RedirectToAction(nameof(Index));
         }
 
         if (await _db.LichGiangDays.AnyAsync(l => l.GiangVienId == id))

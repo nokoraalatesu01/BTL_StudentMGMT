@@ -29,6 +29,7 @@ public class QuanLySinhVienController : Controller
         page = Math.Max(page, 1);
 
         var query = _db.SinhViens
+            .AsNoTracking()
             .Include(s => s.Lop)
                 .ThenInclude(l => l!.Nganh)
             .Include(s => s.Diems)
@@ -85,6 +86,7 @@ public class QuanLySinhVienController : Controller
     public async Task<IActionResult> Details(int id)
     {
         var sinhVien = await _db.SinhViens
+            .AsNoTracking()
             .Include(s => s.Lop)
                 .ThenInclude(l => l!.Nganh)
             .Include(s => s.Diems)
@@ -110,6 +112,8 @@ public class QuanLySinhVienController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(SinhVienFormViewModel model)
     {
+        Normalize(model);
+
         if (await _db.SinhViens.AnyAsync(s => s.MaSinhVien == model.MaSinhVien))
         {
             ModelState.AddModelError(nameof(model.MaSinhVien), "Mã sinh viên đã tồn tại");
@@ -193,6 +197,8 @@ public class QuanLySinhVienController : Controller
             return NotFound();
         }
 
+        Normalize(model);
+
         if (await _db.SinhViens.AnyAsync(s => s.MaSinhVien == model.MaSinhVien && s.Id != id))
         {
             ModelState.AddModelError(nameof(model.MaSinhVien), "Mã sinh viên đã tồn tại");
@@ -224,6 +230,19 @@ public class QuanLySinhVienController : Controller
             }
         }
 
+        // Đồng bộ sang ApplicationUser nếu tài khoản đã liên kết
+        if (sinhVien.UserId != null)
+        {
+            var user = await _userManager.FindByIdAsync(sinhVien.UserId);
+            if (user != null)
+            {
+                user.HoTen = sinhVien.HoTen;
+                user.Email = sinhVien.Email;
+                user.PhoneNumber = sinhVien.SoDienThoai;
+                await _userManager.UpdateAsync(user);
+            }
+        }
+
         await _db.SaveChangesAsync();
 
         TempData["Msg"] = "Đã cập nhật sinh viên";
@@ -234,7 +253,10 @@ public class QuanLySinhVienController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
-        var sinhVien = await _db.SinhViens.FindAsync(id);
+        var sinhVien = await _db.SinhViens
+            .Include(s => s.DiemDanhs)
+            .Include(s => s.Diems)
+            .FirstOrDefaultAsync(s => s.Id == id);
         if (sinhVien == null)
         {
             return NotFound();
@@ -247,6 +269,17 @@ public class QuanLySinhVienController : Controller
         }
 
         await using var transaction = await _db.Database.BeginTransactionAsync();
+        
+        // Xóa các bản ghi phụ thuộc nếu có
+        if (sinhVien.DiemDanhs.Any())
+        {
+            _db.DiemDanhs.RemoveRange(sinhVien.DiemDanhs);
+        }
+        if (sinhVien.Diems.Any())
+        {
+            _db.Diems.RemoveRange(sinhVien.Diems);
+        }
+
         _db.SinhViens.Remove(sinhVien);
         _fileUploadService.DeleteFile(sinhVien.HinhAnh);
         await _db.SaveChangesAsync();
@@ -269,6 +302,17 @@ public class QuanLySinhVienController : Controller
         await transaction.CommitAsync();
         TempData["Msg"] = "Đã xóa sinh viên, điểm học phần và tài khoản liên kết (nếu có).";
         return RedirectToAction(nameof(Index));
+    }
+
+    private static void Normalize(SinhVienFormViewModel model)
+    {
+        model.MaSinhVien = (model.MaSinhVien ?? "").Trim();
+        model.HoTen = (model.HoTen ?? "").Trim();
+        model.Email = string.IsNullOrWhiteSpace(model.Email) ? null : model.Email.Trim();
+        model.SoDienThoai = string.IsNullOrWhiteSpace(model.SoDienThoai) ? null : model.SoDienThoai.Trim();
+        model.DiaChi = string.IsNullOrWhiteSpace(model.DiaChi) ? null : model.DiaChi.Trim();
+        model.NienKhoa = string.IsNullOrWhiteSpace(model.NienKhoa) ? null : model.NienKhoa.Trim();
+        model.TrangThai = string.IsNullOrWhiteSpace(model.TrangThai) ? "Đang học" : model.TrangThai.Trim();
     }
 
     private async Task LoadLopAsync(int? selected = null)
