@@ -36,6 +36,9 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     
     // Hệ thống Học phí & Thanh toán tự động VietQR
     public DbSet<HoaDonHocPhi> HoaDonHocPhis => Set<HoaDonHocPhi>();
+    public DbSet<BieuPhiHocPhi> BieuPhiHocPhis => Set<BieuPhiHocPhi>();
+    public DbSet<ChiTietHoaDonHocPhi> ChiTietHoaDonHocPhis => Set<ChiTietHoaDonHocPhi>();
+    public DbSet<ThanhToan> ThanhToans => Set<ThanhToan>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<BankTransaction> BankTransactions => Set<BankTransaction>();
     public DbSet<PaymentWebhookLog> PaymentWebhookLogs => Set<PaymentWebhookLog>();

@@ -56,5 +56,10 @@ public class HoaDonHocPhi
     public int? DotThuId { get; set; }
     public virtual DotThuHocPhi? DotThu { get; set; }
 
+    [NotMapped]
+    public long HoaDonId { get => Id; set => Id = value; }
+
+    public virtual ICollection<ChiTietHoaDonHocPhi> ChiTietHoaDonHocPhis { get; set; } = new List<ChiTietHoaDonHocPhi>();
+    public virtual ICollection<ThanhToan> ThanhToans { get; set; } = new List<ThanhToan>();
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }
