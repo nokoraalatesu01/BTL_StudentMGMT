@@ -27,7 +27,7 @@ public class BangDiemController : Controller
     }
 
     // 1. Xem danh sách bảng điểm sinh viên (Hỗ trợ lọc theo Lớp học phần, Sinh viên & Học kỳ)
-    public async Task<IActionResult> Index(int? lopHocPhanId, int? sinhVienId, int? hocKyId, string? loaiHoc)
+    public async Task<IActionResult> Index(int? lopHocPhanId, int? sinhVienId, int? hocKyId, string? loaiHoc, int? lanThi)
     {
         var giangVien = await _securityService.GetCurrentGiangVienAsync(User);
         var isGiangVienOnly = User.IsInRole("GiangVien") && !User.IsInRole("Admin") && !User.IsInRole("PGV");
@@ -85,6 +85,11 @@ public class BangDiemController : Controller
             query = query.Where(d => d.LoaiHoc == loaiHoc);
         }
 
+        if (lanThi.HasValue && lanThi.Value > 0)
+        {
+            query = query.Where(d => d.LanThi == lanThi.Value);
+        }
+
         var list = await query
             .OrderBy(d => d.SinhVien!.HoTen)
             .ThenBy(d => d.MonHoc!.TenMon)
@@ -97,6 +102,7 @@ public class BangDiemController : Controller
         ViewBag.SinhVienId = sinhVienId;
         ViewBag.HocKyId = hocKyId;
         ViewBag.LoaiHoc = loaiHoc;
+        ViewBag.LanThi = lanThi;
 
         return View(list);
     }
@@ -222,6 +228,32 @@ public class BangDiemController : Controller
         }
 
         return View(model);
+    }
+
+    // API lấy nhanh thông tin điểm theo Lớp HP & Sinh viên (AJAX không reload trang)
+    [HttpGet]
+    public async Task<IActionResult> GetThongTinDiemJson(int? lopHocPhanId, int? sinhVienId)
+    {
+        var lhp = await _db.LopHocPhans.FindAsync(lopHocPhanId ?? 0);
+        if (lhp == null) return Json(new { success = false });
+
+        var d = sinhVienId > 0 ? await _db.Diems.FirstOrDefaultAsync(x => x.LopHocPhanId == lopHocPhanId && x.SinhVienId == sinhVienId) : null;
+        return Json(new
+        {
+            success = true,
+            hasData = d != null,
+            id = d?.Id ?? 0,
+            monHocId = lhp.MonHocId,
+            hocKyId = lhp.HocKyId,
+            cc = d?.DiemChuyenCan,
+            gk = d?.DiemGiuaKy,
+            ck = d?.DiemCuoiKy,
+            ck2 = d?.DiemCuoiKyLan2,
+            lanHoc = d?.LanHoc,
+            lanThi = d?.LanThi,
+            loaiHoc = d?.LoaiHoc,
+            ghiChu = d?.GhiChu
+        });
     }
 
     // 3. Nhập điểm môn học (POST)

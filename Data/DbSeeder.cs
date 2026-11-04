@@ -644,6 +644,7 @@ public static class DbSeeder
                 // Chuyển bản ghi đạt hiện tại thành lần 2 (Học lại)
                 diemHungLan1.LoaiHoc = "HOC_LAI";
                 diemHungLan1.LanHoc = 2;
+                diemHungLan1.LanThi = 2;
                 diemHungLan1.SuDungTinhTichLuy = true;
                 diemHungLan1.GhiChu = "Học lại lần 2 do lần 1 không đạt (F)";
 
@@ -680,6 +681,7 @@ public static class DbSeeder
                 // Bản ghi hiện tại đang là 8.0, chuyển thành lần 2 (Cải thiện)
                 diemLongLan1.LoaiHoc = "HOC_CAI_THIEN";
                 diemLongLan1.LanHoc = 2;
+                diemLongLan1.LanThi = 2;
                 diemLongLan1.SuDungTinhTichLuy = true;
                 diemLongLan1.GhiChu = "Học cải thiện điểm (lần 1 đạt D+ 4.7 điểm)";
 

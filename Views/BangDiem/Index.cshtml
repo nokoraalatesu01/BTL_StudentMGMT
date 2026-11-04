@@ -162,13 +162,13 @@
             </select>
         </div>
 
-        <!-- Lọc Loại học -->
-        <div class="d-flex align-items-center gap-2" style="position:relative; min-width:180px;">
-            <select name="loaiHoc" class="form-select" style="font-size:.875rem; border-color:#d1d5db; color:#374151;">
-                <option value="">-- Tất cả loại học --</option>
-                <option value="HOC_LAN_DAU" selected="@(ViewBag.LoaiHoc == "HOC_LAN_DAU")">Học lần đầu</option>
-                <option value="HOC_LAI" selected="@(ViewBag.LoaiHoc == "HOC_LAI")">Học lại</option>
-                <option value="HOC_CAI_THIEN" selected="@(ViewBag.LoaiHoc == "HOC_CAI_THIEN")">Học cải thiện</option>
+        <!-- Lọc Lần thi -->
+        <div class="d-flex align-items-center gap-2" style="position:relative; min-width:160px;">
+            <select name="lanThi" class="form-select" style="font-size:.875rem; border-color:#d1d5db; color:#374151;">
+                <option value="">-- Tất cả lần thi --</option>
+                <option value="1" selected="@(ViewBag.LanThi == 1)">Lần thi 1</option>
+                <option value="2" selected="@(ViewBag.LanThi == 2)">Lần thi 2</option>
+                <option value="3" selected="@(ViewBag.LanThi == 3)">Lần thi 3</option>
             </select>
         </div>
 
@@ -214,7 +214,7 @@
                     <th>MÃ SV</th>
                     <th>HỌ VÀ TÊN SV</th>
                     <th>MÔN HỌC & LỚP HP</th>
-                    <th class="text-center">LOẠI HỌC / LẦN</th>
+                    <th class="text-center">LẦN THI</th>
                     <th class="text-center">SỐ TC</th>
                     <th class="text-center">CC (10%)</th>
                     <th class="text-center">GK (30%)</th>
@@ -261,35 +261,9 @@
                             </div>
                         </td>
 
-                        <!-- LOẠI HỌC / LẦN HỌC / THI -->
+                        <!-- LẦN THI -->
                         <td class="text-center">
-                            @if (d.LoaiHoc == "HOC_LAI")
-                            {
-                                <span class="badge" style="background:#ffedd5; color:#c2410c; font-size:.75rem; font-weight:700; padding:4px 8px;">
-                                    <i class="bi bi-arrow-repeat"></i> Học lại (Lần @d.LanHoc)
-                                </span>
-                            }
-                            else if (d.LoaiHoc == "HOC_CAI_THIEN")
-                            {
-                                <span class="badge" style="background:#f3e8ff; color:#7e22ce; font-size:.75rem; font-weight:700; padding:4px 8px;">
-                                    <i class="bi bi-arrow-up-circle"></i> Cải thiện (Lần @d.LanHoc)
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge" style="background:#f0fdf4; color:#15803d; font-size:.75rem; font-weight:700; padding:4px 8px;">
-                                    Lần đầu
-                                </span>
-                            }
-
-                            @if (d.LanThi > 1 || d.DiemCuoiKyLan2.HasValue)
-                            {
-                                <div class="mt-1">
-                                    <span class="badge" style="background:#fee2e2; color:#b91c1c; font-size:.7rem; font-weight:700;">
-                                        Thi lần 2
-                                    </span>
-                                </div>
-                            }
+                            <span style="font-weight:700; color:#475569;">@d.LanThi</span>
                         </td>
 
                         <!-- SỐ TC -->
@@ -358,8 +332,8 @@
                                asp-route-monHocId="@d.MonHocId"
                                class="btn btn-sm"
                                style="background:#f8fafc; border:1px solid #e2e8f0; color:#334155; font-weight:600; font-size:.78rem;"
-                               title="Cập nhật điểm hoặc nhập điểm thi lại">
-                                <i class="bi bi-pencil-square"></i> Sửa / Thi lại
+                               title="Cập nhật điểm">
+                                <i class="bi bi-pencil-square"></i> Sửa
                             </a>
                         </td>
                     </tr>
