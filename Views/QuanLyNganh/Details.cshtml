@@ -3,7 +3,12 @@
     ViewData["Title"] = "Chi tiết ngành";
 }
 
-<h2>Chi tiết ngành</h2>
+<div class="d-flex align-items-center justify-content-between gap-3 mb-4">
+    <h2 class="mb-0">Chi tiết ngành</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
+</div>
 <dl class="row" style="max-width:720px">
     <dt class="col-sm-3">Mã ngành</dt>
     <dd class="col-sm-9">@Model.MaNganh</dd>
@@ -75,4 +80,3 @@ else
 }
 
 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Sửa</a>
-<a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="bi bi-arrow-left me-1"></i> Quay lại</a>

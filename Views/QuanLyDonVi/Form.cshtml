@@ -5,20 +5,25 @@
     Layout = "_AdminLayout";
 }
 
-<div class="mb-4">
-    <p class="mb-1" style="font-size:.8rem; color:#64748b;">
-        <a asp-action="Index" style="color:#64748b; text-decoration:none;">QUẢN LÝ ĐƠN VỊ</a>
-        <span style="color:#cbd5e1; margin:0 6px;">›</span>
-        <span style="color:#2563eb; font-weight:700; text-transform:uppercase; font-size:.72rem; letter-spacing:.07em;">
-            @(isEdit ? "CẬP NHẬT" : "THÊM MỚI")
-        </span>
-    </p>
-    <h3 class="fw-bold mb-1" style="color:#0f172a; font-size:1.55rem; letter-spacing:-.02em;">
-        @(isEdit ? $"Chỉnh sửa đơn vị: {Model.TenDonVi}" : "Thêm mới đơn vị / Khoa phòng")
-    </h3>
-    <p class="mb-0" style="font-size:.875rem; color:#64748b;">
-        Điền đầy đủ thông tin mã đơn vị, tên đơn vị và đơn vị quản lý trực thuộc.
-    </p>
+<div class="d-flex align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <p class="mb-1" style="font-size:.8rem; color:#64748b;">
+            <a asp-action="Index" style="color:#64748b; text-decoration:none;">QUẢN LÝ ĐƠN VỊ</a>
+            <span style="color:#cbd5e1; margin:0 6px;">›</span>
+            <span style="color:#2563eb; font-weight:700; text-transform:uppercase; font-size:.72rem; letter-spacing:.07em;">
+                @(isEdit ? "CẬP NHẬT" : "THÊM MỚI")
+            </span>
+        </p>
+        <h3 class="fw-bold mb-1" style="color:#0f172a; font-size:1.55rem; letter-spacing:-.02em;">
+            @(isEdit ? $"Chỉnh sửa đơn vị: {Model.TenDonVi}" : "Thêm mới đơn vị / Khoa phòng")
+        </h3>
+        <p class="mb-0" style="font-size:.875rem; color:#64748b;">
+            Điền đầy đủ thông tin mã đơn vị, tên đơn vị và đơn vị quản lý trực thuộc.
+        </p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
 </div>
 
 <div class="row justify-content-center">
@@ -107,9 +112,6 @@
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                        <i class="bi bi-arrow-left me-1"></i> Quay lại
-                    </a>
                     <button type="submit" class="btn btn-primary px-4 fw-semibold">
                         <i class="bi bi-check-lg me-1"></i> @(isEdit ? "Lưu thay đổi" : "Tạo đơn vị")
                     </button>

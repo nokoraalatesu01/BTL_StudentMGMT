@@ -478,27 +478,18 @@ input[type="password"]::-ms-clear {
     height: 0 !important;
 }
 
-
-/* Dong bo kieu nut Quay lai vien thuoc (Pill Outline Button) */
+/* Dong bo nut Quay lai - Do bong em khi hover, giu nguyen 100% kich thuoc va vi tri */
+.btn-outline-secondary.rounded-pill,
 .btn-modern-outline,
 .btn-back-pill {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0.35rem !important;
-  border-radius: 50rem !important;
-  padding: 0.25rem 1rem !important;
-  font-size: 0.875rem !important;
-  border: 1px solid #6c757d !important;
-  color: #6c757d !important;
-  background-color: transparent !important;
-  text-decoration: none !important;
-  font-weight: 500 !important;
-  transition: all 0.2s ease-in-out !important;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
 }
 
+.btn-outline-secondary.rounded-pill:hover,
 .btn-modern-outline:hover,
 .btn-back-pill:hover {
-  background-color: #6c757d !important;
-  color: #ffffff !important;
-  border-color: #6c757d !important;
+    background-color: #6c757d !important;
+    color: #ffffff !important;
+    border-color: #6c757d !important;
+    box-shadow: 0 2px 6px rgba(108, 117, 125, 0.28) !important;
 }
