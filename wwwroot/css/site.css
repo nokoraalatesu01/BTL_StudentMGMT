@@ -469,3 +469,36 @@ footer {
   font-size: 0.85rem;
   color: var(--text-muted);
 }
+
+/* Tat mat mac dinh cua Edge */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+
+/* Dong bo kieu nut Quay lai vien thuoc (Pill Outline Button) */
+.btn-modern-outline,
+.btn-back-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  border-radius: 50rem !important;
+  padding: 0.25rem 1rem !important;
+  font-size: 0.875rem !important;
+  border: 1px solid #6c757d !important;
+  color: #6c757d !important;
+  background-color: transparent !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.btn-modern-outline:hover,
+.btn-back-pill:hover {
+  background-color: #6c757d !important;
+  color: #ffffff !important;
+  border-color: #6c757d !important;
+}
