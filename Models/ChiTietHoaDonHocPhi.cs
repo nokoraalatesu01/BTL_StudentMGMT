@@ -1,7 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace BTL_StudentMGMT.Models;
 
 public class ChiTietHoaDonHocPhi
 {
+    [Key]
     public long ChiTietHoaDonId { get; set; }
     public long HoaDonId { get; set; }
     public string LoaiKhoanThu { get; set; } = "HOCPHI";
