@@ -50,7 +50,7 @@ Mở file `appsettings.json`, kiểm tra chuỗi kết nối:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost\\SQLEXPRESS06;Database=BTL_StudentMGMTDb;Trusted_Connection=True;TrustServerCertificate=True"
+    "DefaultConnection": "Server=localhost\\SQLEXPRESS;Database=BTL_StudentMGMTDb;Trusted_Connection=True;TrustServerCertificate=True"
   }
 }
 ```
