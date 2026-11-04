@@ -14,8 +14,8 @@
         <h1>Thời khóa biểu của tôi</h1>
         <p>
             Theo dõi lịch học các lớp học phần đã đăng ký của sinh viên 
-            <strong class="text-dark">@displayName</strong> (Mã SV: <strong class="text-primary font-monospace">@sinhVien.MaSinhVien</strong>) 
-            &bull; Lớp: <span class="badge bg-light text-dark border">@(sinhVien.Lop?.TenLop ?? "Chưa xếp lớp")</span>
+            <strong class="text-dark">@displayName</strong> (Mã SV: <strong class="text-primary font-monospace">@sinhVien?.MaSinhVien</strong>) 
+            &bull; Lớp: <span class="badge bg-light text-dark border">@(sinhVien?.Lop?.TenLop ?? "Chưa xếp lớp")</span>
             @if (Model.HocKyHienTai != null)
             {
                 <span class="ms-1 text-muted">&bull; @Model.HocKyHienTai.TenHocKy</span>

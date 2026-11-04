@@ -1,0 +1,325 @@
+@model BTL_StudentMGMT.Models.AdminChiTietCongNoViewModel
+@{
+    ViewData["Title"] = "Chi tiết công nợ sinh viên " + Model.SinhVien.MaSinhVien;
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var sv = Model.SinhVien;
+}
+
+<div class="container-fluid px-3 py-2 payment-dashboard-wrap">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 payment-header-anim">
+        <div class="d-flex align-items-center gap-3">
+            <div class="payment-header-icon">
+                <i class="bi bi-person-lines-fill"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-light text-dark border font-monospace fs-6">@sv.MaSinhVien</span>
+                    <h2 class="payment-header-title mb-0">@sv.HoTen</h2>
+                    @if (Model.ConNo == 0)
+                    {
+                        <span class="payment-pill pill-paid">Hoàn thành học phí</span>
+                    }
+                    else
+                    {
+                        <span class="payment-pill pill-failed">Còn nợ @Model.ConNo.ToString("N0") ₫</span>
+                    }
+                </div>
+                <div class="payment-header-subtitle">
+                    Lớp: <strong class="text-dark">@(sv.Lop?.TenLop ?? "Chưa xếp lớp")</strong> &bull; Ngành: <strong class="text-dark">@(sv.Lop?.Nganh?.TenNganh)</strong>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="CongNo" class="btn btn-filter-reset w-auto px-3">
+                <i class="bi bi-arrow-left me-1"></i>
+                <span>Về danh sách công nợ</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <partial name="_NavTabs" />
+
+    <!-- 3 Thẻ Thống kê Tài chính SV (Pastel Theme & Count-up) -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="payment-stat-card card-blue">
+                <div class="stat-header">
+                    <span class="stat-label">TỔNG HỌC PHÍ PHẢI NỘP</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-primary" data-counter-target="@Model.TongHocPhi" data-is-currency="true">
+                        @Model.TongHocPhi.ToString("N0") ₫
+                    </div>
+                    <div class="stat-hint">
+                        <span>Định mức các đợt phát sinh</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="payment-stat-card card-emerald">
+                <div class="stat-header">
+                    <span class="stat-label text-success">ĐÃ THANH TOÁN THỰC TẾ</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-success" data-counter-target="@Model.DaThanhToan" data-is-currency="true">
+                        @Model.DaThanhToan.ToString("N0") ₫
+                    </div>
+                    <div class="stat-hint text-success">
+                        <span>Qua VietQR hoặc đối soát ngân hàng</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="payment-stat-card card-rose">
+                <div class="stat-header">
+                    <span class="stat-label text-danger">CÔNG NỢ CÒN LẠI</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-danger" data-counter-target="@Model.ConNo" data-is-currency="true">
+                        @Model.ConNo.ToString("N0") ₫
+                    </div>
+                    <div class="stat-hint text-danger">
+                        <span>Số tiền sinh viên chưa hoàn thành</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh sách hóa đơn học phí của SV -->
+    <div class="payment-table-card">
+        <div class="payment-card-header px-4 pt-3 pb-2 mb-0">
+            <h6 class="payment-card-title">
+                <i class="bi bi-receipt text-primary"></i>
+                <span>Danh sách khoản thu học phí (@Model.DanhSachHoaDon.Count)</span>
+            </h6>
+        </div>
+        <div class="table-responsive">
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th>MÃ HÓA ĐƠN</th>
+                        <th>KHOẢN THU</th>
+                        <th>HỌC KỲ</th>
+                        <th>SỐ TIỀN</th>
+                        <th>ĐÃ THANH TOÁN</th>
+                        <th>CÒN PHẢI ĐÓNG</th>
+                        <th>HẠN NỘP</th>
+                        <th>TRẠNG THÁI</th>
+                        <th class="text-end">ĐIỀU CHỈNH</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.DanhSachHoaDon.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-3 d-block text-secondary mb-2"></i>
+                                Sinh viên chưa có khoản thu nào.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var hd in Model.DanhSachHoaDon)
+                    {
+                        <tr>
+                            <td class="font-monospace fw-bold text-dark">@hd.SoHoaDon</td>
+                            <td class="fw-bold text-dark">@hd.TenKhoanThu</td>
+                            <td>@(hd.HocKy?.TenHocKy ?? "N/A")</td>
+                            <td class="fw-bold font-monospace">@hd.SoTien.ToString("N0") ₫</td>
+                            <td class="fw-bold font-monospace text-success">@hd.DaThanhToan.ToString("N0") ₫</td>
+                            <td class="fw-bold font-monospace text-danger">@hd.ConPhaiDong.ToString("N0") ₫</td>
+                            <td class="small text-muted">@(hd.HanThanhToan.HasValue ? hd.HanThanhToan.Value.ToString("dd/MM/yyyy") : "-")</td>
+                            <td>
+                                @if (hd.TrangThai == "DA_THANH_TOAN")
+                                {
+                                    <span class="payment-pill pill-paid">Hoàn thành</span>
+                                }
+                                else if (hd.TrangThai == "THANH_TOAN_MOT_PHAN")
+                                {
+                                    <span class="payment-pill pill-pending">Một phần</span>
+                                }
+                                else
+                                {
+                                    <span class="payment-pill pill-failed">Chưa đóng</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <button type="button" class="action-icon-btn btn-vcb" 
+                                        onclick="moModalDieuChinh(@hd.Id, '@hd.SoHoaDon', @hd.SoTien)" title="Điều chỉnh công nợ có lý do">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="payment-pagination-bar">
+            <span>Hiển thị @Model.DanhSachHoaDon.Count hóa đơn của sinh viên</span>
+            <span>Cập nhật số liệu tức thì khi có biến động giao dịch</span>
+        </div>
+    </div>
+
+    <!-- Lịch sử giao dịch thanh toán & Nhật ký kiểm toán -->
+    <div class="row g-4">
+        <!-- Lịch sử thanh toán -->
+        <div class="col-lg-6">
+            <div class="payment-card h-100">
+                <div class="payment-card-header">
+                    <h6 class="payment-card-title text-success">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Lịch sử giao dịch VietQR (@Model.LichSuThanhToan.Count)</span>
+                    </h6>
+                </div>
+                @if (Model.LichSuThanhToan.Count == 0)
+                {
+                    <p class="text-muted small py-4 text-center">Chưa có giao dịch thanh toán nào từ sinh viên này.</p>
+                }
+                else
+                {
+                    <div class="list-group list-group-flush" style="font-size:13.5px;">
+                        @foreach (var p in Model.LichSuThanhToan)
+                        {
+                            <div class="list-group-item px-0 py-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="font-monospace fw-bold text-primary">@p.TransactionCode</span>
+                                    <span class="fw-bold font-monospace text-success fs-6">@p.Amount.ToString("N0") ₫</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center text-muted small">
+                                    <span>Tạo: @p.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                                    <span>
+                                        @if (p.Status == "PAID")
+                                        {
+                                            <span class="payment-pill pill-paid">Đã thanh toán</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="payment-pill pill-neutral">@p.Status</span>
+                                        }
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Nhật ký điều chỉnh công nợ -->
+        <div class="col-lg-6">
+            <div class="payment-card h-100">
+                <div class="payment-card-header">
+                    <h6 class="payment-card-title text-info">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Nhật ký điều chỉnh công nợ (@Model.NhatKyDieuChinh.Count)</span>
+                    </h6>
+                </div>
+                @if (Model.NhatKyDieuChinh.Count == 0)
+                {
+                    <p class="text-muted small py-4 text-center">Chưa có lần điều chỉnh công nợ nào.</p>
+                }
+                else
+                {
+                    <div class="list-group list-group-flush" style="font-size:13px;">
+                        @foreach (var a in Model.NhatKyDieuChinh)
+                        {
+                            <div class="list-group-item px-0 py-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="text-danger">@a.HanhDong</strong>
+                                    <span class="text-muted small">@a.ThoiGian.ToString("dd/MM/yyyy HH:mm")</span>
+                                </div>
+                                <p class="mb-1 text-dark"><strong>Lý do:</strong> @a.LyDo</p>
+                                <div class="text-muted small">
+                                    <span>Thực hiện: <strong>@a.NguoiThucHien</strong></span>
+                                    @if (!string.IsNullOrWhiteSpace(a.BangChungDoiChieu))
+                                    {
+                                        <span class="ms-2">&bull; Bằng chứng: @a.BangChungDoiChieu</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Điều chỉnh công nợ -->
+<div class="modal fade" id="modalDieuChinh" tabindex="-1" aria-labelledby="modalDieuChinhLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <form method="post" asp-action="DieuChinhCongNo">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="sinhVienId" value="@sv.Id" />
+                <input type="hidden" name="HoaDonId" id="adjHoaDonId" />
+
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold text-dark" id="modalDieuChinhLabel">
+                        <i class="bi bi-pencil-square text-warning me-2"></i>Điều chỉnh công nợ học phí
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-warning small rounded-3 p-3 mb-3 border-0" style="background:#fffbeb; color:#92400e;">
+                        <i class="bi bi-shield-exclamation me-1"></i> Thao tác điều chỉnh công nợ sẽ được lưu vết kiểm toán vĩnh viễn (Audit Log) theo quy chế an toàn tài chính.
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">MÃ HÓA ĐƠN</label>
+                        <input type="text" id="adjSoHoaDon" class="form-control rounded-3 font-monospace bg-light" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">SỐ TIỀN MỚI (VNĐ) *</label>
+                        <input type="number" step="10000" min="0" name="SoTienMoi" id="adjSoTienMoi" class="form-control rounded-3 font-monospace fw-bold text-success fs-6" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">LÝ DO ĐIỀU CHỈNH * (BẮT BUỘC)</label>
+                        <textarea name="LyDo" rows="2" class="form-control rounded-3" placeholder="Nhập căn cứ, quyết định miễn giảm, điều chỉnh học phần..." required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">BẰNG CHỨNG / SỐ VĂN BẢN ĐỐI CHIẾU</label>
+                        <input type="text" name="BangChung" class="form-control rounded-3" placeholder="VD: Quyết định số 123/QĐ-ĐHGTVT ngày..." />
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <button type="button" class="btn btn-filter-reset px-3" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-filter-submit px-4" style="background:#dc2626;">Xác nhận điều chỉnh</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-payment.js" asp-append-version="true"></script>
+    <script>
+        function moModalDieuChinh(hoaDonId, soHoaDon, soTien) {
+            document.getElementById('adjHoaDonId').value = hoaDonId;
+            document.getElementById('adjSoHoaDon').value = soHoaDon;
+            document.getElementById('adjSoTienMoi').value = soTien;
+
+            var modalEl = document.getElementById('modalDieuChinh');
+            var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+    </script>
+}

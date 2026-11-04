@@ -1,0 +1,175 @@
+@model BTL_StudentMGMT.Models.AdminKhoanThuListViewModel
+@{
+    ViewData["Title"] = "Quản lý khoản thu học phí";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid px-3 py-2 payment-dashboard-wrap">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 payment-header-anim">
+        <div class="d-flex align-items-center gap-3">
+            <div class="payment-header-icon">
+                <i class="bi bi-journal-plus"></i>
+            </div>
+            <div>
+                <h2 class="payment-header-title mb-0">
+                    Quản lý khoản thu học phí
+                </h2>
+                <div class="payment-header-subtitle">
+                    Tạo và quản lý các đợt thu học phí, định mức số tiền và cấu hình phân bổ sinh viên áp dụng
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="ThemKhoanThu" class="btn btn-filter-submit px-3" style="background: linear-gradient(135deg, #008744, #006030); box-shadow: 0 4px 12px rgba(0, 135, 68, 0.25);">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Tạo khoản thu mới</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <partial name="_NavTabs" />
+
+    <!-- Filter Card -->
+    <div class="payment-filter-card">
+        <form method="get" asp-action="KhoanThu" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold text-muted mb-1">Tìm kiếm</label>
+                <div class="filter-input-wrap">
+                    <i class="bi bi-search filter-input-icon"></i>
+                    <input type="text" name="search" value="@Model.Search" class="form-control form-control-sm" placeholder="Mã khoản thu, tên khoản thu..." />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted mb-1">Học kỳ</label>
+                <select name="hocKyId" class="form-select form-select-sm filter-select">
+                    <option value="">-- Tất cả học kỳ --</option>
+                    @foreach (var hk in Model.DanhSachHocKy)
+                    {
+                        <option value="@hk.HocKyId" selected="@(Model.HocKyId == hk.HocKyId)">@hk.TenHocKy</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted mb-1">Trạng thái</label>
+                <select name="trangThai" class="form-select form-select-sm filter-select">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    <option value="ACTIVE" selected="@(Model.TrangThai == "ACTIVE")">Đang áp dụng</option>
+                    <option value="STOPPED" selected="@(Model.TrangThai == "STOPPED")">Đã ngừng áp dụng</option>
+                    <option value="DRAFT" selected="@(Model.TrangThai == "DRAFT")">Bản nháp</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn-filter-submit flex-grow-1">
+                        <i class="bi bi-funnel-fill"></i> Lọc
+                    </button>
+                    <a asp-action="KhoanThu" class="btn btn-filter-reset" title="Xóa lọc">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Danh sách khoản thu -->
+    <div class="payment-table-card">
+        <div class="payment-card-header px-4 pt-3 pb-2 mb-0">
+            <h6 class="payment-card-title">
+                <i class="bi bi-journal-bookmark-fill text-success"></i>
+                <span>Danh sách đợt thu học phí (@Model.TongSoKhoanThu đợt)</span>
+            </h6>
+        </div>
+        <div class="table-responsive">
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th>MÃ KHOẢN THU</th>
+                        <th>TÊN KHOẢN THU</th>
+                        <th>HỌC KỲ</th>
+                        <th>SỐ TIỀN / SV</th>
+                        <th>ĐỐI TƯỢNG ÁP DỤNG</th>
+                        <th>HẠN NỘP</th>
+                        <th>TRẠNG THÁI</th>
+                        <th class="text-end">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.DanhSachDotThu.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-3 d-block text-secondary mb-2"></i>
+                                Chưa có khoản thu nào. Hãy nhấn "Tạo khoản thu mới" để bắt đầu.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var d in Model.DanhSachDotThu)
+                    {
+                        <tr>
+                            <td class="font-monospace fw-bold text-dark">@d.MaKhoanThu</td>
+                            <td>
+                                <a asp-action="ChiTietKhoanThu" asp-route-id="@d.Id" class="text-decoration-none fw-bold text-dark d-block">
+                                    @d.TenKhoanThu
+                                </a>
+                                @if (!string.IsNullOrWhiteSpace(d.MoTa))
+                                {
+                                    <small class="text-muted d-block">@d.MoTa</small>
+                                }
+                            </td>
+                            <td>@(d.HocKy?.TenHocKy ?? "N/A")</td>
+                            <td class="fw-bold text-success font-monospace fs-6">@d.SoTien.ToString("N0") ₫</td>
+                            <td>
+                                @if (d.DoiTuongApDung == "TOAN_TRUONG")
+                                {
+                                    <span class="payment-pill pill-cyan">Toàn trường</span>
+                                }
+                                else if (d.DoiTuongApDung == "THEO_LOP")
+                                {
+                                    <span class="payment-pill pill-neutral">Theo lớp</span>
+                                }
+                                else if (d.DoiTuongApDung == "THEO_NGANH")
+                                {
+                                    <span class="payment-pill pill-neutral">Theo ngành</span>
+                                }
+                                else
+                                {
+                                    <span class="payment-pill pill-neutral">Danh sách SV</span>
+                                }
+                            </td>
+                            <td class="small text-muted">
+                                @(d.HanThanhToan.HasValue ? d.HanThanhToan.Value.ToString("dd/MM/yyyy") : "Không thời hạn")
+                            </td>
+                            <td>
+                                @if (d.TrangThai == "ACTIVE")
+                                {
+                                    <span class="payment-pill pill-paid">Đang áp dụng</span>
+                                }
+                                else
+                                {
+                                    <span class="payment-pill pill-failed">Ngừng áp dụng</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1">
+                                    <a asp-action="ChiTietKhoanThu" asp-route-id="@d.Id" class="action-icon-btn btn-vcb" title="Chi tiết & Tiến độ">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="payment-pagination-bar">
+            <span>Hiển thị @Model.DanhSachDotThu.Count đợt thu học phí</span>
+            <span>Hệ thống phân bổ hóa đơn tự động theo tín chỉ & đợt</span>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-payment.js" asp-append-version="true"></script>
+}

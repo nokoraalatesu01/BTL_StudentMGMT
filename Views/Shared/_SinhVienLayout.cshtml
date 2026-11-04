@@ -70,6 +70,11 @@
                     <span class="nav-symbol" aria-hidden="true"><i class="bi bi-pencil-square"></i></span>
                     <span>Đăng ký học phần</span>
                 </a>
+                <a asp-controller="SinhVien" asp-action="HocPhi"
+                   class="@(currentAction == "HocPhi" ? "active" : "")" aria-current="@(currentAction == "HocPhi" ? "page" : null)">
+                    <span class="nav-symbol" aria-hidden="true"><i class="bi bi-credit-card-2-front"></i></span>
+                    <span>Thanh toán học phí</span>
+                </a>
             </nav>
 
             <div class="student-sidebar-bottom">

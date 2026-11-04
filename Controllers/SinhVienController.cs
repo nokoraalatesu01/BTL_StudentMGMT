@@ -16,12 +16,18 @@ public class SinhVienController : Controller
     private readonly ApplicationDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IFileUploadService _fileUploadService;
+    private readonly IPaymentService _paymentService;
 
-    public SinhVienController(ApplicationDbContext db, UserManager<ApplicationUser> userManager, IFileUploadService fileUploadService)
+    public SinhVienController(
+        ApplicationDbContext db, 
+        UserManager<ApplicationUser> userManager, 
+        IFileUploadService fileUploadService,
+        IPaymentService paymentService)
     {
         _db = db;
         _userManager = userManager;
         _fileUploadService = fileUploadService;
+        _paymentService = paymentService;
     }
 
     public async Task<IActionResult> Index()
@@ -375,7 +381,7 @@ public class SinhVienController : Controller
 
         var student = await _db.SinhViens
             .Include(s => s.Lop)
-                .ThenInclude(l => l.Nganh)
+                .ThenInclude(l => l!.Nganh)
             .FirstOrDefaultAsync(s => s.UserId == userId);
         if (student == null) return View("Unlinked");
 
@@ -426,7 +432,7 @@ public class SinhVienController : Controller
                 .ThenInclude(l => l.GiangVien)
             .Include(dk => dk.LopHocPhan)
                 .ThenInclude(l => l.HocKy)
-                    .ThenInclude(h => h.NamHoc)
+                    .ThenInclude(h => h!.NamHoc)
             .Where(dk => dk.SinhVienId == student.Id 
                       && dk.TrangThai == "ENROLLED" 
                       && dk.LopHocPhan.TrangThai != "CANCELLED");
@@ -682,30 +688,42 @@ public class SinhVienController : Controller
         };
     }
 
-    private async Task<SinhVien?> GetCurrentStudentAsync()
+    // 8. Quản lý & Thanh toán Học phí trực tuyến VietQR
+    public async Task<IActionResult> HocPhi(int? hocKyId, string? trangThai)
     {
         var userId = _userManager.GetUserId(User);
-        if (userId == null) return null;
-        return await _db.SinhViens.FirstOrDefaultAsync(student => student.UserId == userId);
+        if (userId == null) return View("Unlinked");
+
+        var student = await _db.SinhViens.FirstOrDefaultAsync(s => s.UserId == userId);
+        if (student == null) return View("Unlinked");
+
+        var model = await _paymentService.GetSinhVienHocPhiAsync(student.Id, hocKyId, trangThai);
+        return View(model);
     }
 
-    private static decimal GetInvoiceTotal(HoaDonHocPhi invoice) =>
-        invoice.ChiTietHoaDonHocPhis.Sum(item => Math.Max(0, item.SoLuong * item.DonGia - item.SoTienGiam));
-
-    private async Task<string> GenerateTransactionCodeAsync()
+    [HttpPost]
+    public async Task<IActionResult> TaoGiaoDichHocPhi([FromBody] TaoPaymentRequest request)
     {
-        const string letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        for (var attempt = 0; attempt < 10; attempt++)
-        {
-            var code = new string(Enumerable.Range(0, 8)
-                .Select(_ => letters[RandomNumberGenerator.GetInt32(letters.Length)])
-                .ToArray());
-            if (!await _db.ThanhToans.AnyAsync(payment => payment.MaGiaoDich == code))
-            {
-                return code;
-            }
-        }
+        var userId = _userManager.GetUserId(User);
+        if (userId == null) return Unauthorized(new { success = false, message = "Chưa đăng nhập." });
 
-        throw new InvalidOperationException("Không thể tạo mã giao dịch duy nhất sau nhiều lần thử.");
+        var student = await _db.SinhViens.FirstOrDefaultAsync(s => s.UserId == userId);
+        if (student == null) return Unauthorized(new { success = false, message = "Không tìm thấy sinh viên." });
+
+        var result = await _paymentService.CreatePaymentAsync(request.HoaDonId, student.Id);
+        return Ok(result);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> KiemTraGiaoDich(string transactionCode)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (userId == null) return Unauthorized();
+
+        var student = await _db.SinhViens.FirstOrDefaultAsync(s => s.UserId == userId);
+        if (student == null) return Unauthorized();
+
+        var result = await _paymentService.CheckPaymentStatusAsync(transactionCode, student.Id);
+        return Ok(result);
     }
 }

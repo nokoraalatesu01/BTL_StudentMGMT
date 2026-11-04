@@ -1,0 +1,334 @@
+@model BTL_StudentMGMT.Models.AdminDoiSoatViewModel
+@{
+    ViewData["Title"] = "Đối soát ngân hàng Vietcombank";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid px-3 py-2 payment-dashboard-wrap">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 payment-header-anim">
+        <div class="d-flex align-items-center gap-3">
+            <div class="payment-header-icon">
+                <i class="bi bi-bank"></i>
+            </div>
+            <div>
+                <h2 class="payment-header-title mb-0">
+                    Đối soát giao dịch Vietcombank
+                </h2>
+                <div class="payment-header-subtitle">
+                    Đối chiếu biến động số dư tài khoản ngân hàng Vietcombank với các đơn thanh toán nội bộ hệ thống
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <partial name="_NavTabs" />
+
+    <!-- 4 Thẻ Thống kê Đối soát (Pastel Theme & Count-up) -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="payment-stat-card card-blue">
+                <div class="stat-header">
+                    <span class="stat-label">TỔNG GD NGÂN HÀNG</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-bank2"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-primary" data-counter-target="@Model.TongGiaoDichNganHang" data-is-currency="false">
+                        @Model.TongGiaoDichNganHang
+                    </div>
+                    <div class="stat-hint">
+                        <span>Biến động số dư ghi nhận</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="payment-stat-card card-emerald">
+                <div class="stat-header">
+                    <span class="stat-label text-success">TỔNG TIỀN BÁO CÓ</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-success" data-counter-target="@Model.TongTienBaoCo" data-is-currency="true">
+                        @Model.TongTienBaoCo.ToString("N0") ₫
+                    </div>
+                    <div class="stat-hint text-success">
+                        <span>Thực nhận vào tài khoản VCB</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="payment-stat-card card-cyan">
+                <div class="stat-header">
+                    <span class="stat-label text-info">GIAO DỊCH KHỚP 100%</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-dark" data-counter-target="@Model.SoGiaoDichKhop" data-is-currency="false">
+                        @Model.SoGiaoDichKhop
+                    </div>
+                    <div class="stat-hint text-success">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Đã khớp tự động</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="payment-stat-card card-rose">
+                <div class="stat-header">
+                    <span class="stat-label text-danger">BẤT THƯỜNG / CẦN DUYỆT</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-danger" data-counter-target="@Model.SoGiaoDichBatThuong" data-is-currency="false">
+                        @Model.SoGiaoDichBatThuong
+                    </div>
+                    <div class="stat-hint text-danger">
+                        <span>Sai cú pháp, sai tiền, lệch đơn</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bộ lọc Đối soát -->
+    <div class="payment-filter-card">
+        <form method="get" asp-action="DoiSoat" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted mb-1">Tìm kiếm</label>
+                <div class="filter-input-wrap">
+                    <i class="bi bi-search filter-input-icon"></i>
+                    <input type="text" name="search" value="@Model.Search" class="form-control form-control-sm" placeholder="Mã FT, nội dung chuyển khoản..." />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted mb-1">Kết quả đối soát</label>
+                <select name="ketQuaFilter" class="form-select form-select-sm filter-select">
+                    <option value="">-- Tất cả kết quả --</option>
+                    <option value="MATCHED" selected="@(Model.KetQuaFilter == "MATCHED")">Khớp hoàn toàn (MATCHED)</option>
+                    <option value="UNMATCHED_NO_ORDER" selected="@(Model.KetQuaFilter == "UNMATCHED_NO_ORDER")">Không tìm thấy đơn nội bộ</option>
+                    <option value="AMOUNT_MISMATCH" selected="@(Model.KetQuaFilter == "AMOUNT_MISMATCH")">Sai số tiền (AMOUNT_MISMATCH)</option>
+                    <option value="CONTENT_MISMATCH" selected="@(Model.KetQuaFilter == "CONTENT_MISMATCH")">Sai nội dung cú pháp</option>
+                    <option value="MANUAL_REVIEW" selected="@(Model.KetQuaFilter == "MANUAL_REVIEW")">Cần kiểm tra thủ công</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-muted mb-1">Từ ngày</label>
+                <input type="date" name="tuNgay" value="@Model.TuNgay" class="form-control form-control-sm filter-select" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-muted mb-1">Đến ngày</label>
+                <input type="date" name="denNgay" value="@Model.DenNgay" class="form-control form-control-sm filter-select" />
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn-filter-submit flex-grow-1">
+                        <i class="bi bi-funnel-fill"></i> Lọc
+                    </button>
+                    <a asp-action="DoiSoat" class="btn btn-filter-reset" title="Xóa lọc">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bảng Đối soát -->
+    <div class="payment-table-card">
+        <div class="payment-card-header px-4 pt-3 pb-2 mb-0">
+            <h6 class="payment-card-title">
+                <i class="bi bi-shield-check text-success"></i>
+                <span>Bảng đối soát giao dịch ngân hàng (@Model.DanhSachDoiSoat.Count bản ghi)</span>
+            </h6>
+        </div>
+        <div class="table-responsive">
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th>MÃ GD NGÂN HÀNG (FT)</th>
+                        <th>NỘI DUNG CHUYỂN KHOẢN</th>
+                        <th>TIỀN BÁO CÓ</th>
+                        <th>THỜI GIAN NHẬN</th>
+                        <th>MÃ ĐƠN NỘI BỘ</th>
+                        <th>TIỀN HỆ THỐNG</th>
+                        <th>KẾT QUẢ ĐỐI SOÁT</th>
+                        <th class="text-end">XỬ LÝ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.DanhSachDoiSoat.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-3 d-block text-secondary mb-2"></i>
+                                Chưa có giao dịch ngân hàng nào phù hợp với bộ lọc.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var d in Model.DanhSachDoiSoat)
+                    {
+                        <tr>
+                            <td class="font-monospace fw-bold text-dark">@d.BankTransactionId</td>
+                            <td>
+                                <span class="font-monospace small bg-light p-1 rounded border text-break d-inline-block" style="max-width:240px;">
+                                    @d.TransactionContent
+                                </span>
+                            </td>
+                            <td class="fw-bold font-monospace text-success fs-6">@d.AmountBank.ToString("N0") ₫</td>
+                            <td class="small text-muted">@d.TransactionDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(d.PaymentTransactionCode))
+                                {
+                                    <span class="font-monospace fw-bold text-primary">@d.PaymentTransactionCode</span>
+                                    @if (!string.IsNullOrWhiteSpace(d.StudentInfo))
+                                    {
+                                        <small class="text-muted d-block font-monospace">@d.StudentInfo</small>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted font-italic">- Chưa gán -</span>
+                                }
+                            </td>
+                            <td class="font-monospace">
+                                @(d.AmountInternal.HasValue ? d.AmountInternal.Value.ToString("N0") + " ₫" : "-")
+                            </td>
+                            <td>
+                                @if (d.KetQuaDoiSoat == "MATCHED")
+                                {
+                                    <span class="payment-pill pill-paid">Khớp 100%</span>
+                                }
+                                else if (d.KetQuaDoiSoat == "AMOUNT_MISMATCH")
+                                {
+                                    <span class="payment-pill pill-failed">Lệch số tiền</span>
+                                }
+                                else if (d.KetQuaDoiSoat == "UNMATCHED_NO_ORDER")
+                                {
+                                    <span class="payment-pill pill-pending">Không thấy đơn</span>
+                                }
+                                else
+                                {
+                                    <span class="payment-pill pill-neutral">@d.KetQuaDoiSoat</span>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(d.GhiChu))
+                                {
+                                    <small class="text-muted d-block mt-1">@d.GhiChu</small>
+                                }
+                            </td>
+                            <td class="text-end">
+                                @if (!d.DaXuLy)
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-danger py-1 px-3 rounded-2 fw-semibold"
+                                            onclick="moModalXuLy(@d.BankTransactionDbId, '@d.BankTransactionId', @d.AmountBank, '@(d.PaymentTransactionCode ?? "")')"
+                                            title="Xử lý bất thường & Ghi nhật ký kiểm toán">
+                                        <i class="bi bi-tools me-1"></i> Xử lý
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-success small fw-semibold"><i class="bi bi-check2"></i> Đã xử lý</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="payment-pagination-bar">
+            <span>Hiển thị @Model.DanhSachDoiSoat.Count bản ghi giao dịch ngân hàng</span>
+            <span>Khớp lệnh thời gian thực theo cấu trúc mã chuyển khoản</span>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xử lý bất thường -->
+<div class="modal fade" id="modalXuLyBatThuong" tabindex="-1" aria-labelledby="modalXuLyLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <form method="post" asp-action="XuLyBatThuongDoiSoat">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="BankTransactionDbId" id="xulyBankDbId" />
+
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold text-dark" id="modalXuLyLabel">
+                        <i class="bi bi-tools text-danger me-2"></i>Quy trình xử lý đối soát bất thường
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-warning small rounded-3 p-3 mb-3 border-0" style="background:#fffbeb; color:#92400e;">
+                        <i class="bi bi-shield-lock-fill me-1"></i> Theo quy chế tài chính, không cho phép chỉnh sửa dữ liệu ngân hàng gốc. Mọi thao tác xử lý bắt buộc ghi nhận lý do và kiểm toán (Audit Log).
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">MÃ FT NGÂN HÀNG VIETCOMBANK</label>
+                        <input type="text" id="xulyFtCode" class="form-control rounded-3 font-monospace bg-light" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">SỐ TIỀN BÁO CÓ (VNĐ)</label>
+                        <input type="text" id="xulyAmount" class="form-control rounded-3 font-monospace fw-bold text-success bg-light" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">HÀNH ĐỘNG XỬ LÝ *</label>
+                        <select name="HanhDong" class="form-select rounded-3 filter-select" required>
+                            <option value="XAC_NHAN_KHOP">Khớp thủ công với mã giao dịch nội bộ</option>
+                            <option value="DANH_DAU_CHO_XU_LY">Đánh dấu chờ tra soát ngân hàng</option>
+                            <option value="HUY_BO">Hủy bỏ / Chuyển khoản nhầm</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">MÃ GIAO DỊCH NỘI BỘ (NẾU CẦN GÁN)</label>
+                        <input type="text" name="PaymentCode" id="xulyPaymentCode" class="form-control rounded-3 font-monospace" placeholder="VD: HP261104ABCDEF" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">LÝ DO XỬ LÝ * (BẮT BUỘC)</label>
+                        <textarea name="LyDo" rows="2" class="form-control rounded-3" placeholder="Nhập căn cứ tra soát, giải trình sinh viên..." required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">BẰNG CHỨNG ĐỐI CHIẾU</label>
+                        <input type="text" name="BangChung" class="form-control rounded-3" placeholder="VD: Ảnh biên lai VCB / Mã phiếu thu..." />
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <button type="button" class="btn btn-filter-reset px-3" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-filter-submit px-4" style="background: linear-gradient(135deg, #008744, #006030);">Xác nhận xử lý</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-payment.js" asp-append-version="true"></script>
+    <script>
+        function moModalXuLy(dbId, ftCode, amount, paymentCode) {
+            document.getElementById('xulyBankDbId').value = dbId;
+            document.getElementById('xulyFtCode').value = ftCode;
+            document.getElementById('xulyAmount').value = Number(amount).toLocaleString('vi-VN') + ' ₫';
+            document.getElementById('xulyPaymentCode').value = paymentCode || '';
+
+            var modalEl = document.getElementById('modalXuLyBatThuong');
+            var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+    </script>
+}

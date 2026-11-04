@@ -1,80 +1,576 @@
 @model BTL_StudentMGMT.Models.SinhVienHocPhiViewModel
 @{
-    ViewData["Title"] = "Học phí / Thanh toán";
+    ViewData["Title"] = "Thanh toán học phí trực tuyến";
+    Layout = "_SinhVienLayout";
+    var sinhVien = Model.SinhVien;
+    var displayName = string.IsNullOrWhiteSpace(sinhVien?.HoTen) ? "Sinh viên" : sinhVien.HoTen.Trim();
 }
-<section class="student-page">
-    <div class="student-page-heading">
-        <div><p class="text-uppercase small text-muted mb-1">Tài chính sinh viên</p><h1>Học phí / Thanh toán</h1><p>Theo dõi hóa đơn, công nợ và trạng thái xác nhận chuyển khoản.</p></div>
-    </div>
-    @if (TempData["Msg"] is string success) { <div class="alert alert-success">@success</div> }
-    @if (TempData["Error"] is string error) { <div class="alert alert-danger">@error</div> }
 
-    <div class="student-chip red mb-4">Tổng công nợ: @Model.TongCongNo.ToString("N0") ₫</div>
-    @if (Model.HoaDons.Count == 0)
+<!-- ===== HEADER TRANG ===== -->
+<div class="student-page-heading mb-4">
+    <div>
+        <p class="student-eyebrow" style="color:#059669;">CỔNG TÀI CHÍNH SINH VIÊN &bull; VIETCOMBANK VIETQR</p>
+        <h1>Thanh toán học phí trực tuyến</h1>
+        <p>
+            Theo dõi công nợ và thanh toán học phí tự động qua mã VietQR chuẩn ngân hàng Vietcombank cho sinh viên 
+            <strong class="text-dark">@displayName</strong> (Mã SV: <strong class="text-primary font-monospace">@sinhVien?.MaSinhVien</strong>).
+        </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        @if (Model.VietQrConfig.Environment == "Sandbox")
+        {
+            <span class="badge bg-warning-subtle text-warning-emphasis px-3 py-2 border border-warning" style="font-size:12.5px; border-radius:10px;">
+                <i class="bi bi-shield-check me-1"></i> Môi trường Sandbox (Thử nghiệm)
+            </span>
+        }
+        else
+        {
+            <span class="badge bg-success-subtle text-success px-3 py-2 border border-success" style="font-size:12.5px; border-radius:10px;">
+                <i class="bi bi-patch-check-fill me-1"></i> Vietcombank Official Gateway
+            </span>
+        }
+    </div>
+</div>
+
+<!-- ===== 4 THẺ THỐNG KÊ (STATISTIC CARDS) ===== -->
+<section class="student-stat-grid" aria-label="Tóm tắt công nợ học phí" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));">
+    <!-- Card 1: Tổng học phí -->
+    <article class="student-stat-card">
+        <span class="student-stat-icon student-icon-blue" aria-hidden="true">
+            <i class="bi bi-receipt"></i>
+        </span>
+        <div>
+            <p>TỔNG HỌC PHÍ</p>
+            <strong style="color:#0f172a;">@Model.TongHocPhi.ToString("N0") <span class="stat-sub-tc">₫</span></strong>
+        </div>
+    </article>
+
+    <!-- Card 2: Đã thanh toán -->
+    <article class="student-stat-card" style="border-color:#bbf7d0;">
+        <span class="student-stat-icon student-icon-green" aria-hidden="true">
+            <i class="bi bi-check2-circle"></i>
+        </span>
+        <div>
+            <p style="color:#15803d;">ĐÃ THANH TOÁN</p>
+            <strong style="color:#15803d;">@Model.DaThanhToan.ToString("N0") <span class="stat-sub-tc">₫</span></strong>
+        </div>
+    </article>
+
+    <!-- Card 3: Còn nợ -->
+    <article class="student-stat-card" style="border-color: @(Model.ChuaThanhToan > 0 ? "#fed7aa" : "#e2e8f0");">
+        <span class="student-stat-icon student-icon-amber" aria-hidden="true">
+            <i class="bi bi-hourglass-split"></i>
+        </span>
+        <div>
+            <p style="color:#b45309;">CHƯA THANH TOÁN</p>
+            <strong style="color:@(Model.ChuaThanhToan > 0 ? "#c2410c" : "#0f172a");">
+                @Model.ChuaThanhToan.ToString("N0") <span class="stat-sub-tc">₫</span>
+            </strong>
+        </div>
+    </article>
+
+    <!-- Card 4: Số khoản còn nợ -->
+    <article class="student-stat-card">
+        <span class="student-stat-icon student-icon-violet" aria-hidden="true">
+            <i class="bi bi-wallet2"></i>
+        </span>
+        <div>
+            <p>SỐ KHOẢN CÒN NỢ</p>
+            <strong>@Model.SoKhoanConNo <span class="stat-sub-tc">khoản</span></strong>
+        </div>
+    </article>
+</section>
+
+<!-- ===== BỘ LỌC HỌC KỲ VÀ TRẠNG THÁI ===== -->
+<div class="tkb-navigator-bar mb-4">
+    <form method="get" asp-action="HocPhi" class="d-flex flex-wrap align-items-center gap-3 w-100 m-0">
+        <div class="d-flex align-items-center gap-2">
+            <label for="selectHocKy" class="text-muted small fw-semibold text-nowrap">
+                <i class="bi bi-funnel me-1"></i>Học kỳ:
+            </label>
+            <select name="hocKyId" id="selectHocKy" class="form-select form-select-sm tkb-semester-select" onchange="this.form.submit()">
+                <option value="">-- Tất cả các học kỳ --</option>
+                @foreach (var hk in Model.DanhSachHocKy)
+                {
+                    <option value="@hk.HocKyId" selected="@(Model.SelectedHocKyId == hk.HocKyId ? "selected" : null)">
+                        @hk.TenHocKy
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <label for="selectStatus" class="text-muted small fw-semibold text-nowrap">Trạng thái:</label>
+            <select name="trangThai" id="selectStatus" class="form-select form-select-sm" style="border-radius:10px; min-width:180px;" onchange="this.form.submit()">
+                <option value="">-- Tất cả trạng thái --</option>
+                <option value="CHUA_THANH_TOAN" selected="@(Model.SelectedTrangThai == "CHUA_THANH_TOAN" ? "selected" : null)">Chưa thanh toán</option>
+                <option value="THANH_TOAN_MOT_PHAN" selected="@(Model.SelectedTrangThai == "THANH_TOAN_MOT_PHAN" ? "selected" : null)">Thanh toán một phần</option>
+                <option value="DA_THANH_TOAN" selected="@(Model.SelectedTrangThai == "DA_THANH_TOAN" ? "selected" : null)">Đã hoàn thành</option>
+            </select>
+        </div>
+
+        @if (Model.SelectedHocKyId.HasValue || !string.IsNullOrEmpty(Model.SelectedTrangThai))
+        {
+            <a asp-action="HocPhi" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" style="border-radius:8px;">
+                <i class="bi bi-x-circle"></i> Xóa lọc
+            </a>
+        }
+    </form>
+</div>
+
+<!-- ===== DANH SÁCH CÁC KHOẢN HỌC PHÍ ===== -->
+<section class="student-panel p-0 overflow-hidden mb-4">
+    <div class="student-panel-heading p-3 border-bottom d-flex justify-content-between align-items-center">
+        <div>
+            <p class="student-eyebrow mb-1">BẢNG KÊ NGHĨA VỤ TÀI CHÍNH</p>
+            <h2 class="m-0">Danh sách các khoản học phí cần thanh toán</h2>
+        </div>
+        <span class="student-chip green">
+            <i class="bi bi-shield-check"></i> Xác nhận tức thì qua VietQR
+        </span>
+    </div>
+
+    @if (Model.DanhSachHocPhi.Count == 0)
     {
-        <div class="student-table-wrap p-4 text-center text-muted">Hiện chưa có hóa đơn học phí.</div>
+        <div class="p-5 text-center">
+            <i class="bi bi-check-circle-fill text-success fs-1 d-block mb-2"></i>
+            <h5 class="fw-bold text-dark">Không có khoản học phí nào</h5>
+            <p class="text-muted small mb-0">Hiện tại bạn không có khoản nợ học phí nào cần thanh toán.</p>
+        </div>
     }
-    @foreach (var item in Model.HoaDons)
+    else
     {
-        <article class="student-table-wrap mb-4">
-            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 p-3">
-                <div>
-                    <h2 class="h5 mb-1">@item.HoaDon.HocKy.TenHocKy · @item.HoaDon.HocKy.NamHoc.MaNamHoc</h2>
-                    <div class="small text-muted">Hóa đơn @item.HoaDon.SoHoaDon · Hạn thanh toán: @(item.HoaDon.HanThanhToan?.ToString("dd/MM/yyyy") ?? "Chưa đặt hạn")</div>
-                </div>
-                <span class="student-chip @(item.HoaDon.TrangThai == "PAID" ? "green" : item.HoaDon.TrangThai == "CANCELLED" ? "red" : "")">@item.HoaDon.TrangThai</span>
-            </div>
-            <div class="table-responsive">
-                <table class="student-table">
-                    <thead><tr><th>Khoản thu</th><th>Tổng tiền</th><th>Đã thanh toán</th><th>Còn nợ</th></tr></thead>
-                    <tbody>
-                    @foreach (var detail in item.HoaDon.ChiTietHoaDonHocPhis)
+        <div class="student-table-wrap">
+            <table class="student-table" id="tableHocPhi">
+                <thead>
+                    <tr>
+                        <th>Mã khoản thu</th>
+                        <th>Tên khoản thu</th>
+                        <th>Học kỳ</th>
+                        <th class="text-end">Số tiền</th>
+                        <th class="text-end">Đã nộp</th>
+                        <th class="text-end">Còn phải nộp</th>
+                        <th class="text-center">Hạn nộp</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.DanhSachHocPhi)
                     {
-                        <tr><td>@detail.MoTa</td><td>@item.TongTien.ToString("N0") ₫</td><td>@item.DaThanhToan.ToString("N0") ₫</td><td>@item.ConNo.ToString("N0") ₫</td></tr>
+                        <tr id="row-invoice-@item.Id">
+                            <td>
+                                <strong class="font-monospace text-primary">@item.SoHoaDon</strong>
+                            </td>
+                            <td>
+                                <strong class="text-dark">@item.TenKhoanThu</strong>
+                                @if (!string.IsNullOrEmpty(item.GhiChu))
+                                {
+                                    <div class="text-muted small">@item.GhiChu</div>
+                                }
+                            </td>
+                            <td>
+                                <div>@item.TenHocKy</div>
+                                @if (!string.IsNullOrEmpty(item.TenNamHoc))
+                                {
+                                    <small class="text-muted">NH: @item.TenNamHoc</small>
+                                }
+                            </td>
+                            <td class="text-end font-monospace">@item.SoTien.ToString("N0") ₫</td>
+                            <td class="text-end font-monospace text-success">@item.DaThanhToan.ToString("N0") ₫</td>
+                            <td class="text-end font-monospace fw-bold @(item.ConPhaiDong > 0 ? "text-danger" : "text-dark")">
+                                @item.ConPhaiDong.ToString("N0") ₫
+                            </td>
+                            <td class="text-center small">
+                                @(item.HanThanhToan.HasValue ? item.HanThanhToan.Value.ToString("dd/MM/yyyy") : "—")
+                            </td>
+                            <td class="text-center">
+                                @if (item.TrangThai == "DA_THANH_TOAN")
+                                {
+                                    <span class="student-chip green"><i class="bi bi-check-lg"></i> Đã thanh toán</span>
+                                }
+                                else if (item.TrangThai == "THANH_TOAN_MOT_PHAN")
+                                {
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning px-2 py-1">Còn nợ 1 phần</span>
+                                }
+                                else
+                                {
+                                    <span class="student-chip red"><i class="bi bi-exclamation-circle"></i> Chưa đóng</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (item.CoTheThanhToan)
+                                {
+                                    <button type="button" 
+                                            class="btn btn-sm btn-success fw-bold d-inline-flex align-items-center gap-1 shadow-sm px-3 btn-mo-thanhtoan"
+                                            style="border-radius:8px; font-size:12.5px; background:linear-gradient(135deg, #059669 0%, #10b981 100%); border:none;"
+                                            data-id="@item.Id"
+                                            data-sohd="@item.SoHoaDon"
+                                            data-ten="@item.TenKhoanThu"
+                                            data-amount="@item.ConPhaiDong.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)"
+                                            onclick="moModalThanhToan(this)">
+                                        <i class="bi bi-qr-code-scan"></i> Thanh toán ngay
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small"><i class="bi bi-check-circle text-success me-1"></i>Hoàn tất</span>
+                                }
+                            </td>
+                        </tr>
                     }
-                    </tbody>
-                </table>
-            </div>
-            @if (item.HoaDon.ThanhToans.Count > 0)
-            {
-                <div class="p-3">
-                    <h3 class="h6">Lịch sử thanh toán</h3>
-                    <div class="table-responsive">
-                        <table class="student-table">
-                            <thead><tr><th>Mã chuyển khoản</th><th>Số tiền</th><th>Thời gian</th><th>Trạng thái</th><th>Biên lai</th></tr></thead>
-                            <tbody>
-                            @foreach (var payment in item.HoaDon.ThanhToans)
-                            {
-                                <tr>
-                                    <td class="fw-semibold">@payment.MaGiaoDich</td>
-                                    <td>@payment.SoTien.ToString("N0") ₫</td>
-                                    <td>@payment.ThoiGianThanhToan.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                                    <td>@payment.TrangThai @if (!string.IsNullOrWhiteSpace(payment.GhiChu)) { <span class="small text-muted">— @payment.GhiChu</span> }</td>
-                                    <td>@if (!string.IsNullOrEmpty(payment.AnhMinhChung)) { <a asp-action="XemBienLai" asp-route-id="@payment.ThanhToanId">Xem</a> }</td>
-                                </tr>
-                            }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            }
-            @if (item.ConNo > 0 && item.HoaDon.TrangThai is not "CANCELLED" and not "PAID"
-                && !item.HoaDon.ThanhToans.Any(payment => payment.TrangThai == "PENDING"))
-            {
-                <div class="p-3 border-top">
-                    <p class="mb-2">Chuyển khoản đúng số tiền còn nợ và tải ảnh biên lai. Ghi <strong>mã giao dịch</strong> do hệ thống cấp vào nội dung chuyển khoản; giao dịch chỉ được ghi nhận sau khi Admin/PGV xác nhận.</p>
-                    <form asp-action="GuiYeuCauThanhToan" method="post" enctype="multipart/form-data" class="d-flex flex-wrap align-items-end gap-2">
-                        <input type="hidden" name="HoaDonId" value="@item.HoaDon.HoaDonId" />
-                        <input type="hidden" name="IdempotencyKey" value="@item.IdempotencyKey" />
-                        <div><label class="form-label" for="proof-@item.HoaDon.HoaDonId">Ảnh biên lai (JPG/PNG/WEBP, tối đa 5MB)</label><input id="proof-@item.HoaDon.HoaDonId" type="file" name="AnhMinhChung" accept=".jpg,.jpeg,.png,.webp" required /></div>
-                        <button class="student-logout" type="submit"><i class="bi bi-send"></i><span>Gửi yêu cầu xác nhận</span></button>
-                    </form>
-                </div>
-            }
-            else if (item.HoaDon.ThanhToans.Any(payment => payment.TrangThai == "PENDING"))
-            {
-                <div class="p-3 border-top text-muted">Yêu cầu chuyển khoản đang chờ nhà trường xác nhận.</div>
-            }
-        </article>
+                </tbody>
+            </table>
+        </div>
     }
 </section>
+
+<!-- ===== MODAL THANH TOÁN VIETQR VIETCOMBANK CHUYÊN NGHIỆP ===== -->
+<div class="modal fade" id="modalThanhToanVietQr" tabindex="-1" aria-labelledby="modalThanhToanLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:540px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:20px; overflow:hidden;">
+            <!-- Header Modal Tông Xanh Vietcombank -->
+            <div class="modal-header border-0 text-white p-4 d-flex justify-content-between align-items-center" 
+                 style="background: linear-gradient(135deg, #005a36 0%, #007a48 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle p-2 bg-white text-success d-flex align-items-center justify-content-center" style="width:44px; height:44px;">
+                        <i class="bi bi-qr-code fs-4" style="color:#007a48;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0 text-white" id="modalThanhToanLabel" style="font-size:1.15rem;">
+                            Thanh toán học phí VietQR
+                        </h5>
+                        <small class="text-white-50" style="font-size:12px;">Ngân hàng TMCP Ngoại thương Việt Nam &bull; Vietcombank</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng" onclick="dungPolling()"></button>
+            </div>
+
+            <div class="modal-body p-4" style="background:#f8fafc;">
+                <!-- Trạng thái Đang chờ thanh toán -->
+                <div id="boxWaitingPayment">
+                    <!-- Khung VietQR Code Card -->
+                    <div class="text-center p-3 mb-3 bg-white rounded-4 shadow-sm border border-success-subtle position-relative">
+                        <div class="d-flex justify-content-between align-items-center px-2 mb-2">
+                            <span class="fw-bold" style="color:#007a48; font-size:13px;">
+                                <i class="bi bi-shield-lock-fill me-1"></i>NAPAS 24/7 &bull; VIETQR
+                            </span>
+                            <span class="badge bg-light text-muted border" id="countdownTimer">
+                                Hết hạn sau: 20:00
+                            </span>
+                        </div>
+
+                        <!-- Khung ảnh QR -->
+                        <div class="qr-container my-2 text-center position-relative d-inline-block">
+                            <img id="qrImage" src="" alt="Mã VietQR" class="img-fluid rounded-3 border p-2 bg-white" style="max-height:270px; width:auto; min-height:230px;" />
+                            <div id="qrLoadingSpinner" class="position-absolute top-50 start-50 translate-middle">
+                                <div class="spinner-border text-success" role="status">
+                                    <span class="visually-hidden">Đang tải mã QR...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="small text-muted mb-2">
+                            Mở ứng dụng <strong>VCB Digibank</strong> hoặc bất kỳ App Ngân hàng nào để quét mã QR thanh toán tức thì.
+                        </p>
+
+                        <div class="d-flex justify-content-center gap-2">
+                            <a id="btnDownloadQr" href="#" download="VietQR_HocPhi.png" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" style="border-radius:8px; font-size:12px;">
+                                <i class="bi bi-download"></i> Tải ảnh QR
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1" style="border-radius:8px; font-size:12px;" onclick="kiemTraTrangThaiNgay()">
+                                <i class="bi bi-arrow-clockwise"></i> Kiểm tra trạng thái
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bảng chi tiết chuyển khoản -->
+                    <div class="bg-white rounded-4 p-3 shadow-sm border mb-3">
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <span class="text-muted small">Số tiền cần đóng:</span>
+                            <strong class="fs-5 text-danger font-monospace" id="modalAmountDisplay">0 ₫</strong>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <span class="text-muted small">Ngân hàng thụ hưởng:</span>
+                            <span class="fw-semibold text-dark text-end" id="modalBankNameDisplay">Vietcombank</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <span class="text-muted small">Số tài khoản:</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <strong class="font-monospace text-primary fs-6" id="modalAccountNoDisplay">...</strong>
+                                <button type="button" class="btn btn-sm btn-light border py-0 px-2" title="Sao chép số tài khoản" onclick="copyToClipboard('modalAccountNoDisplay', 'Đã sao chép số tài khoản!')">
+                                    <i class="bi bi-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <span class="text-muted small">Chủ tài khoản:</span>
+                            <span class="fw-bold text-dark text-end" id="modalAccountHolderDisplay">...</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center py-2">
+                            <div>
+                                <span class="text-muted small d-block">Nội dung chuyển khoản:</span>
+                                <small class="text-danger" style="font-size:11px;">*Bắt buộc ghi chính xác để tự động duyệt</small>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <strong class="font-monospace bg-light p-1 px-2 rounded border text-danger" id="modalContentDisplay">...</strong>
+                                <button type="button" class="btn btn-sm btn-light border py-0 px-2" title="Sao chép nội dung" onclick="copyToClipboard('modalContentDisplay', 'Đã sao chép nội dung chuyển khoản!')">
+                                    <i class="bi bi-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cảnh báo thời gian tự động duyệt -->
+                    <div class="d-flex align-items-center justify-content-center gap-2 text-muted small py-1">
+                        <div class="spinner-grow spinner-grow-sm text-success" role="status"></div>
+                        <span>Hệ thống đang tự động lắng nghe biến động số dư Vietcombank...</span>
+                    </div>
+
+                    <!-- Nút mô phỏng Sandbox (Chỉ hiển thị khi Environment == Sandbox) -->
+                    <div id="wrapSandboxSimulate" class="mt-3 text-center" style="display:none;">
+                        <button type="button" class="btn btn-outline-warning btn-sm w-100 fw-bold d-inline-flex align-items-center justify-content-center gap-2 py-2" style="border-radius:10px;" onclick="moPhongChuyenTienSandbox()">
+                            <i class="bi bi-lightning-charge-fill"></i> Mô phỏng sinh viên đã quét QR & chuyển tiền (Sandbox Test)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Trạng thái Thanh toán thành công (Success Box) -->
+                <div id="boxSuccessPayment" style="display:none;" class="text-center py-4">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 shadow" style="width:76px; height:76px; background:#10b981; color:#fff; font-size:2.5rem;">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <h4 class="fw-bold text-success mb-2">Thanh toán thành công!</h4>
+                    <p class="text-muted small mb-3">
+                        Giao dịch của bạn đã được Vietcombank ghi nhận và hệ thống đã cập nhật công nợ học phí tức thì.
+                    </p>
+
+                    <div class="bg-white rounded-4 p-3 border text-start mb-3 shadow-sm">
+                        <div class="d-flex justify-content-between py-1 border-bottom small">
+                            <span class="text-muted">Mã giao dịch:</span>
+                            <strong class="font-monospace text-primary" id="successTxnCode">—</strong>
+                        </div>
+                        <div class="d-flex justify-content-between py-1 border-bottom small">
+                            <span class="text-muted">Mã tham chiếu VCB:</span>
+                            <strong class="font-monospace text-dark" id="successBankRef">—</strong>
+                        </div>
+                        <div class="d-flex justify-content-between py-1 border-bottom small">
+                            <span class="text-muted">Số tiền đã thanh toán:</span>
+                            <strong class="text-success font-monospace" id="successAmount">—</strong>
+                        </div>
+                        <div class="d-flex justify-content-between py-1 small">
+                            <span class="text-muted">Thời gian thanh toán:</span>
+                            <span id="successTime">—</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-success px-4 py-2 fw-bold" style="border-radius:10px;" data-bs-dismiss="modal" onclick="reloadHocPhiData()">
+                        <i class="bi bi-check-circle me-1"></i> Hoàn tất & Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var currentTransactionCode = null;
+        var pollingInterval = null;
+        var countdownTimer = null;
+        var expiredTime = null;
+
+        function moModalThanhToan(param1, soHoaDon, tenKhoanThu, conPhaiDong) {
+            dungPolling();
+
+            var hoaDonId = param1;
+            if (typeof param1 === 'object' && param1 !== null && param1.getAttribute) {
+                hoaDonId = parseInt(param1.getAttribute('data-id')) || 0;
+                soHoaDon = param1.getAttribute('data-sohd') || '';
+                tenKhoanThu = param1.getAttribute('data-ten') || '';
+                conPhaiDong = parseFloat(param1.getAttribute('data-amount')) || 0;
+            }
+
+            // Reset UI
+            document.getElementById('boxWaitingPayment').style.display = 'block';
+            document.getElementById('boxSuccessPayment').style.display = 'none';
+            document.getElementById('qrLoadingSpinner').style.display = 'block';
+            document.getElementById('qrImage').style.opacity = '0.2';
+            document.getElementById('modalAmountDisplay').innerText = (Number(conPhaiDong) || 0).toLocaleString('vi-VN') + ' ₫';
+
+            var modalEl = document.getElementById('modalThanhToanVietQr');
+            var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modal.show();
+
+            // Gọi API tạo Payment và nhận VietQR động
+            fetch('/SinhVien/TaoGiaoDichHocPhi', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hoaDonId: hoaDonId })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                document.getElementById('qrLoadingSpinner').style.display = 'none';
+                document.getElementById('qrImage').style.opacity = '1';
+
+                if (!data.success) {
+                    alert(data.message || 'Không thể tạo mã thanh toán.');
+                    modal.hide();
+                    return;
+                }
+
+                currentTransactionCode = data.transactionCode;
+                document.getElementById('qrImage').src = data.qrUrl;
+                document.getElementById('btnDownloadQr').href = data.qrUrl;
+                document.getElementById('modalBankNameDisplay').innerText = data.bankName;
+                document.getElementById('modalAccountNoDisplay').innerText = data.accountNumber;
+                document.getElementById('modalAccountHolderDisplay').innerText = data.accountHolderName;
+                document.getElementById('modalContentDisplay').innerText = data.paymentContent;
+
+                if (data.isSandbox) {
+                    document.getElementById('wrapSandboxSimulate').style.display = 'block';
+                } else {
+                    document.getElementById('wrapSandboxSimulate').style.display = 'none';
+                }
+
+                // Thiết lập countdown 20 phút
+                expiredTime = new Date(data.expiredAt).getTime();
+                batDauCountdown();
+
+                // Bắt đầu Auto-Polling kiểm tra trạng thái mỗi 2.5 giây
+                batDauPolling(currentTransactionCode);
+            })
+            .catch(function(err) {
+                document.getElementById('qrLoadingSpinner').style.display = 'none';
+                alert('Lỗi kết nối khi tạo mã thanh toán: ' + err);
+            });
+        }
+
+        function batDauPolling(code) {
+            dungPolling();
+            pollingInterval = setInterval(function() {
+                if (!currentTransactionCode) return;
+
+                fetch('/api/payment/check-status/' + currentTransactionCode)
+                    .then(function(res) { return res.json(); })
+                    .then(function(res) {
+                        if (res.success && res.status === 'PAID') {
+                            dungPolling();
+                            hienThiThanhCong(res);
+                        } else if (res.status === 'EXPIRED') {
+                            dungPolling();
+                            alert('Mã QR thanh toán đã hết hạn. Vui lòng tạo mã mới.');
+                        }
+                    })
+                    .catch(function(e) { console.log('Polling check error: ', e); });
+            }, 2500);
+        }
+
+        function dungPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
+        }
+
+        function kiemTraTrangThaiNgay() {
+            if (!currentTransactionCode) return;
+            fetch('/api/payment/check-status/' + currentTransactionCode)
+                .then(function(res) { return res.json(); })
+                .then(function(res) {
+                    if (res.status === 'PAID') {
+                        dungPolling();
+                        hienThiThanhCong(res);
+                    } else {
+                        alert(res.message || 'Giao dịch chưa được xác nhận hoặc tiền chưa vào tài khoản.');
+                    }
+                });
+        }
+
+        function hienThiThanhCong(res) {
+            document.getElementById('boxWaitingPayment').style.display = 'none';
+            document.getElementById('boxSuccessPayment').style.display = 'block';
+
+            document.getElementById('successTxnCode').innerText = res.transactionCode || currentTransactionCode;
+            document.getElementById('successBankRef').innerText = res.bankTransactionId || 'VCB-DIGIBANK-N247';
+            document.getElementById('successAmount').innerText = (res.amount || 0).toLocaleString('vi-VN') + ' ₫';
+            document.getElementById('successTime').innerText = res.paidAt ? new Date(res.paidAt).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN');
+
+            if (window.gsap) {
+                gsap.from('#boxSuccessPayment', { scale: 0.9, opacity: 0, duration: 0.4, ease: "back.out(1.5)" });
+            }
+        }
+
+        function moPhongChuyenTienSandbox() {
+            if (!currentTransactionCode) return;
+            var btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang mô phỏng giao dịch...';
+
+            fetch('/api/payment/sandbox/simulate-transfer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ transactionCode: currentTransactionCode })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-lightning-charge-fill"></i> Mô phỏng sinh viên đã quét QR & chuyển tiền (Sandbox Test)';
+                if (data.success) {
+                    kiemTraTrangThaiNgay();
+                } else {
+                    alert('Lỗi mô phỏng: ' + data.message);
+                }
+            })
+            .catch(function(err) {
+                btn.disabled = false;
+                alert('Lỗi gọi API: ' + err);
+            });
+        }
+
+        function batDauCountdown() {
+            var el = document.getElementById('countdownTimer');
+            if (!expiredTime) return;
+
+            countdownTimer = setInterval(function() {
+                var now = new Date().getTime();
+                var distance = expiredTime - now;
+
+                if (distance <= 0) {
+                    clearInterval(countdownTimer);
+                    el.innerText = 'Hết hạn';
+                    el.className = 'badge bg-danger text-white';
+                    return;
+                }
+
+                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                el.innerText = 'Hết hạn sau: ' + (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+            }, 1000);
+        }
+
+        function copyToClipboard(elementId, successMsg) {
+            var text = document.getElementById(elementId).innerText.trim();
+            navigator.clipboard.writeText(text).then(function() {
+                var originalText = document.getElementById(elementId).innerText;
+                document.getElementById(elementId).style.color = '#10b981';
+                setTimeout(function() {
+                    document.getElementById(elementId).style.color = '';
+                }, 1000);
+                alert(successMsg);
+            });
+        }
+
+        function reloadHocPhiData() {
+            window.location.reload();
+        }
+    </script>
+}

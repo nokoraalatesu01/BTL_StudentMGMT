@@ -1,0 +1,693 @@
+/* ==========================================================================
+   UTC ADMIN PAYMENT MANAGEMENT - FINTECH MODERN DESIGN SYSTEM
+   Synchronized with UTC Portal Theme & Vietcombank VietQR Brand Guidelines
+   ========================================================================== */
+
+:root {
+    --vcb-green: #008744;
+    --vcb-green-dark: #006030;
+    --vcb-green-light: #10b981;
+    --vcb-mint-bg: #f0fdf4;
+    --vcb-mint-border: #bbf7d0;
+    --utc-navy: #0c2340;
+    --utc-blue: #1d4ed8;
+    --utc-blue-light: #3b82f6;
+    --surface-card: #ffffff;
+    --surface-border: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+    --shadow-md: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+    --shadow-lg: 0 12px 28px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
+    --shadow-vcb: 0 8px 24px -4px rgba(0, 135, 68, 0.12);
+}
+
+/* Page Wrapper */
+.payment-dashboard-wrap {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text-primary);
+}
+
+/* Header Area */
+.payment-header-title {
+    font-size: 1.55rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.payment-header-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    color: var(--vcb-green);
+    font-size: 1.3rem;
+    box-shadow: 0 2px 8px rgba(0, 135, 68, 0.12);
+}
+
+.payment-header-subtitle {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+}
+
+/* Nav Tabs Segmented Control */
+.payment-tabs-container {
+    background: #ffffff;
+    border: 1px solid var(--surface-border);
+    border-radius: 14px;
+    padding: 6px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.payment-tabs-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.payment-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    background: transparent;
+}
+
+.payment-tab-btn:hover {
+    color: var(--text-primary);
+    background: #f1f5f9;
+}
+
+.payment-tab-btn.active {
+    background: var(--utc-navy);
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(12, 35, 64, 0.2);
+}
+
+.payment-tab-btn.active.vcb-style {
+    background: linear-gradient(135deg, var(--vcb-green), var(--vcb-green-dark));
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(0, 135, 68, 0.25);
+}
+
+.payment-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: #f0fdf4;
+    color: var(--vcb-green);
+    border: 1px solid var(--vcb-mint-border);
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--vcb-green-light);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 7px rgba(16, 185, 129, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+/* Stat Cards (Pastel Theming Synchronized with UTC Admin Portal) */
+.payment-stat-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--surface-border);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.payment-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Pastel Card Variations */
+.payment-stat-card.card-blue {
+    background: linear-gradient(135deg, #ffffff 60%, #f0f7ff 100%);
+    border-color: #dbeafe;
+}
+.payment-stat-card.card-blue .stat-badge-icon {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.payment-stat-card.card-emerald {
+    background: linear-gradient(135deg, #ffffff 60%, #f0fdf4 100%);
+    border-color: #dcfce7;
+}
+.payment-stat-card.card-emerald .stat-badge-icon {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.payment-stat-card.card-amber {
+    background: linear-gradient(135deg, #ffffff 60%, #fffbeb 100%);
+    border-color: #fef3c7;
+}
+.payment-stat-card.card-amber .stat-badge-icon {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.payment-stat-card.card-purple {
+    background: linear-gradient(135deg, #ffffff 60%, #faf5ff 100%);
+    border-color: #f3e8ff;
+}
+.payment-stat-card.card-purple .stat-badge-icon {
+    background: #f3e8ff;
+    color: #9333ea;
+}
+
+.payment-stat-card.card-cyan {
+    background: linear-gradient(135deg, #ffffff 60%, #ecfeff 100%);
+    border-color: #cffafe;
+}
+.payment-stat-card.card-cyan .stat-badge-icon {
+    background: #cffafe;
+    color: #0891b2;
+}
+
+.payment-stat-card.card-rose {
+    background: linear-gradient(135deg, #ffffff 60%, #fff1f2 100%);
+    border-color: #ffe4e6;
+}
+.payment-stat-card.card-rose .stat-badge-icon {
+    background: #ffe4e6;
+    color: #e11d48;
+}
+
+.stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.stat-label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.stat-badge-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+}
+
+.stat-value {
+    font-size: 1.55rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Filter Card */
+.payment-filter-card {
+    background: #ffffff;
+    border: 1px solid var(--surface-border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 22px;
+}
+
+.filter-input-wrap {
+    position: relative;
+}
+
+.filter-input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+    font-size: 0.88rem;
+}
+
+.filter-input-wrap .form-control {
+    padding-left: 36px;
+    border-radius: 10px;
+    border-color: #cbd5e1;
+    font-size: 0.86rem;
+    height: 40px;
+}
+
+.filter-select {
+    border-radius: 10px;
+    border-color: #cbd5e1;
+    font-size: 0.86rem;
+    height: 40px;
+}
+
+.btn-filter-submit {
+    background: #1d4ed8;
+    color: #ffffff;
+    border-radius: 10px;
+    height: 40px;
+    font-weight: 600;
+    font-size: 0.86rem;
+    border: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-filter-submit:hover {
+    background: #1e40af;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+}
+
+.btn-filter-reset {
+    background: #ffffff;
+    color: var(--text-secondary);
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    height: 40px;
+    width: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-filter-reset:hover {
+    background: #f1f5f9;
+    color: var(--text-primary);
+}
+
+/* Modern FinTech Content Cards */
+.payment-card {
+    background: #ffffff;
+    border: 1px solid var(--surface-border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    padding: 22px;
+    margin-bottom: 22px;
+}
+
+.payment-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.payment-card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+/* Modern FinTech Tables */
+.payment-table-card {
+    background: #ffffff;
+    border: 1px solid var(--surface-border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+}
+
+.payment-table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.payment-table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 13px 18px;
+    border-bottom: 1px solid #edf2f7;
+    white-space: nowrap;
+}
+
+.payment-table tbody td {
+    padding: 14px 18px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.87rem;
+    color: var(--text-primary);
+    background: #ffffff;
+    transition: background 0.15s ease;
+}
+
+.payment-table tbody tr:hover td {
+    background: #f8fafc;
+}
+
+.payment-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Soft Chip Status Pills (Exact Image 2 Style) */
+.payment-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.77rem;
+    font-weight: 600;
+    white-space: nowrap;
+    line-height: 1.3;
+}
+
+.payment-pill::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.payment-pill.pill-paid {
+    background: #dcfce7;
+    color: #15803d;
+}
+.payment-pill.pill-paid::before {
+    background: #16a34a;
+}
+
+.payment-pill.pill-pending {
+    background: #fef3c7;
+    color: #b45309;
+}
+.payment-pill.pill-pending::before {
+    background: #f59e0b;
+}
+
+.payment-pill.pill-failed {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+.payment-pill.pill-failed::before {
+    background: #ef4444;
+}
+
+.payment-pill.pill-cyan {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+.payment-pill.pill-cyan::before {
+    background: #0284c7;
+}
+
+.payment-pill.pill-neutral {
+    background: #f1f5f9;
+    color: #475569;
+}
+.payment-pill.pill-neutral::before {
+    background: #94a3b8;
+}
+
+/* Action Icon Buttons (Exact Image 2 Style) */
+.action-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.88rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.action-icon-btn:hover {
+    background: #f1f5f9;
+    color: var(--utc-blue);
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+.action-icon-btn.btn-vcb:hover {
+    color: var(--vcb-green);
+    border-color: var(--vcb-mint-border);
+    background: var(--vcb-mint-bg);
+}
+
+.action-icon-btn.btn-danger-soft:hover {
+    color: #ef4444;
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+
+/* Vietcombank VietQR Ticket Voucher Card (From Image 1) */
+.vcb-ticket-container {
+    background: linear-gradient(135deg, #f0fdf4 0%, #e6f7ec 50%, #e0f2fe 100%);
+    border-radius: 24px;
+    padding: 24px;
+    border: 1px solid rgba(0, 135, 68, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 135, 68, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 380px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.vcb-ticket-inner {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 24px 20px;
+    width: 100%;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    position: relative;
+}
+
+.vcb-ticket-header {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.vcb-ticket-logo {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #008744;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.vcb-qr-frame {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 0 1px #f1f5f9;
+    margin-bottom: 14px;
+}
+
+.vcb-qr-img {
+    width: 100%;
+    max-width: 230px;
+    height: auto;
+    border-radius: 8px;
+}
+
+.vcb-ticket-badges {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    margin-bottom: 14px;
+}
+
+.vietqr-badge {
+    font-weight: 800;
+    color: #e11d48;
+    font-size: 0.95rem;
+    letter-spacing: -0.02em;
+}
+
+.napas-badge {
+    font-weight: 700;
+    color: #0284c7;
+    font-style: italic;
+    font-size: 0.88rem;
+}
+
+.vcb-perforation {
+    position: relative;
+    border-top: 2px dashed #cbd5e1;
+    margin: 14px -20px;
+}
+
+.vcb-perforation::before,
+.vcb-perforation::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    width: 20px;
+    height: 20px;
+    background: #eaf6ee;
+    border-radius: 50%;
+}
+
+.vcb-perforation::before {
+    left: -10px;
+}
+
+.vcb-perforation::after {
+    right: -10px;
+}
+
+.vcb-account-info {
+    text-align: center;
+    padding-top: 6px;
+}
+
+.vcb-account-name {
+    font-size: 0.95rem;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    color: #0f172a;
+    text-transform: uppercase;
+}
+
+.vcb-account-no {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #008744;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+}
+
+/* Pagination bar */
+.payment-pagination-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-top: 1px solid #edf2f7;
+    background: #ffffff;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Sidebar: Quản lý thanh toán (Mặc định đồng bộ, chỉ đổi màu xanh khi Active)
+   ========================================================================== */
+.admin-nav a[href*="QuanLyThanhToan"] .nav-symbol i {
+    transition: color 0.2s ease, filter 0.2s ease;
+}
+
+/* Khi active (đang ở phân hệ Quản lý thanh toán) */
+.admin-nav a.active[href*="QuanLyThanhToan"] {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.18) 0%, rgba(255, 255, 255, 0.09) 100%) !important;
+    border-color: rgba(16, 185, 129, 0.35) !important;
+}
+
+.admin-nav a.active[href*="QuanLyThanhToan"]::before {
+    background: #10b981 !important;
+    box-shadow: 0 0 10px #10b981 !important;
+}
+
+.admin-nav a.active[href*="QuanLyThanhToan"] .nav-symbol {
+    color: #10b981 !important;
+    filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6)) !important;
+}
+
+.admin-nav a.active[href*="QuanLyThanhToan"] span:not(.nav-symbol) {
+    color: #ffffff !important;
+    font-weight: 680;
+}
+
+/* Hover nhẹ khi chưa active */
+.admin-nav a[href*="QuanLyThanhToan"]:hover:not(.active) .nav-symbol {
+    color: #34d399;
+}
+
