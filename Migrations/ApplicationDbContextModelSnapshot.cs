@@ -1899,6 +1899,17 @@ namespace BTL_StudentMGMT.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.ThanhToan", b =>
+                {
+                    b.HasOne("BTL_StudentMGMT.Models.HoaDonHocPhi", "HoaDon")
+                        .WithMany("ThanhToans")
+                        .HasForeignKey("HoaDonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("HoaDon");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)

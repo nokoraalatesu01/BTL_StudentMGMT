@@ -31,26 +31,29 @@ public class GiangVienController : Controller
 
         if (user != null)
         {
-            giangVien = _db.GiangViens
+            giangVien = await _db.GiangViens
                 .Include(g => g.User)
-                .FirstOrDefault(g => g.UserId == user.Id);
+                .FirstOrDefaultAsync(g => g.UserId == user.Id);
         }
 
-        ViewBag.TongSoSinhVien = _db.SinhViens.Count();
-        ViewBag.TongSoLop = _db.Lops.Count();
-        ViewBag.TongSoNganh = _db.Nganhs.Count();
-        ViewBag.TongSoBuoiDay = _db.LichGiangDays.Count();
+        ViewBag.TongSoSinhVien = await _db.SinhViens.CountAsync();
+        ViewBag.TongSoLop = await _db.Lops.CountAsync();
+        ViewBag.TongSoNganh = await _db.Nganhs.CountAsync();
+        ViewBag.TongSoBuoiDay = giangVien != null
+            ? await _db.LichGiangDays.CountAsync(l => l.GiangVienId == giangVien.Id)
+            : await _db.LichGiangDays.CountAsync();
 
         return View(giangVien);
     }
 
     // 2. Danh sách sinh viên (tìm kiếm, lọc theo lớp, phân trang)
-    public IActionResult DanhSachSinhVien(string? tuKhoa, int? lopId, int page = 1)
+    public async Task<IActionResult> DanhSachSinhVien(string? tuKhoa, int? lopId, int page = 1)
     {
         int pageSize = 10;
         page = Math.Max(page, 1);
 
         var query = _db.SinhViens
+            .AsNoTracking()
             .Include(s => s.Lop)
             .ThenInclude(l => l!.Nganh)
             .Include(s => s.Diems)
@@ -68,23 +71,23 @@ public class GiangVienController : Controller
             query = query.Where(s => s.LopId == lopId.Value);
         }
 
-        var totalItems = query.Count();
+        var totalItems = await query.CountAsync();
         var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
         if (page > Math.Max(totalPages, 1))
         {
             page = Math.Max(totalPages, 1);
         }
 
-        var items = query
+        var items = await query
             .OrderBy(s => s.MaSinhVien)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ToList();
+            .ToListAsync();
 
         ViewBag.TuKhoa = tuKhoa;
         ViewBag.LopId = lopId;
         ViewBag.DanhSachLop = new SelectList(
-            _db.Lops.OrderBy(l => l.TenLop).ToList(),
+            await _db.Lops.OrderBy(l => l.TenLop).ToListAsync(),
             "Id",
             "TenLop",
             lopId);
@@ -101,14 +104,15 @@ public class GiangVienController : Controller
     }
 
     // 3. Chi tiết sinh viên
-    public IActionResult ChiTietSinhVien(int id)
+    public async Task<IActionResult> ChiTietSinhVien(int id)
     {
-        var sinhVien = _db.SinhViens
+        var sinhVien = await _db.SinhViens
+            .AsNoTracking()
             .Include(s => s.Lop)
             .ThenInclude(l => l!.Nganh)
             .Include(s => s.Diems)
             .ThenInclude(d => d.MonHoc)
-            .FirstOrDefault(s => s.Id == id);
+            .FirstOrDefaultAsync(s => s.Id == id);
 
         if (sinhVien == null)
         {
@@ -125,60 +129,51 @@ public class GiangVienController : Controller
         GiangVien? giangVien = null;
         if (user != null)
         {
-            giangVien = _db.GiangViens.FirstOrDefault(g => g.UserId == user.Id);
+            giangVien = await _db.GiangViens.FirstOrDefaultAsync(g => g.UserId == user.Id);
         }
 
         var query = _db.LichGiangDays
+            .AsNoTracking()
             .Include(l => l.MonHoc)
             .Include(l => l.Lop)
             .AsQueryable();
 
         if (giangVien != null)
         {
-            // Nếu có giảng viên thì lọc theo giảng viên, nếu chưa phân thì hiện lịch khoa
-            var lichGv = query.Where(l => l.GiangVienId == giangVien.Id).ToList();
-            if (lichGv.Any())
-            {
-                query = query.Where(l => l.GiangVienId == giangVien.Id);
-            }
+            // Chỉ hiển thị lịch của chính giảng viên đang đăng nhập
+            query = query.Where(l => l.GiangVienId == giangVien.Id);
+        }
+        else
+        {
+            // Tài khoản chưa gắn với hồ sơ giảng viên cụ thể thì trả về danh sách rỗng để bảo mật
+            query = query.Where(l => false);
         }
 
-        var list = query
+        var list = await query
             .OrderBy(l => l.Thu)
             .ThenBy(l => l.TietBatDau)
-            .ToList();
+            .ToListAsync();
 
         ViewBag.GiangVien = giangVien;
         return View(list);
     }
 
     // 5. Điểm danh sinh viên theo buổi học (Chức năng 2)
-    public IActionResult DiemDanh(int? lopId, int? monHocId, DateTime? ngay)
+    public async Task<IActionResult> DiemDanh(int? lopId, int? monHocId, DateTime? ngay)
     {
         var targetDate = (ngay ?? DateTime.Today).Date;
 
         // Chọn lớp mặc định nếu chưa chọn
-        var dsLop = _db.Lops.OrderBy(l => l.TenLop).ToList();
+        var dsLop = await _db.Lops.OrderBy(l => l.TenLop).ToListAsync();
         var selectedLopId = (lopId.HasValue && lopId.Value > 0) ? lopId.Value : (dsLop.FirstOrDefault()?.Id ?? 0);
 
         // Chọn môn học mặc định nếu chưa chọn
-        var dsMon = _db.MonHocs.OrderBy(m => m.TenMon).ToList();
+        var dsMon = await _db.MonHocs.OrderBy(m => m.TenMon).ToListAsync();
         var selectedMonId = (monHocId.HasValue && monHocId.Value > 0) ? monHocId.Value : (dsMon.FirstOrDefault()?.Id ?? 0);
 
         ViewBag.DanhSachLop = new SelectList(dsLop, "Id", "TenLop", selectedLopId);
         ViewBag.DanhSachMonHoc = new SelectList(dsMon, "Id", "TenMon", selectedMonId);
         ViewBag.NgayChon = targetDate.ToString("yyyy-MM-dd");
-
-        // Lấy danh sách sinh viên của lớp
-        var sinhViens = _db.SinhViens
-            .Where(s => s.LopId == selectedLopId)
-            .OrderBy(s => s.MaSinhVien)
-            .ToList();
-
-        // Lấy danh sách điểm danh đã có trong ngày đó và môn đó
-        var dsDiemDanhCu = _db.DiemDanhs
-            .Where(d => d.LopId == selectedLopId && d.MonHocId == selectedMonId && d.NgayDiemDanh.Date == targetDate)
-            .ToList();
 
         var model = new DiemDanhFormViewModel
         {
@@ -188,17 +183,31 @@ public class GiangVienController : Controller
             DanhSachSinhVien = new List<DiemDanhItemViewModel>()
         };
 
-        foreach (var sv in sinhViens)
+        if (selectedLopId > 0 && selectedMonId > 0)
         {
-            var daDiemDanh = dsDiemDanhCu.FirstOrDefault(d => d.SinhVienId == sv.Id);
-            model.DanhSachSinhVien.Add(new DiemDanhItemViewModel
+            // Lấy danh sách sinh viên của lớp
+            var sinhViens = await _db.SinhViens
+                .Where(s => s.LopId == selectedLopId)
+                .OrderBy(s => s.MaSinhVien)
+                .ToListAsync();
+
+            // Lấy danh sách điểm danh đã có trong ngày đó và môn đó
+            var dsDiemDanhCu = await _db.DiemDanhs
+                .Where(d => d.LopId == selectedLopId && d.MonHocId == selectedMonId && d.NgayDiemDanh.Date == targetDate)
+                .ToListAsync();
+
+            foreach (var sv in sinhViens)
             {
-                SinhVienId = sv.Id,
-                MaSinhVien = sv.MaSinhVien,
-                HoTen = sv.HoTen,
-                TrangThai = daDiemDanh?.TrangThai ?? "Có mặt",
-                GhiChu = daDiemDanh?.GhiChu
-            });
+                var daDiemDanh = dsDiemDanhCu.FirstOrDefault(d => d.SinhVienId == sv.Id);
+                model.DanhSachSinhVien.Add(new DiemDanhItemViewModel
+                {
+                    SinhVienId = sv.Id,
+                    MaSinhVien = sv.MaSinhVien,
+                    HoTen = sv.HoTen,
+                    TrangThai = daDiemDanh?.TrangThai ?? "Có mặt",
+                    GhiChu = daDiemDanh?.GhiChu
+                });
+            }
         }
 
         return View(model);
@@ -207,39 +216,53 @@ public class GiangVienController : Controller
     // 6. Lưu điểm danh (POST)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult LuuDiemDanh(DiemDanhFormViewModel model)
+    public async Task<IActionResult> LuuDiemDanh(DiemDanhFormViewModel model)
     {
-        var targetDate = model.NgayDiemDanh.Date;
-
-        foreach (var item in model.DanhSachSinhVien)
+        if (model.LopId <= 0 || model.MonHocId <= 0)
         {
-            var record = _db.DiemDanhs.FirstOrDefault(d =>
-                d.SinhVienId == item.SinhVienId &&
-                d.LopId == model.LopId &&
-                d.MonHocId == model.MonHocId &&
-                d.NgayDiemDanh.Date == targetDate);
-
-            if (record != null)
-            {
-                record.TrangThai = item.TrangThai;
-                record.GhiChu = item.GhiChu;
-            }
-            else
-            {
-                _db.DiemDanhs.Add(new DiemDanh
-                {
-                    SinhVienId = item.SinhVienId,
-                    LopId = model.LopId,
-                    MonHocId = model.MonHocId,
-                    NgayDiemDanh = targetDate,
-                    TrangThai = item.TrangThai,
-                    GhiChu = item.GhiChu
-                });
-            }
+            TempData["Error"] = "Vui lòng chọn lớp học và môn học hợp lệ trước khi điểm danh.";
+            return RedirectToAction(nameof(DiemDanh));
         }
 
-        _db.SaveChanges();
-        TempData["Msg"] = $"Đã lưu kết quả điểm danh ngày {targetDate:dd/MM/yyyy} thành công!";
+        var targetDate = model.NgayDiemDanh.Date;
+
+        if (model.DanhSachSinhVien != null && model.DanhSachSinhVien.Count > 0)
+        {
+            foreach (var item in model.DanhSachSinhVien)
+            {
+                var record = await _db.DiemDanhs.FirstOrDefaultAsync(d =>
+                    d.SinhVienId == item.SinhVienId &&
+                    d.LopId == model.LopId &&
+                    d.MonHocId == model.MonHocId &&
+                    d.NgayDiemDanh.Date == targetDate);
+
+                if (record != null)
+                {
+                    record.TrangThai = item.TrangThai;
+                    record.GhiChu = item.GhiChu;
+                }
+                else
+                {
+                    _db.DiemDanhs.Add(new DiemDanh
+                    {
+                        SinhVienId = item.SinhVienId,
+                        LopId = model.LopId,
+                        MonHocId = model.MonHocId,
+                        NgayDiemDanh = targetDate,
+                        TrangThai = item.TrangThai,
+                        GhiChu = item.GhiChu
+                    });
+                }
+            }
+
+            await _db.SaveChangesAsync();
+            TempData["Msg"] = $"Đã lưu kết quả điểm danh ngày {targetDate:dd/MM/yyyy} thành công!";
+        }
+        else
+        {
+            TempData["Msg"] = "Lớp hiện chưa có sinh viên nào để lưu điểm danh.";
+        }
+
         return RedirectToAction(nameof(DiemDanh), new
         {
             lopId = model.LopId,
@@ -258,7 +281,7 @@ public class GiangVienController : Controller
             return RedirectToAction("Login", "Account");
         }
 
-        var giangVien = _db.GiangViens.FirstOrDefault(g => g.UserId == user.Id);
+        var giangVien = await _db.GiangViens.FirstOrDefaultAsync(g => g.UserId == user.Id);
         if (giangVien == null)
         {
             return NotFound("Không tìm thấy thông tin giảng viên");
@@ -288,7 +311,7 @@ public class GiangVienController : Controller
             return RedirectToAction("Login", "Account");
         }
 
-        var giangVien = _db.GiangViens.FirstOrDefault(g => g.UserId == user.Id);
+        var giangVien = await _db.GiangViens.FirstOrDefaultAsync(g => g.UserId == user.Id);
         if (giangVien == null)
         {
             return NotFound("Không tìm thấy thông tin giảng viên");

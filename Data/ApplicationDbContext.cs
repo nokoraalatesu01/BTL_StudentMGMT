@@ -424,29 +424,32 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             // entity.HasOne(d => d.DangKy).WithOne(p => p.KetQuaHocTap).HasForeignKey<KetQuaHocTap>(d => d.DangKyId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_KQ_DK");
         });
 
-        // modelBuilder.Entity<HoaDonHocPhi>(entity =>
-        // {
-        //     entity.ToTable("HoaDonHocPhi");
-        //     entity.HasIndex(e => e.SoHoaDon, "UQ_HoaDon_So").IsUnique();
-        //     entity.Property(e => e.GhiChu).HasMaxLength(500);
-        //     entity.Property(e => e.NgayLap).HasPrecision(0).HasDefaultValueSql("(sysutcdatetime())", "DF_HoaDon_Ngay");
-        //     entity.Property(e => e.SoHoaDon).HasMaxLength(40).IsUnicode(false);
-        //     entity.Property(e => e.TrangThai).HasMaxLength(20).IsUnicode(false).HasDefaultValue("ISSUED", "DF_HoaDon_TrangThai");
-        //     entity.HasOne(d => d.HocKy).WithMany(p => p.HoaDonHocPhis).HasForeignKey(d => d.HocKyId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_HoaDon_HocKy");
-        //     entity.HasOne(d => d.SinhVien).WithMany(p => p.HoaDonHocPhis).HasForeignKey(d => d.SinhVienId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_HoaDon_SV");
-        // });
+        modelBuilder.Entity<BieuPhiHocPhi>(entity =>
+        {
+            entity.ToTable("BieuPhiHocPhi");
+            entity.HasKey(e => e.BieuPhiId);
+            entity.Property(e => e.DonGiaTinChi).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.LoaiTien).HasMaxLength(3).IsUnicode(false).HasDefaultValue("VND");
+            entity.Property(e => e.HieuLucTu).HasColumnType("date");
+            entity.Property(e => e.HieuLucDen).HasColumnType("date");
+            entity.HasOne<ChuongTrinhDaoTao>().WithMany().HasForeignKey(e => e.ChuongTrinhId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<NamHoc>().WithMany().HasForeignKey(e => e.NamHocId).OnDelete(DeleteBehavior.Restrict);
+        });
 
-        // modelBuilder.Entity<ChiTietHoaDonHocPhi>(entity =>
-        // {
-        //     entity.ToTable("ChiTietHoaDonHocPhi");
-        //     entity.HasKey(e => e.ChiTietHoaDonId).HasName("PK_ChiTietHoaDon");
-        //     entity.Property(e => e.DonGia).HasColumnType("decimal(18, 2)");
-        //     entity.Property(e => e.LoaiKhoanThu).HasMaxLength(30).IsUnicode(false);
-        //     entity.Property(e => e.MoTa).HasMaxLength(300);
-        //     entity.Property(e => e.SoLuong).HasDefaultValue(1m, "DF_CTHD_SL").HasColumnType("decimal(10, 2)");
-        //     entity.Property(e => e.SoTienGiam).HasColumnType("decimal(18, 2)");
-        //     entity.HasOne(d => d.HoaDon).WithMany(p => p.ChiTietHoaDonHocPhis).HasForeignKey(d => d.HoaDonId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_CTHD_HD");
-        // });
+        modelBuilder.Entity<HoaDonHocPhi>(entity =>
+        {
+            entity.ToTable("HoaDonHocPhi");
+            entity.HasKey(e => e.HoaDonId);
+            entity.HasIndex(e => e.SoHoaDon, "UQ_HoaDon_So").IsUnique();
+            entity.HasIndex(e => new { e.SinhVienId, e.HocKyId }, "UQ_HoaDon_SV_HocKy").IsUnique();
+            entity.Property(e => e.GhiChu).HasMaxLength(500);
+            entity.Property(e => e.NgayLap).HasPrecision(0).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.SoHoaDon).HasMaxLength(40).IsUnicode(false);
+            entity.Property(e => e.TrangThai).HasMaxLength(20).IsUnicode(false).HasDefaultValue("ISSUED");
+            entity.Property(e => e.HanThanhToan).HasColumnType("date");
+            entity.HasOne(e => e.HocKy).WithMany().HasForeignKey(e => e.HocKyId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.SinhVien).WithMany().HasForeignKey(e => e.SinhVienId).OnDelete(DeleteBehavior.Restrict);
+        });
 
         // Cấu hình Hệ thống Thanh toán Học phí VietQR
         modelBuilder.Entity<HoaDonHocPhi>(entity =>
@@ -532,4 +535,3 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
-

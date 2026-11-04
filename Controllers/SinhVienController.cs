@@ -4,7 +4,9 @@ using BTL_StudentMGMT.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace BTL_StudentMGMT.Controllers;
 
@@ -58,6 +60,11 @@ public class SinhVienController : Controller
                 TempData["Error"] = "Định dạng file không hợp lệ (.jpg, .jpeg, .png, .webp) hoặc vượt quá 5MB.";
             }
         }
+        else
+        {
+            TempData["Error"] = "Vui lòng chọn file hình ảnh hợp lệ để tải lên.";
+        }
+
         return RedirectToAction(nameof(HoSo));
     }
 
