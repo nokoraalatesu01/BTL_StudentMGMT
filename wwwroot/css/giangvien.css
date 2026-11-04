@@ -340,3 +340,34 @@
     border-color: #b45309;
     color: #b45309;
 }
+
+/* Avatar upload button */
+.student-avatar-wrapper {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.avatar-change-btn {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.78rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    border: 2px solid #fff;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.avatar-change-btn:hover {
+    background: #1d4ed8;
+    transform: scale(1.12);
+}

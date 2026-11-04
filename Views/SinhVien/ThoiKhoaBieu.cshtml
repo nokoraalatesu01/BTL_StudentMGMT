@@ -1,0 +1,443 @@
+@model BTL_StudentMGMT.Models.SinhVienThoiKhoaBieuViewModel
+@{
+    ViewData["Title"] = "Thời khóa biểu của tôi";
+    Layout = "_SinhVienLayout";
+    var sinhVien = Model.SinhVien;
+    var displayName = string.IsNullOrWhiteSpace(sinhVien?.HoTen) ? "Sinh viên" : sinhVien.HoTen.Trim();
+    var caHocs = BTL_StudentMGMT.Models.CaHocHelper.DanhSachCa;
+}
+
+<!-- ===== HEADER TRANG ===== -->
+<div class="student-page-heading mb-4">
+    <div>
+        <p class="student-eyebrow">LỊCH ĐÀO TẠO TÍN CHỈ</p>
+        <h1>Thời khóa biểu của tôi</h1>
+        <p>
+            Theo dõi lịch học các lớp học phần đã đăng ký của sinh viên 
+            <strong class="text-dark">@displayName</strong> (Mã SV: <strong class="text-primary font-monospace">@sinhVien?.MaSinhVien</strong>) 
+            &bull; Lớp: <span class="badge bg-light text-dark border">@(sinhVien?.Lop?.TenLop ?? "Chưa xếp lớp")</span>
+            @if (Model.HocKyHienTai != null)
+            {
+                <span class="ms-1 text-muted">&bull; @Model.HocKyHienTai.TenHocKy</span>
+            }
+        </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-action="DangKyHocPhan" class="btn btn-outline-primary fw-semibold d-inline-flex align-items-center gap-1" style="border-radius:10px; font-size:13.5px; padding:8px 16px;">
+            <i class="bi bi-pencil-square"></i> Đăng ký học phần
+        </a>
+    </div>
+</div>
+
+<!-- ===== 3 THẺ THỐNG KÊ (STATISTIC CARDS) ===== -->
+<section class="student-stat-grid" aria-label="Tóm tắt thời khóa biểu">
+    <!-- Card 1: Tổng lớp học phần -->
+    <article class="student-stat-card">
+        <span class="student-stat-icon student-icon-blue" aria-hidden="true">
+            <i class="bi bi-collection-play"></i>
+        </span>
+        <div>
+            <p>TỔNG LỚP HỌC PHẦN</p>
+            <strong>@Model.TongLopHocPhan <span class="stat-sub-tc">lớp đang học</span></strong>
+        </div>
+    </article>
+
+    <!-- Card 2: Tổng số buổi học trong tuần -->
+    <article class="student-stat-card">
+        <span class="student-stat-icon student-icon-green" aria-hidden="true">
+            <i class="bi bi-calendar2-check"></i>
+        </span>
+        <div>
+            <p>BUỔI HỌC TRONG TUẦN</p>
+            <strong>@Model.TongBuoiHocTrongTuan <span class="stat-sub-tc">buổi / tuần</span></strong>
+        </div>
+    </article>
+
+    <!-- Card 3: Tổng số tín chỉ -->
+    <article class="student-stat-card">
+        <span class="student-stat-icon student-icon-violet" aria-hidden="true">
+            <i class="bi bi-journal-bookmark"></i>
+        </span>
+        <div>
+            <p>TỔNG TÍN CHỈ ĐĂNG KÝ</p>
+            <strong>@Model.TongTinChiDangKy <span class="stat-sub-tc">tín chỉ</span></strong>
+        </div>
+    </article>
+</section>
+
+<!-- ===== THANH ĐIỀU HƯỚNG TUẦN & LỌC HỌC KỲ ===== -->
+<div class="tkb-navigator-bar">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <div class="tkb-week-controls">
+            <a asp-action="ThoiKhoaBieu" 
+               asp-route-hocKyId="@Model.HocKyHienTai?.HocKyId" 
+               asp-route-ngay="@Model.NgayTruocUrlParam" 
+               class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1"
+               style="border-radius:8px; font-weight:600;" 
+               title="Xem tuần trước">
+                <i class="bi bi-chevron-left"></i> Tuần trước
+            </a>
+            <a asp-action="ThoiKhoaBieu" 
+               asp-route-hocKyId="@Model.HocKyHienTai?.HocKyId" 
+               asp-route-ngay="@Model.NgayHienTaiUrlParam" 
+               class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1"
+               style="border-radius:8px; font-weight:600;" 
+               title="Quay về tuần hiện tại">
+                <i class="bi bi-calendar-check"></i> Tuần hiện tại
+            </a>
+            <a asp-action="ThoiKhoaBieu" 
+               asp-route-hocKyId="@Model.HocKyHienTai?.HocKyId" 
+               asp-route-ngay="@Model.NgaySauUrlParam" 
+               class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1"
+               style="border-radius:8px; font-weight:600;" 
+               title="Xem tuần kế tiếp">
+                Tuần sau <i class="bi bi-chevron-right"></i>
+            </a>
+        </div>
+        <span class="tkb-week-badge">
+            <i class="bi bi-calendar3 text-primary"></i> @Model.ChuoiTuanHienThi
+        </span>
+    </div>
+
+    <!-- Dropdown lọc học kỳ -->
+    <form method="get" asp-action="ThoiKhoaBieu" class="d-flex align-items-center gap-2 m-0" id="formChonHocKy">
+        <input type="hidden" name="ngay" value="@Model.NgayDauTuan.ToString("yyyy-MM-dd")" />
+        <label for="selectHocKy" class="text-muted small fw-semibold text-nowrap d-none d-sm-inline">
+            <i class="bi bi-funnel me-1"></i>Học kỳ:
+        </label>
+        <select name="hocKyId" id="selectHocKy" class="form-select form-select-sm tkb-semester-select" onchange="this.form.submit()">
+            @foreach (var hk in Model.DanhSachHocKy)
+            {
+                <option value="@hk.HocKyId" selected="@(Model.HocKyHienTai?.HocKyId == hk.HocKyId ? "selected" : null)">
+                    @hk.TenHocKy @(hk.TrangThai == "DANG_MO" ? "(Đang mở)" : "")
+                </option>
+            }
+        </select>
+    </form>
+</div>
+
+<!-- ===== CẢNH BÁO TRÙNG LỊCH HỌC (NẾU PHÁT HIỆN) ===== -->
+@if (Model.DanhSachTrungLich.Count > 0)
+{
+    <div class="alert alert-danger border-danger-subtle d-flex align-items-start gap-3 p-3 mb-4 rounded-4 shadow-sm" role="alert">
+        <i class="bi bi-exclamation-triangle-fill fs-4 text-danger flex-shrink-0 mt-1"></i>
+        <div class="flex-grow-1">
+            <h6 class="alert-heading fw-bold mb-1" style="font-size:14.5px;">
+                Phát hiện trùng lịch học giữa các lớp học phần (@Model.DanhSachTrungLich.Count trường hợp)!
+            </h6>
+            <p class="mb-2 text-danger-emphasis small">
+                Sinh viên có các lớp học phần bị trùng khung giờ tiết học trong cùng một ngày. Vui lòng kiểm tra và hủy bớt lớp bị trùng hoặc đổi sang nhóm lớp khác:
+            </p>
+            <ul class="mb-0 ps-3 small text-danger-emphasis">
+                @foreach (var tr in Model.DanhSachTrungLich)
+                {
+                    <li class="mb-1">
+                        <strong>@tr.Thu:</strong> Lớp <strong class="font-monospace">@tr.LopA</strong> (@tr.MonA - @tr.TietA) trùng <strong>@tr.TietTrung</strong> với lớp <strong class="font-monospace">@tr.LopB</strong> (@tr.MonB - @tr.TietB).
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+<!-- ===== TRẠNG THÁI KHÔNG CÓ DỮ LIỆU (EMPTY STATES) ===== -->
+@if (Model.ChuaDangKyMonNao)
+{
+    <div class="student-panel text-center py-5">
+        <div class="py-4">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width:72px; height:72px; background:#eff6ff; color:#2563eb; font-size:2rem;">
+                <i class="bi bi-calendar-x"></i>
+            </div>
+            <h4 class="fw-bold mb-2 text-dark" style="font-size:1.2rem;">Chưa có thời khóa biểu</h4>
+            <p class="text-muted mx-auto mb-4" style="max-width:480px; font-size:14px;">
+                Bạn chưa đăng ký lớp học phần nào trong học kỳ này. Vui lòng truy cập cổng Đăng ký học phần để chọn môn học theo chương trình đào tạo tín chỉ.
+            </p>
+            <a asp-action="DangKyHocPhan" class="btn btn-primary px-4 py-2 fw-semibold" style="border-radius:10px;">
+                <i class="bi bi-pencil-square me-1"></i> Đăng ký học phần ngay
+            </a>
+        </div>
+    </div>
+}
+else if (Model.ChuaCoLichHoc)
+{
+    <div class="student-panel text-center py-5">
+        <div class="py-4">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width:72px; height:72px; background:#fef3c7; color:#d97706; font-size:2rem;">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <h4 class="fw-bold mb-2 text-dark" style="font-size:1.2rem;">Chưa có lịch giảng dạy</h4>
+            <p class="text-muted mx-auto mb-3" style="max-width:480px; font-size:14px;">
+                Bạn đã đăng ký thành công <strong>@Model.TongLopHocPhan lớp học phần</strong>, nhưng phòng đào tạo hoặc giảng viên hiện chưa cập nhật thứ và tiết học cụ thể.
+            </p>
+            <span class="badge bg-light text-muted border px-3 py-2">
+                Vui lòng quay lại kiểm tra sau khi phòng đào tạo hoàn tất xếp thời khóa biểu.
+            </span>
+        </div>
+    </div>
+}
+else
+{
+    <!-- ===== BẢNG THỜI KHÓA BIỂU CHÍNH (MA TRẬN 4 CA HỌC X 6 THỨ) ===== -->
+    <div class="tkb-matrix-wrap">
+        <div class="table-responsive">
+            <table class="table tkb-table">
+                <thead>
+                    <tr>
+                        <th class="tkb-ca-col-header" scope="col">
+                            <div>CA HỌC</div>
+                            <small class="text-muted fw-normal" style="font-size:11px;">(Khung giờ)</small>
+                        </th>
+                        @foreach (var ngay in Model.CacNgayTrongTuan)
+                        {
+                            <th class="tkb-day-header @(ngay.LaHomNay ? "col-today" : "")" scope="col">
+                                <div class="tkb-day-name">@ngay.Thu</div>
+                                <div class="tkb-day-date">@ngay.Ngay.ToString("dd/MM")</div>
+                                @if (ngay.LaHomNay)
+                                {
+                                    <span class="tkb-day-badge-today">Hôm nay</span>
+                                }
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ca in caHocs)
+                    {
+                        <tr>
+                            <!-- Cột định danh Ca học cố định -->
+                            <td class="tkb-ca-col-cell">
+                                <div class="tkb-ca-title">@ca.TenCa</div>
+                                <div class="tkb-ca-tiet">@ca.MoTaTiet</div>
+                                <div class="tkb-ca-time">
+                                    <i class="bi bi-clock me-1"></i>@ca.KhungGio
+                                </div>
+                            </td>
+
+                            <!-- 6 Cột từ Thứ 2 đến Thứ 7 -->
+                            @foreach (var ngay in Model.CacNgayTrongTuan)
+                            {
+                                var cellKey = $"{ngay.Thu}_Ca{ca.Ca}";
+                                var cacLop = Model.MaTranThoiKhoaBieu.ContainsKey(cellKey) 
+                                    ? Model.MaTranThoiKhoaBieu[cellKey] 
+                                    : new List<BTL_StudentMGMT.Models.ThoiKhoaBieuCardViewModel>();
+
+                                <td class="tkb-cell @(ngay.LaHomNay ? "col-today" : "")">
+                                    @if (cacLop.Count == 0)
+                                    {
+                                        <div class="tkb-cell-empty">
+                                            <span>—</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var lop in cacLop)
+                                        {
+                                            var cardClass = "tkb-card";
+                                            if (lop.BiTrungLich) { cardClass += " conflict"; }
+                                            else if (lop.LaCaKeoDai) { cardClass += " extended"; }
+
+                                            <div class="@cardClass" 
+                                                 tabindex="0"
+                                                 role="button"
+                                                 onclick="xemChiTietBuoiHoc(@lop.LopHocPhanId, '@lop.Thu', '@(lop.NgayHoc?.ToString("dd/MM/yyyy") ?? "")', @ca.Ca)"
+                                                 onkeypress="if(event.key === 'Enter') this.click();"
+                                                 title="Nhấn để xem chi tiết học phần @lop.TenMon">
+                                                
+                                                @if (lop.BiTrungLich)
+                                                {
+                                                    <div class="tkb-card-badge-conflict">
+                                                        <i class="bi bi-exclamation-triangle-fill"></i> Trùng lịch
+                                                    </div>
+                                                }
+                                                else if (lop.LaCaKeoDai)
+                                                {
+                                                    <div class="tkb-card-badge-cont">
+                                                        <i class="bi bi-arrow-return-right"></i> Nối tiếp Ca @lop.CaHocGoc
+                                                    </div>
+                                                }
+
+                                                <!-- Tên môn học -->
+                                                <div class="tkb-card-subject">
+                                                    @lop.TenMon
+                                                </div>
+
+                                                <!-- Mã LHP & Tín chỉ -->
+                                                <div class="tkb-card-meta">
+                                                    <span class="tkb-card-badge-hp">@lop.MaLopHocPhan</span>
+                                                    <span class="badge bg-light text-dark border">@lop.SoTinChi TC</span>
+                                                </div>
+
+                                                <!-- Tiết học & Khung giờ -->
+                                                <div class="tkb-card-meta text-primary fw-semibold">
+                                                    <i class="bi bi-clock"></i> Tiết @lop.TietBatDau–@lop.TietKetThuc (@lop.KhungGio)
+                                                </div>
+
+                                                <!-- Phòng học & Giảng viên -->
+                                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-1 mt-1">
+                                                    <span class="tkb-card-room">
+                                                        <i class="bi bi-geo-alt-fill text-danger"></i> @lop.PhongHoc
+                                                    </span>
+                                                    <span class="small text-muted text-truncate" style="max-width:130px;" title="@lop.GiangVien">
+                                                        <i class="bi bi-person"></i> @lop.GiangVien
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- ===== MODAL CHI TIẾT BUỔI HỌC (MODERN MODAL) ===== -->
+<div class="modal fade" id="modalChiTietBuoiHoc" tabindex="-1" aria-labelledby="modalBuoiHocLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:18px; overflow:hidden;">
+            <div class="modal-header border-0 pb-0 pt-4 px-4 d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-1 mb-2" id="modalMaLhpBadge">LHP: INT301.01</span>
+                    <h5 class="modal-title fw-bold text-dark mb-0" id="modalMonHocTitle" style="font-size:1.15rem; line-height:1.3;">
+                        Tên môn học
+                    </h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="tkb-detail-label">Mã môn học</div>
+                        <div class="tkb-detail-val font-monospace" id="modalMaMon">—</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="tkb-detail-label">Số tín chỉ</div>
+                        <div class="tkb-detail-val" id="modalSoTinChi">—</div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="tkb-detail-label">Thứ & Ngày học</div>
+                        <div class="tkb-detail-val text-primary" id="modalThuNgay">—</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="tkb-detail-label">Phòng học</div>
+                        <div class="tkb-detail-val text-danger fw-bold" id="modalPhongHoc">—</div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="tkb-detail-label">Tiết học</div>
+                        <div class="tkb-detail-val" id="modalTietHoc">—</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="tkb-detail-label">Khung giờ học</div>
+                        <div class="tkb-detail-val" id="modalKhungGio">—</div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="tkb-detail-label">Giảng viên giảng dạy</div>
+                        <div class="tkb-detail-val d-flex align-items-center gap-2 mb-1" id="modalGiangVien">
+                            <i class="bi bi-person-circle fs-5 text-secondary"></i>
+                            <span id="modalTenGiangVien">—</span>
+                        </div>
+                        <div class="small text-muted ps-4" id="modalLienHeGv"></div>
+                    </div>
+
+                    <div class="col-12" id="modalWrapConflict" style="display:none;">
+                        <div class="alert alert-danger p-2 mb-0 rounded-3 small">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            <span id="modalConflictText"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-12" id="modalWrapGhiChu" style="display:none;">
+                        <div class="tkb-detail-label">Ghi chú học phần</div>
+                        <div class="p-2 rounded bg-light small text-muted" id="modalGhiChu"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0 pb-4 px-4">
+                <button type="button" class="btn btn-secondary px-4 fw-semibold" style="border-radius:10px;" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Dữ liệu danh sách tất cả các lớp học phần để bind nhanh vào Modal
+        var dsLopHocPhan = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TatCaLopHoc));
+
+        function xemChiTietBuoiHoc(lopHocPhanId, thu, ngayHoc, ca) {
+            var item = dsLopHocPhan.find(function(x) { return x.LopHocPhanId === lopHocPhanId; });
+            if (!item) return;
+
+            document.getElementById('modalMaLhpBadge').innerText = 'Lớp HP: ' + item.MaLopHocPhan;
+            document.getElementById('modalMonHocTitle').innerText = item.TenMon;
+            document.getElementById('modalMaMon').innerText = item.MaMon || '—';
+            document.getElementById('modalSoTinChi').innerText = item.SoTinChi + ' tín chỉ';
+            document.getElementById('modalThuNgay').innerText = thu + (ngayHoc ? ' (' + ngayHoc + ')' : '');
+            document.getElementById('modalPhongHoc').innerText = item.PhongHoc || 'Chưa xếp phòng';
+            document.getElementById('modalTietHoc').innerText = 'Tiết ' + item.TietBatDau + ' – ' + item.TietKetThuc + ' (' + item.SoTiet + ' tiết)';
+            document.getElementById('modalKhungGio').innerText = item.KhungGio;
+            document.getElementById('modalTenGiangVien').innerText = item.GiangVien || 'Chưa phân công';
+
+            var lienHe = [];
+            if (item.EmailGiangVien) lienHe.push('<i class="bi bi-envelope me-1"></i>' + item.EmailGiangVien);
+            if (item.SoDienThoaiGiangVien) lienHe.push('<i class="bi bi-telephone me-1"></i>' + item.SoDienThoaiGiangVien);
+            document.getElementById('modalLienHeGv').innerHTML = lienHe.join(' &bull; ');
+
+            var conflictBox = document.getElementById('modalWrapConflict');
+            if (item.BiTrungLich && item.LyDoTrungLich) {
+                document.getElementById('modalConflictText').innerText = item.LyDoTrungLich;
+                conflictBox.style.display = 'block';
+            } else {
+                conflictBox.style.display = 'none';
+            }
+
+            var ghiChuBox = document.getElementById('modalWrapGhiChu');
+            if (item.GhiChu) {
+                document.getElementById('modalGhiChu').innerText = item.GhiChu;
+                ghiChuBox.style.display = 'block';
+            } else {
+                ghiChuBox.style.display = 'none';
+            }
+
+            var modalEl = document.getElementById('modalChiTietBuoiHoc');
+            if (window.bootstrap && window.bootstrap.Modal) {
+                var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modal.show();
+            }
+        }
+
+        // GSAP Timeline animation cho các phần tử trên trang Thời khóa biểu
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.gsap) {
+                var tl = gsap.timeline({ defaults: { ease: "power2.out", duration: 0.45 } });
+                
+                var navBar = document.querySelector('.tkb-navigator-bar');
+                if (navBar) {
+                    tl.from(navBar, { y: 12, opacity: 0 }, 0.1);
+                }
+
+                var matrixWrap = document.querySelector('.tkb-matrix-wrap');
+                if (matrixWrap) {
+                    tl.from(matrixWrap, { y: 16, opacity: 0 }, 0.2);
+                }
+
+                var cards = gsap.utils.toArray('.tkb-card');
+                if (cards.length > 0) {
+                    tl.from(cards, {
+                        y: 10,
+                        opacity: 0,
+                        stagger: 0.04,
+                        duration: 0.35,
+                        clearProps: "all"
+                    }, 0.25);
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,228 @@
+@model BTL_StudentMGMT.Models.AdminGiaoDichListViewModel
+@{
+    ViewData["Title"] = "Danh sách giao dịch thanh toán";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid px-3 py-2 payment-dashboard-wrap">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 payment-header-anim">
+        <div class="d-flex align-items-center gap-3">
+            <div class="payment-header-icon">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div>
+                <h2 class="payment-header-title mb-0">
+                    Danh sách giao dịch thanh toán
+                </h2>
+                <div class="payment-header-subtitle">
+                    Lịch sử toàn bộ các giao dịch chuyển khoản VietQR thụ hưởng Vietcombank từ sinh viên
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="XuatExcelGiaoDich" 
+               asp-route-search="@Model.Search" 
+               asp-route-status="@Model.Status" 
+               asp-route-bankId="@Model.BankId" 
+               asp-route-tuNgay="@Model.TuNgay" 
+               asp-route-denNgay="@Model.DenNgay" 
+               class="btn btn-filter-reset w-auto px-3">
+                <i class="bi bi-file-earmark-excel text-success me-1"></i>
+                <span>Xuất Excel giao dịch</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <partial name="_NavTabs" />
+
+    <!-- Bộ lọc -->
+    <div class="payment-filter-card">
+        <form method="get" asp-action="GiaoDich" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted mb-1">Tìm kiếm</label>
+                <div class="filter-input-wrap">
+                    <i class="bi bi-search filter-input-icon"></i>
+                    <input type="text" name="search" value="@Model.Search" class="form-control form-control-sm" placeholder="Mã GD, Mã SV, Họ tên..." />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-muted mb-1">Trạng thái</label>
+                <select name="status" class="form-select form-select-sm filter-select">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    <option value="PAID" selected="@(Model.Status == "PAID")">Đã thanh toán (Paid)</option>
+                    <option value="PENDING" selected="@(Model.Status == "PENDING")">Chờ quét QR (Pending)</option>
+                    <option value="EXPIRED" selected="@(Model.Status == "EXPIRED")">Hết hạn (Expired)</option>
+                    <option value="FAILED" selected="@(Model.Status == "FAILED")">Thất bại (Failed)</option>
+                    <option value="CANCELLED" selected="@(Model.Status == "CANCELLED")">Đã hủy (Cancelled)</option>
+                    <option value="AMOUNT_MISMATCH" selected="@(Model.Status == "AMOUNT_MISMATCH")">Sai số tiền (Review)</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-muted mb-1">Từ ngày</label>
+                <input type="date" name="tuNgay" value="@Model.TuNgay" class="form-control form-control-sm filter-select" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-muted mb-1">Đến ngày</label>
+                <input type="date" name="denNgay" value="@Model.DenNgay" class="form-control form-control-sm filter-select" />
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn-filter-submit flex-grow-1">
+                        <i class="bi bi-funnel-fill"></i> Lọc dữ liệu
+                    </button>
+                    <a asp-action="GiaoDich" class="btn btn-filter-reset" title="Xóa lọc">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bảng giao dịch -->
+    <div class="payment-table-card">
+        <div class="payment-card-header px-4 pt-3 pb-2 mb-0">
+            <h6 class="payment-card-title">
+                <i class="bi bi-list-ul text-primary"></i>
+                <span>Danh sách giao dịch (@Model.TotalItems kết quả &bull; Tổng tiền: <span class="text-success font-monospace">@Model.TongTienFilter.ToString("N0") ₫</span>)</span>
+            </h6>
+        </div>
+        <div class="table-responsive">
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th style="width:50px;">STT</th>
+                        <th>MÃ GIAO DỊCH</th>
+                        <th>SINH VIÊN</th>
+                        <th>LỚP</th>
+                        <th>KHOẢN THU</th>
+                        <th>SỐ TIỀN</th>
+                        <th>PHƯƠNG THỨC</th>
+                        <th>THỜI GIAN TẠO</th>
+                        <th>THỜI GIAN NHẬN</th>
+                        <th>TRẠNG THÁI</th>
+                        <th class="text-end">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.DanhSachGiaoDich.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="11" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-3 d-block text-secondary mb-2"></i>
+                                Không tìm thấy giao dịch nào phù hợp với điều kiện lọc.
+                            </td>
+                        </tr>
+                    }
+                    @{ int stt = (Model.Page - 1) * Model.PageSize + 1; }
+                    @foreach (var p in Model.DanhSachGiaoDich)
+                    {
+                        <tr>
+                            <td class="text-muted text-center">@(stt++)</td>
+                            <td>
+                                <a asp-action="ChiTietGiaoDich" asp-route-id="@p.Id" class="fw-bold font-monospace text-decoration-none text-primary d-block">
+                                    @p.TransactionCode
+                                </a>
+                                @if (!string.IsNullOrWhiteSpace(p.BankTransactionId))
+                                {
+                                    <small class="text-muted d-block font-monospace" style="font-size:11px;">Ref: @p.BankTransactionId</small>
+                                }
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">@(p.SinhVien?.HoTen ?? "N/A")</div>
+                                <div class="text-muted font-monospace small">@(p.SinhVien?.MaSinhVien)</div>
+                            </td>
+                            <td>@(p.SinhVien?.Lop?.TenLop ?? "Chưa xếp lớp")</td>
+                            <td class="text-secondary">@(p.HoaDonHocPhi?.TenKhoanThu ?? "Học phí")</td>
+                            <td class="fw-bold font-monospace text-success fs-6">@p.Amount.ToString("N0") ₫</td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    <i class="bi bi-qr-code me-1 text-success"></i>VietQR
+                                </span>
+                            </td>
+                            <td class="small text-muted">@p.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="small text-muted">
+                                @(p.PaidAt.HasValue ? p.PaidAt.Value.ToString("dd/MM/yyyy HH:mm") : "-")
+                            </td>
+                            <td>
+                                @if (p.Status == "PAID")
+                                {
+                                    <span class="payment-pill pill-paid">Đã thanh toán</span>
+                                }
+                                else if (p.Status == "PENDING")
+                                {
+                                    <span class="payment-pill pill-pending">Chờ quét QR</span>
+                                }
+                                else if (p.Status == "EXPIRED")
+                                {
+                                    <span class="payment-pill pill-neutral">Hết hạn</span>
+                                }
+                                else if (p.Status == "AMOUNT_MISMATCH")
+                                {
+                                    <span class="payment-pill pill-failed">Cần đối soát</span>
+                                }
+                                else
+                                {
+                                    <span class="payment-pill pill-failed">@p.Status</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="ChiTietGiaoDich" asp-route-id="@p.Id" class="action-icon-btn btn-vcb" title="Chi tiết giao dịch">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Phân trang Server-side -->
+        <div class="payment-pagination-bar">
+            <span>Trang @Model.Page / @Math.Max(1, Model.TotalPages) (Tổng @Model.TotalItems giao dịch)</span>
+            @if (Model.TotalPages > 1)
+            {
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                        <a class="page-link rounded-2 me-1" asp-action="GiaoDich" 
+                           asp-route-page="@(Model.Page - 1)" 
+                           asp-route-search="@Model.Search" 
+                           asp-route-status="@Model.Status" 
+                           asp-route-bankId="@Model.BankId" 
+                           asp-route-tuNgay="@Model.TuNgay" 
+                           asp-route-denNgay="@Model.DenNgay">&laquo;</a>
+                    </li>
+                    @for (int p = 1; p <= Model.TotalPages; p++)
+                    {
+                        if (p == 1 || p == Model.TotalPages || (p >= Model.Page - 2 && p <= Model.Page + 2))
+                        {
+                            <li class="page-item @(p == Model.Page ? "active" : "")">
+                                <a class="page-link rounded-2 me-1 @(p == Model.Page ? "bg-primary border-primary" : "")" asp-action="GiaoDich" 
+                                   asp-route-page="@p" 
+                                   asp-route-search="@Model.Search" 
+                                   asp-route-status="@Model.Status" 
+                                   asp-route-bankId="@Model.BankId" 
+                                   asp-route-tuNgay="@Model.TuNgay" 
+                                   asp-route-denNgay="@Model.DenNgay">@p</a>
+                            </li>
+                        }
+                    }
+                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link rounded-2" asp-action="GiaoDich" 
+                           asp-route-page="@(Model.Page + 1)" 
+                           asp-route-search="@Model.Search" 
+                           asp-route-status="@Model.Status" 
+                           asp-route-bankId="@Model.BankId" 
+                           asp-route-tuNgay="@Model.TuNgay" 
+                           asp-route-denNgay="@Model.DenNgay">&raquo;</a>
+                    </li>
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-payment.js" asp-append-version="true"></script>
+}

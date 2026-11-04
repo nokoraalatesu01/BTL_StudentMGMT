@@ -26,16 +26,24 @@
             {
                 <div class="student-avatar large" aria-hidden="true">@nameInitial</div>
             }
+            <label for="FileAnh" class="avatar-change-btn" title="Chọn ảnh thẻ / đại diện mới">
+                <i class="bi bi-camera-fill"></i>
+            </label>
         </div>
         <div>
             <h2>@displayName</h2>
             <p>Mã giảng viên: <strong>@Model.MaGiangVien</strong></p>
             @if (!string.IsNullOrEmpty(Model.HinhAnh))
             {
-                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size:0.75rem;">
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 mb-2 d-inline-block" style="font-size:0.75rem;">
                     <i class="bi bi-check-circle-fill"></i> Đã có ảnh hồ sơ
                 </span>
             }
+            <div>
+                <label for="FileAnh" class="btn btn-sm btn-outline-primary" style="cursor:pointer; font-size:.78rem; font-weight:600; border-radius:6px;">
+                    <i class="bi bi-upload"></i> Chọn ảnh thẻ mới
+                </label>
+            </div>
         </div>
     </div>
 

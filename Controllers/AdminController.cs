@@ -25,6 +25,8 @@ public class AdminController : Controller
             TongNganh = await _db.Nganhs.CountAsync(),
             TongLop = await _db.Lops.CountAsync(),
             TongMonHoc = await _db.MonHocs.CountAsync(),
+            TongLopHocPhan = await _db.LopHocPhans.CountAsync(),
+            TongDangKyHocPhan = await _db.DangKyHocPhans.CountAsync(dk => dk.TrangThai == "ENROLLED"),
             TongTaiKhoan = await _db.Users.CountAsync(),
             SinhVienChuaCoLop = await _db.SinhViens.CountAsync(s => s.LopId == null),
             SinhVienChuaCoTaiKhoan = await _db.SinhViens.CountAsync(s => s.UserId == null),

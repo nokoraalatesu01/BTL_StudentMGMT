@@ -1,0 +1,96 @@
+@model BTL_StudentMGMT.Models.HocPhiChiTietViewModel
+@{
+    ViewData["Title"] = "Chi tiết hóa đơn";
+    var invoice = Model.HoaDon;
+    var canEdit = invoice.TrangThai != "CANCELLED"
+        && !invoice.ThanhToans.Any(payment => payment.TrangThai is "PENDING" or "COMPLETED");
+}
+<section class="container-fluid py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <a asp-action="Index" class="text-decoration-none">&larr; Danh sách hóa đơn</a>
+            <h1 class="h3 mt-2 mb-1">Hóa đơn @invoice.SoHoaDon</h1>
+            <p class="text-muted mb-0">@invoice.SinhVien.MaSinhVien · @invoice.SinhVien.HoTen · @invoice.HocKy.TenHocKy (@invoice.HocKy.NamHoc.MaNamHoc)</p>
+        </div>
+        <div class="d-flex gap-2">
+            @if (canEdit)
+            {
+                <a asp-action="SuaHoaDon" asp-route-id="@invoice.HoaDonId" class="btn btn-outline-primary">Sửa hóa đơn</a>
+            }
+            @if (invoice.TrangThai is not "CANCELLED" and not "PAID")
+            {
+                <form asp-action="HuyHoaDon" asp-route-id="@invoice.HoaDonId" method="post" onsubmit="return confirm('Bạn có chắc muốn hủy hóa đơn này?');">
+                    <button class="btn btn-outline-danger" type="submit">Hủy hóa đơn</button>
+                </form>
+            }
+        </div>
+    </div>
+    @if (TempData["Msg"] is string success) { <div class="alert alert-success">@success</div> }
+    @if (TempData["Error"] is string error) { <div class="alert alert-danger">@error</div> }
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3"><div class="card h-100"><div class="card-body"><div class="text-muted">Trạng thái</div><strong>@invoice.TrangThai</strong></div></div></div>
+        <div class="col-md-3"><div class="card h-100"><div class="card-body"><div class="text-muted">Tổng hóa đơn</div><strong>@Model.TongTien.ToString("N0") ₫</strong></div></div></div>
+        <div class="col-md-3"><div class="card h-100"><div class="card-body"><div class="text-muted">Đã thanh toán</div><strong>@Model.DaThanhToan.ToString("N0") ₫</strong></div></div></div>
+        <div class="col-md-3"><div class="card h-100"><div class="card-body"><div class="text-muted">Còn nợ</div><strong>@Model.ConNo.ToString("N0") ₫</strong></div></div></div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-semibold">Các khoản thu</div>
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead><tr><th>Khoản thu</th><th>Số lượng</th><th>Đơn giá</th><th>Giảm trừ</th><th class="text-end">Thành tiền</th></tr></thead>
+                <tbody>
+                @foreach (var detail in invoice.ChiTietHoaDonHocPhis)
+                {
+                    <tr><td>@detail.MoTa</td><td>@detail.SoLuong</td><td>@detail.DonGia.ToString("N0") ₫</td><td>@detail.SoTienGiam.ToString("N0") ₫</td><td class="text-end">@Math.Max(0, detail.SoLuong * detail.DonGia - detail.SoTienGiam).ToString("N0") ₫</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header fw-semibold">Lịch sử / yêu cầu thanh toán</div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead><tr><th>Mã chuyển khoản</th><th>Thời gian</th><th>Số tiền</th><th>Phương thức</th><th>Trạng thái</th><th>Biên lai</th><th>Duyệt</th></tr></thead>
+                <tbody>
+                @foreach (var payment in invoice.ThanhToans)
+                {
+                    <tr>
+                        <td class="fw-semibold">@payment.MaGiaoDich</td>
+                        <td>@payment.ThoiGianThanhToan.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@payment.SoTien.ToString("N0") ₫</td>
+                        <td>@payment.PhuongThuc</td>
+                        <td><span class="badge text-bg-secondary">@payment.TrangThai</span><div class="small text-muted">@payment.GhiChu</div></td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(payment.AnhMinhChung))
+                            {
+                                <a asp-action="XemMinhChung" asp-route-id="@payment.ThanhToanId" target="_blank" rel="noopener">Xem biên lai</a>
+                            }
+                        </td>
+                        <td>
+                            @if (payment.TrangThai == "PENDING")
+                            {
+                                <form asp-action="XacNhanThanhToan" method="post" class="d-flex flex-column gap-1">
+                                    <input type="hidden" name="id" value="@payment.ThanhToanId" />
+                                    <input name="ghiChu" class="form-control form-control-sm" maxlength="500" placeholder="Ghi chú (nếu từ chối)" />
+                                    <div class="d-flex gap-1">
+                                        <button class="btn btn-sm btn-success" name="chapNhan" value="true" type="submit">Xác nhận</button>
+                                        <button class="btn btn-sm btn-outline-danger" name="chapNhan" value="false" type="submit">Từ chối</button>
+                                    </div>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (invoice.ThanhToans.Count == 0)
+                {
+                    <tr><td colspan="7" class="text-center text-muted py-3">Chưa có giao dịch.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

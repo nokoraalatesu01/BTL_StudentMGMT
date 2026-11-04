@@ -26,20 +26,25 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<HocKy> HocKies => Set<HocKy>();
     public DbSet<KhoaTuyenSinh> KhoaTuyenSinhs => Set<KhoaTuyenSinh>();
     public DbSet<PhongHoc> PhongHocs => Set<PhongHoc>();
-    // public DbSet<LopHanhChinh> LopHanhChinhs => Set<LopHanhChinh>();
-    // public DbSet<LopHocPhan> LopHocPhans => Set<LopHocPhan>();
+    public DbSet<LopHocPhan> LopHocPhans => Set<LopHocPhan>();
     public DbSet<LichHoc> LichHocs => Set<LichHoc>();
-    // public DbSet<DangKyHocPhan> DangKyHocPhans => Set<DangKyHocPhan>();
+    public DbSet<DangKyHocPhan> DangKyHocPhans => Set<DangKyHocPhan>();
     public DbSet<ThanhPhanDiem> ThanhPhanDiems => Set<ThanhPhanDiem>();
     public DbSet<DiemThanhPhan> DiemThanhPhans => Set<DiemThanhPhan>();
     public DbSet<KetQuaHocTap> KetQuaHocTaps => Set<KetQuaHocTap>();
     public DbSet<ChuongTrinhHocBong> ChuongTrinhHocBongs => Set<ChuongTrinhHocBong>();
-    // Schema mở rộng (chưa kích hoạt nghiệp vụ):
-    // public DbSet<BuoiDiemDanh> BuoiDiemDanhs => Set<BuoiDiemDanh>();
-    // public DbSet<ChiTietHoaDonHocPhi> ChiTietHoaDonHocPhis => Set<ChiTietHoaDonHocPhi>();
-    // public DbSet<HoaDonHocPhi> HoaDonHocPhis => Set<HoaDonHocPhi>();
-    // public DbSet<ThanhToan> ThanhToans => Set<ThanhToan>();
-    // public DbSet<BieuPhiHocPhi> BieuPhiHocPhis => Set<BieuPhiHocPhi>();
+    
+    // Hệ thống Học phí & Thanh toán tự động VietQR
+    public DbSet<HoaDonHocPhi> HoaDonHocPhis => Set<HoaDonHocPhi>();
+    public DbSet<BieuPhiHocPhi> BieuPhiHocPhis => Set<BieuPhiHocPhi>();
+    public DbSet<ChiTietHoaDonHocPhi> ChiTietHoaDonHocPhis => Set<ChiTietHoaDonHocPhi>();
+    public DbSet<ThanhToan> ThanhToans => Set<ThanhToan>();
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<BankTransaction> BankTransactions => Set<BankTransaction>();
+    public DbSet<PaymentWebhookLog> PaymentWebhookLogs => Set<PaymentWebhookLog>();
+    public DbSet<VietQrConfig> VietQrConfigs => Set<VietQrConfig>();
+    public DbSet<DotThuHocPhi> DotThuHocPhis => Set<DotThuHocPhi>();
+    public DbSet<NhatKyThanhToan> NhatKyThanhToans => Set<NhatKyThanhToan>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -203,14 +208,18 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany(s => s.DiemDanhs)
                 .HasForeignKey(e => e.SinhVienId)
                 .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.LopHocPhan)
+                .WithMany(lhp => lhp.DiemDanhs)
+                .HasForeignKey(e => e.LopHocPhanId)
+                .OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.Lop)
                 .WithMany()
                 .HasForeignKey(e => e.LopId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.SetNull);
             entity.HasOne(e => e.MonHoc)
                 .WithMany()
                 .HasForeignKey(e => e.MonHocId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<LichGiangDay>(entity =>
@@ -234,19 +243,43 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasForeignKey(e => e.LopId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-        modelBuilder.Entity<Diem>()
-            .HasIndex(diem => new { diem.SinhVienId, diem.MonHocId })
-            .IsUnique();
-        modelBuilder.Entity<Diem>()
-            .HasOne(diem => diem.SinhVien)
-            .WithMany(sinhVien => sinhVien.Diems)
-            .HasForeignKey(diem => diem.SinhVienId)
-            .OnDelete(DeleteBehavior.Cascade);
-        modelBuilder.Entity<Diem>()
-            .HasOne(diem => diem.MonHoc)
-            .WithMany()
-            .HasForeignKey(diem => diem.MonHocId)
-            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Diem>(entity =>
+        {
+            entity.ToTable("Diems");
+            entity.HasKey(e => e.Id);
+            entity.HasOne(diem => diem.SinhVien)
+                .WithMany(sinhVien => sinhVien.Diems)
+                .HasForeignKey(diem => diem.SinhVienId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(diem => diem.MonHoc)
+                .WithMany()
+                .HasForeignKey(diem => diem.MonHocId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(diem => diem.LopHocPhan)
+                .WithMany(lhp => lhp.Diems)
+                .HasForeignKey(diem => diem.LopHocPhanId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(diem => diem.HocKy)
+                .WithMany()
+                .HasForeignKey(diem => diem.HocKyId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.Property(e => e.LoaiHoc).HasMaxLength(30).HasDefaultValue("HOC_LAN_DAU");
+            entity.Property(e => e.TrangThai).HasMaxLength(30).HasDefaultValue("DAT");
+            entity.Property(e => e.LanHoc).HasDefaultValue(1);
+            entity.Property(e => e.LanThi).HasDefaultValue(1);
+            entity.Property(e => e.SuDungTinhTichLuy).HasDefaultValue(true);
+            entity.Property(e => e.GhiChu).HasMaxLength(500);
+            entity.Property(e => e.NguoiCapNhat).HasMaxLength(100);
+
+            // Ràng buộc Unique Composite Index:
+            // Trong cùng một Lớp học phần, một sinh viên chỉ có 1 kết quả học tập
+            entity.HasIndex(diem => new { diem.SinhVienId, diem.LopHocPhanId })
+                .IsUnique()
+                .HasFilter("[LopHocPhanId] IS NOT NULL");
+
+            // Index tối ưu truy vấn lịch sử học tập & tính GPA tích lũy
+            entity.HasIndex(diem => new { diem.SinhVienId, diem.MonHocId, diem.SuDungTinhTichLuy });
+        });
 
         // === Cấu hình bổ sung từ schema QLSinhVienUTC ===
         modelBuilder.Entity<DonVi>(entity =>
@@ -315,18 +348,22 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         //     entity.HasOne(d => d.Nganh).WithMany(p => p.LopHanhChinhs).HasForeignKey(d => d.NganhId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_Lop_Nganh");
         // });
 
-        // modelBuilder.Entity<LopHocPhan>(entity =>
-        // {
-        //     entity.ToTable("LopHocPhan");
-        //     entity.HasIndex(e => new { e.HocKyId, e.MonHocId, e.TrangThai }, "IX_LHP_HocKy_Mon");
-        //     entity.HasIndex(e => e.MaLopHocPhan, "UQ_LHP_Ma").IsUnique();
-        //     entity.Property(e => e.MaLopHocPhan).HasMaxLength(30).IsUnicode(false);
-        //     entity.Property(e => e.Nhom).HasMaxLength(20).IsUnicode(false).HasDefaultValue("01", "DF_LHP_Nhom");
-        //     entity.Property(e => e.TrangThai).HasMaxLength(25).IsUnicode(false).HasDefaultValue("PLANNED", "DF_LHP_TrangThai");
-        //     entity.HasOne(d => d.GiangVien).WithMany(p => p.LopHocPhans).HasForeignKey(d => d.GiangVienId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_LHP_GV");
-        //     entity.HasOne(d => d.HocKy).WithMany(p => p.LopHocPhans).HasForeignKey(d => d.HocKyId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_LHP_HocKy");
-        //     entity.HasOne(d => d.MonHoc).WithMany(p => p.LopHocPhans).HasForeignKey(d => d.MonHocId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_LHP_Mon");
-        // });
+        modelBuilder.Entity<LopHocPhan>(entity =>
+        {
+            entity.ToTable("LopHocPhan");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.MaLopHocPhan).IsUnique();
+            entity.Property(e => e.MaLopHocPhan).HasMaxLength(30);
+            entity.Property(e => e.TenLopHocPhan).HasMaxLength(200);
+            entity.Property(e => e.Nhom).HasMaxLength(20).HasDefaultValue("01");
+            entity.Property(e => e.TrangThai).HasMaxLength(30).HasDefaultValue("OPEN");
+            entity.Property(e => e.Thu).HasMaxLength(20);
+            entity.Property(e => e.PhongHoc).HasMaxLength(50);
+            entity.Property(e => e.GhiChu).HasMaxLength(255);
+            entity.HasOne(d => d.GiangVien).WithMany(p => p.LopHocPhans).HasForeignKey(d => d.GiangVienId).OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(d => d.HocKy).WithMany(p => p.LopHocPhans).HasForeignKey(d => d.HocKyId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(d => d.MonHoc).WithMany(p => p.LopHocPhans).HasForeignKey(d => d.MonHocId).OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<LichHoc>(entity =>
         {
@@ -338,20 +375,18 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasOne(d => d.PhongHoc).WithMany(p => p.LichHocs).HasForeignKey(d => d.PhongHocId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_LichHoc_Phong");
         });
 
-        // modelBuilder.Entity<DangKyHocPhan>(entity =>
-        // {
-        //     entity.ToTable("DangKyHocPhan");
-        //     entity.HasIndex(e => new { e.LopHocPhanId, e.TrangThai }, "IX_DK_LHP_TrangThai");
-        //     entity.HasIndex(e => new { e.SinhVienId, e.TrangThai }, "IX_DK_SV_TrangThai");
-        //     entity.HasIndex(e => new { e.SinhVienId, e.LopHocPhanId }, "UQ_DK_SV_LHP").IsUnique();
-        //     entity.Property(e => e.GhiChu).HasMaxLength(300);
-        //     entity.Property(e => e.LanHoc).HasDefaultValue((byte)1, "DF_DK_LanHoc");
-        //     entity.Property(e => e.NgayDangKy).HasPrecision(0).HasDefaultValueSql("(sysutcdatetime())", "DF_DK_Ngay");
-        //     entity.Property(e => e.RowVer).IsRowVersion().IsConcurrencyToken();
-        //     entity.Property(e => e.TrangThai).HasMaxLength(20).IsUnicode(false).HasDefaultValue("ENROLLED", "DF_DK_TrangThai");
-        //     entity.HasOne(d => d.LopHocPhan).WithMany(p => p.DangKyHocPhans).HasForeignKey(d => d.LopHocPhanId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_DK_LHP");
-        //     entity.HasOne(d => d.SinhVien).WithMany(p => p.DangKyHocPhans).HasForeignKey(d => d.SinhVienId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_DK_SV");
-        // });
+        modelBuilder.Entity<DangKyHocPhan>(entity =>
+        {
+            entity.ToTable("DangKyHocPhan");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.SinhVienId, e.LopHocPhanId }, "UQ_DK_SV_LHP").IsUnique();
+            entity.Property(e => e.GhiChu).HasMaxLength(300);
+            entity.Property(e => e.LanHoc).HasDefaultValue(1);
+            entity.Property(e => e.LoaiDangKy).HasMaxLength(30).HasDefaultValue("HOC_LAN_DAU");
+            entity.Property(e => e.TrangThai).HasMaxLength(30).HasDefaultValue("ENROLLED");
+            entity.HasOne(d => d.LopHocPhan).WithMany(p => p.DangKyHocPhans).HasForeignKey(d => d.LopHocPhanId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(d => d.SinhVien).WithMany(p => p.DangKyHocPhans).HasForeignKey(d => d.SinhVienId).OnDelete(DeleteBehavior.Cascade);
+        });
 
         modelBuilder.Entity<ThanhPhanDiem>(entity =>
         {
@@ -392,49 +427,114 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             // entity.HasOne(d => d.DangKy).WithOne(p => p.KetQuaHocTap).HasForeignKey<KetQuaHocTap>(d => d.DangKyId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_KQ_DK");
         });
 
-        // modelBuilder.Entity<HoaDonHocPhi>(entity =>
-        // {
-        //     entity.ToTable("HoaDonHocPhi");
-        //     entity.HasIndex(e => e.SoHoaDon, "UQ_HoaDon_So").IsUnique();
-        //     entity.Property(e => e.GhiChu).HasMaxLength(500);
-        //     entity.Property(e => e.NgayLap).HasPrecision(0).HasDefaultValueSql("(sysutcdatetime())", "DF_HoaDon_Ngay");
-        //     entity.Property(e => e.SoHoaDon).HasMaxLength(40).IsUnicode(false);
-        //     entity.Property(e => e.TrangThai).HasMaxLength(20).IsUnicode(false).HasDefaultValue("ISSUED", "DF_HoaDon_TrangThai");
-        //     entity.HasOne(d => d.HocKy).WithMany(p => p.HoaDonHocPhis).HasForeignKey(d => d.HocKyId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_HoaDon_HocKy");
-        //     entity.HasOne(d => d.SinhVien).WithMany(p => p.HoaDonHocPhis).HasForeignKey(d => d.SinhVienId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_HoaDon_SV");
-        // });
+        modelBuilder.Entity<BieuPhiHocPhi>(entity =>
+        {
+            entity.ToTable("BieuPhiHocPhi");
+            entity.HasKey(e => e.BieuPhiId);
+            entity.Property(e => e.DonGiaTinChi).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.LoaiTien).HasMaxLength(3).IsUnicode(false).HasDefaultValue("VND");
+            entity.Property(e => e.HieuLucTu).HasColumnType("date");
+            entity.Property(e => e.HieuLucDen).HasColumnType("date");
+            entity.HasOne<ChuongTrinhDaoTao>().WithMany().HasForeignKey(e => e.ChuongTrinhId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<NamHoc>().WithMany().HasForeignKey(e => e.NamHocId).OnDelete(DeleteBehavior.Restrict);
+        });
 
-        // modelBuilder.Entity<ChiTietHoaDonHocPhi>(entity =>
-        // {
-        //     entity.ToTable("ChiTietHoaDonHocPhi");
-        //     entity.HasKey(e => e.ChiTietHoaDonId).HasName("PK_ChiTietHoaDon");
-        //     entity.Property(e => e.DonGia).HasColumnType("decimal(18, 2)");
-        //     entity.Property(e => e.LoaiKhoanThu).HasMaxLength(30).IsUnicode(false);
-        //     entity.Property(e => e.MoTa).HasMaxLength(300);
-        //     entity.Property(e => e.SoLuong).HasDefaultValue(1m, "DF_CTHD_SL").HasColumnType("decimal(10, 2)");
-        //     entity.Property(e => e.SoTienGiam).HasColumnType("decimal(18, 2)");
-        //     entity.HasOne(d => d.HoaDon).WithMany(p => p.ChiTietHoaDonHocPhis).HasForeignKey(d => d.HoaDonId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_CTHD_HD");
-        // });
+        modelBuilder.Entity<HoaDonHocPhi>(entity =>
+        {
+            entity.ToTable("HoaDonHocPhi");
+            entity.HasKey(e => e.HoaDonId);
+            entity.HasIndex(e => e.SoHoaDon, "UQ_HoaDon_So").IsUnique();
+            entity.HasIndex(e => new { e.SinhVienId, e.HocKyId }, "UQ_HoaDon_SV_HocKy").IsUnique();
+            entity.Property(e => e.GhiChu).HasMaxLength(500);
+            entity.Property(e => e.NgayLap).HasPrecision(0).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.SoHoaDon).HasMaxLength(40).IsUnicode(false);
+            entity.Property(e => e.TrangThai).HasMaxLength(20).IsUnicode(false).HasDefaultValue("ISSUED");
+            entity.Property(e => e.HanThanhToan).HasColumnType("date");
+            entity.HasOne(e => e.HocKy).WithMany().HasForeignKey(e => e.HocKyId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.SinhVien).WithMany().HasForeignKey(e => e.SinhVienId).OnDelete(DeleteBehavior.Restrict);
+        });
 
-        // modelBuilder.Entity<ThanhToan>(entity =>
-        // {
-        //     entity.ToTable("ThanhToan");
-        //     entity.HasIndex(e => new { e.HoaDonId, e.TrangThai }, "IX_ThanhToan_HD_TrangThai");
-        //     entity.HasIndex(e => e.IdempotencyKey, "UQ_ThanhToan_Idempotency").IsUnique();
-        //     entity.Property(e => e.GhiChu).HasMaxLength(500);
-        //     entity.Property(e => e.IdempotencyKey).HasMaxLength(100).IsUnicode(false);
-        //     entity.Property(e => e.MaGiaoDich).HasMaxLength(100).IsUnicode(false);
-        //     entity.Property(e => e.NguonThanhToan).HasMaxLength(100);
-        //     entity.Property(e => e.PhuongThuc).HasMaxLength(20).IsUnicode(false);
-        //     entity.Property(e => e.SoTien).HasColumnType("decimal(18, 2)");
-        //     entity.Property(e => e.ThoiGianThanhToan).HasPrecision(0).HasDefaultValueSql("(sysutcdatetime())", "DF_ThanhToan_Time");
-        //     entity.Property(e => e.TrangThai).HasMaxLength(20).IsUnicode(false).HasDefaultValue("PENDING", "DF_ThanhToan_TrangThai");
-        //     entity.HasOne(d => d.HoaDon).WithMany(p => p.ThanhToans).HasForeignKey(d => d.HoaDonId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_ThanhToan_HD");
-        // });
+        // Cấu hình Hệ thống Thanh toán Học phí VietQR
+        modelBuilder.Entity<HoaDonHocPhi>(entity =>
+        {
+            entity.ToTable("HoaDonHocPhi");
+            entity.HasIndex(e => e.SoHoaDon).IsUnique();
+            entity.HasIndex(e => new { e.SinhVienId, e.HocKyId });
+            entity.Property(e => e.SoTien).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.DaThanhToan).HasColumnType("decimal(18,2)");
+            entity.HasOne(e => e.SinhVien)
+                  .WithMany()
+                  .HasForeignKey(e => e.SinhVienId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.HocKy)
+                  .WithMany()
+                  .HasForeignKey(e => e.HocKyId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.ToTable("Payment");
+            entity.HasIndex(e => e.TransactionCode).IsUnique();
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.BankTransactionId);
+            entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
+            entity.HasOne(e => e.HoaDonHocPhi)
+                  .WithMany(h => h.Payments)
+                  .HasForeignKey(e => e.HoaDonHocPhiId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.SinhVien)
+                  .WithMany()
+                  .HasForeignKey(e => e.SinhVienId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<BankTransaction>(entity =>
+        {
+            entity.ToTable("BankTransaction");
+            entity.HasIndex(e => e.BankTransactionId).IsUnique();
+            entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
+            entity.HasOne(e => e.Payment)
+                  .WithOne(p => p.BankTransaction)
+                  .HasForeignKey<BankTransaction>(b => b.PaymentId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<PaymentWebhookLog>(entity =>
+        {
+            entity.ToTable("PaymentWebhookLog");
+            entity.HasIndex(e => e.ReceivedAt);
+        });
+
+        modelBuilder.Entity<VietQrConfig>(entity =>
+        {
+            entity.ToTable("VietQrConfig");
+        });
+
+        modelBuilder.Entity<DotThuHocPhi>(entity =>
+        {
+            entity.ToTable("DotThuHocPhi");
+            entity.HasIndex(e => e.MaKhoanThu).IsUnique();
+            entity.Property(e => e.SoTien).HasColumnType("decimal(18,2)");
+            entity.HasOne(e => e.HocKy)
+                  .WithMany()
+                  .HasForeignKey(e => e.HocKyId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasMany(e => e.HoaDonHocPhis)
+                  .WithOne(h => h.DotThu)
+                  .HasForeignKey(h => h.DotThuId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<NhatKyThanhToan>(entity =>
+        {
+            entity.ToTable("NhatKyThanhToan");
+            entity.HasIndex(e => e.ThoiGian);
+            entity.HasIndex(e => e.HanhDong);
+        });
 
         OnModelCreatingPartial(modelBuilder);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
-

@@ -1,0 +1,307 @@
+@model BTL_StudentMGMT.Models.AdminCongNoListViewModel
+@{
+    ViewData["Title"] = "Quản lý công nợ sinh viên";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid px-3 py-2 payment-dashboard-wrap">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 payment-header-anim">
+        <div class="d-flex align-items-center gap-3">
+            <div class="payment-header-icon">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <div>
+                <h2 class="payment-header-title mb-0">
+                    Quản lý công nợ sinh viên
+                </h2>
+                <div class="payment-header-subtitle">
+                    Theo dõi tổng số học phí, số tiền đã đóng và khoản nợ còn lại của từng sinh viên theo lớp và ngành
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="XuatExcelCongNo" 
+               asp-route-search="@Model.Search" 
+               asp-route-lopId="@Model.LopId" 
+               asp-route-nganhId="@Model.NganhId" 
+               asp-route-hocKyId="@Model.HocKyId" 
+               asp-route-chiSinhVienNo="@Model.ChiSinhVienNo" 
+               class="btn btn-filter-reset w-auto px-3">
+                <i class="bi bi-file-earmark-excel text-success me-1"></i>
+                <span>Xuất Excel công nợ</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <partial name="_NavTabs" />
+
+    <!-- 4 Thẻ Thống kê Công nợ (Pastel Theme & Count-up) -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="payment-stat-card card-blue">
+                <div class="stat-header">
+                    <span class="stat-label">TỔNG HỌC PHÍ PHẢI THU</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-primary" data-counter-target="@Model.TongPhaiThu" data-is-currency="true">
+                        @Model.TongPhaiThu.ToString("N0") ₫
+                    </div>
+                    <div class="stat-hint">
+                        <span>Định mức toàn bộ SV</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="payment-stat-card card-emerald">
+                <div class="stat-header">
+                    <span class="stat-label text-success">TỔNG ĐÃ THANH TOÁN</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-success" data-counter-target="@Model.TongDaThu" data-is-currency="true">
+                        @Model.TongDaThu.ToString("N0") ₫
+                    </div>
+                    <div class="stat-hint text-success">
+                        <span>Thực thu Vietcombank</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="payment-stat-card card-rose">
+                <div class="stat-header">
+                    <span class="stat-label text-danger">TỔNG CÔNG NỢ CÒN LẠI</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-danger" data-counter-target="@Model.TongConNo" data-is-currency="true">
+                        @Model.TongConNo.ToString("N0") ₫
+                    </div>
+                    <div class="stat-hint text-danger">
+                        <span>Chưa hoàn tất học phí</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="payment-stat-card card-amber">
+                <div class="stat-header">
+                    <span class="stat-label text-warning-emphasis">SINH VIÊN CÒN NỢ</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-dark" data-counter-target="@Model.SoSinhVienConNo" data-is-currency="false">
+                        @Model.SoSinhVienConNo
+                    </div>
+                    <div class="stat-hint text-warning-emphasis">
+                        <span>Cần đôn đốc nhắc nhở</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bộ lọc -->
+    <div class="payment-filter-card">
+        <form method="get" asp-action="CongNo" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted mb-1">Tìm kiếm sinh viên</label>
+                <div class="filter-input-wrap">
+                    <i class="bi bi-search filter-input-icon"></i>
+                    <input type="text" name="search" value="@Model.Search" class="form-control form-control-sm" placeholder="Mã SV, họ tên..." />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-muted mb-1">Lớp</label>
+                <select name="lopId" class="form-select form-select-sm filter-select">
+                    <option value="">-- Tất cả lớp --</option>
+                    @foreach (var l in Model.DanhSachLop)
+                    {
+                        <option value="@l.Id" selected="@(Model.LopId == l.Id)">@l.TenLop</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-muted mb-1">Ngành</label>
+                <select name="nganhId" class="form-select form-select-sm filter-select">
+                    <option value="">-- Tất cả ngành --</option>
+                    @foreach (var n in Model.DanhSachNganh)
+                    {
+                        <option value="@n.Id" selected="@(Model.NganhId == n.Id)">@n.TenNganh</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-muted mb-1">Học kỳ</label>
+                <select name="hocKyId" class="form-select form-select-sm filter-select">
+                    <option value="">-- Tất cả học kỳ --</option>
+                    @foreach (var hk in Model.DanhSachHocKy)
+                    {
+                        <option value="@hk.HocKyId" selected="@(Model.HocKyId == hk.HocKyId)">@hk.TenHocKy</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="chiSinhVienNo" value="true" id="chkNoOnly" @(Model.ChiSinhVienNo ? "checked" : "")>
+                        <label class="form-check-label small fw-semibold text-danger" for="chkNoOnly">
+                            Chỉ hiện SV còn nợ
+                        </label>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn-filter-submit flex-grow-1">
+                        <i class="bi bi-funnel-fill"></i> Lọc
+                    </button>
+                    <a asp-action="CongNo" class="btn btn-filter-reset" title="Xóa lọc">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bảng công nợ -->
+    <div class="payment-table-card">
+        <div class="payment-card-header px-4 pt-3 pb-2 mb-0">
+            <h6 class="payment-card-title">
+                <i class="bi bi-table text-primary"></i>
+                <span>Bảng theo dõi công nợ học phí (@Model.TotalItems sinh viên)</span>
+            </h6>
+        </div>
+        <div class="table-responsive">
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th style="width:50px;">STT</th>
+                        <th>MÃ SINH VIÊN</th>
+                        <th>HỌ VÀ TÊN</th>
+                        <th>LỚP</th>
+                        <th>NGÀNH</th>
+                        <th>TỔNG HỌC PHÍ</th>
+                        <th>ĐÃ THANH TOÁN</th>
+                        <th>CÒN NỢ</th>
+                        <th>KHOẢN CHƯA NỘP</th>
+                        <th>TRẠNG THÁI</th>
+                        <th class="text-end">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.DanhSachCongNo.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="11" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-3 d-block text-secondary mb-2"></i>
+                                Không tìm thấy sinh viên nào theo điều kiện lọc.
+                            </td>
+                        </tr>
+                    }
+                    @{ int stt = (Model.Page - 1) * Model.PageSize + 1; }
+                    @foreach (var c in Model.DanhSachCongNo)
+                    {
+                        <tr>
+                            <td class="text-muted text-center">@(stt++)</td>
+                            <td class="font-monospace fw-bold text-primary">@c.MaSinhVien</td>
+                            <td class="fw-bold text-dark">@c.HoTen</td>
+                            <td>@c.TenLop</td>
+                            <td>@c.TenNganh</td>
+                            <td class="fw-bold font-monospace">@c.TongHocPhi.ToString("N0") ₫</td>
+                            <td class="fw-bold font-monospace text-success">@c.DaThanhToan.ToString("N0") ₫</td>
+                            <td class="fw-bold font-monospace text-danger">@c.ConNo.ToString("N0") ₫</td>
+                            <td class="text-center">
+                                @if (c.SoKhoanChuaThanhToan > 0)
+                                {
+                                    <span class="payment-pill pill-failed">
+                                        @c.SoKhoanChuaThanhToan khoản
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">0</span>
+                                }
+                            </td>
+                            <td>
+                                @if (c.TrangThaiCongNo == "HOAN_THANH")
+                                {
+                                    <span class="payment-pill pill-paid">Hoàn thành</span>
+                                }
+                                else
+                                {
+                                    <span class="payment-pill pill-failed">Còn nợ</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="ChiTietCongNo" asp-route-sinhVienId="@c.SinhVienId" class="action-icon-btn btn-vcb" title="Xem chi tiết công nợ">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Phân trang -->
+        <div class="payment-pagination-bar">
+            <span>Trang @Model.Page / @Math.Max(1, Model.TotalPages) (Tổng @Model.TotalItems sinh viên)</span>
+            @if (Model.TotalPages > 1)
+            {
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                        <a class="page-link rounded-2 me-1" asp-action="CongNo" 
+                           asp-route-page="@(Model.Page - 1)" 
+                           asp-route-search="@Model.Search" 
+                           asp-route-lopId="@Model.LopId" 
+                           asp-route-nganhId="@Model.NganhId" 
+                           asp-route-hocKyId="@Model.HocKyId" 
+                           asp-route-chiSinhVienNo="@Model.ChiSinhVienNo">&laquo;</a>
+                    </li>
+                    @for (int p = 1; p <= Model.TotalPages; p++)
+                    {
+                        if (p == 1 || p == Model.TotalPages || (p >= Model.Page - 2 && p <= Model.Page + 2))
+                        {
+                            <li class="page-item @(p == Model.Page ? "active" : "")">
+                                <a class="page-link rounded-2 me-1 @(p == Model.Page ? "bg-primary border-primary" : "")" asp-action="CongNo" 
+                                   asp-route-page="@p" 
+                                   asp-route-search="@Model.Search" 
+                                   asp-route-lopId="@Model.LopId" 
+                                   asp-route-nganhId="@Model.NganhId" 
+                                   asp-route-hocKyId="@Model.HocKyId" 
+                                   asp-route-chiSinhVienNo="@Model.ChiSinhVienNo">@p</a>
+                            </li>
+                        }
+                    }
+                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link rounded-2" asp-action="CongNo" 
+                           asp-route-page="@(Model.Page + 1)" 
+                           asp-route-search="@Model.Search" 
+                           asp-route-lopId="@Model.LopId" 
+                           asp-route-nganhId="@Model.NganhId" 
+                           asp-route-hocKyId="@Model.HocKyId" 
+                           asp-route-chiSinhVienNo="@Model.ChiSinhVienNo">&raquo;</a>
+                    </li>
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-payment.js" asp-append-version="true"></script>
+}

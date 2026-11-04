@@ -172,6 +172,18 @@ public class QuanLyMonHocController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        if (await _db.LichGiangDays.AnyAsync(item => item.MonHocId == id))
+        {
+            TempData["Error"] = "Không thể xóa môn học đang có trong lịch giảng dạy.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (await _db.DiemDanhs.AnyAsync(item => item.MonHocId == id))
+        {
+            TempData["Error"] = "Không thể xóa môn học đang có dữ liệu điểm danh.";
+            return RedirectToAction(nameof(Index));
+        }
+
         _db.MonHocs.Remove(monHoc);
         await _db.SaveChangesAsync();
         TempData["Msg"] = "Đã xóa môn học.";

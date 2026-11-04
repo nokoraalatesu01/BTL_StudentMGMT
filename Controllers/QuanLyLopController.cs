@@ -175,6 +175,18 @@ public class QuanLyLopController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        if (await _db.LichGiangDays.AnyAsync(l => l.LopId == id))
+        {
+            TempData["Error"] = "Không thể xóa lớp đang có trong lịch giảng dạy.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (await _db.DiemDanhs.AnyAsync(d => d.LopId == id))
+        {
+            TempData["Error"] = "Không thể xóa lớp đang có dữ liệu điểm danh liên quan.";
+            return RedirectToAction(nameof(Index));
+        }
+
         _db.Lops.Remove(lop);
         await _db.SaveChangesAsync();
         TempData["Msg"] = "Đã xóa lớp.";

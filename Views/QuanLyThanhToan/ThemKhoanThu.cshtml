@@ -1,0 +1,202 @@
+@model BTL_StudentMGMT.Models.AdminTaoKhoanThuViewModel
+@{
+    ViewData["Title"] = "Tạo khoản thu học phí mới";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container py-3 payment-dashboard-wrap" style="max-width:880px;">
+    <!-- Breadcrumb & Header -->
+    <div class="d-flex align-items-center justify-content-between mb-3 payment-header-anim">
+        <div class="d-flex align-items-center gap-3">
+            <div class="payment-header-icon">
+                <i class="bi bi-plus-circle"></i>
+            </div>
+            <div>
+                <h2 class="payment-header-title mb-0">
+                    Tạo khoản thu học phí mới
+                </h2>
+                <div class="payment-header-subtitle">
+                    Thiết lập đợt thu học phí mới và tự động phát sinh hóa đơn cho sinh viên
+                </div>
+            </div>
+        </div>
+        <a asp-action="KhoanThu" class="btn btn-filter-reset w-auto px-3">
+            <i class="bi bi-arrow-left me-1"></i>
+            <span>Quay lại</span>
+        </a>
+    </div>
+
+    <div class="payment-card">
+        <form method="post" asp-action="ThemKhoanThu">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 small py-2 mb-3"></div>
+
+            <!-- Nhóm 1: Thông tin cơ bản -->
+            <div class="payment-card-header pb-2 mb-3">
+                <h6 class="payment-card-title text-primary">
+                    <i class="bi bi-card-heading"></i>
+                    <span>1. Thông tin khoản thu</span>
+                </h6>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label asp-for="MaKhoanThu" class="form-label small fw-semibold text-muted">MÃ KHOẢN THU *</label>
+                    <input asp-for="MaKhoanThu" class="form-control rounded-3 font-monospace" placeholder="VD: KT2026_HK1" required />
+                    <span asp-validation-for="MaKhoanThu" class="text-danger small"></span>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="TenKhoanThu" class="form-label small fw-semibold text-muted">TÊN KHOẢN THU *</label>
+                    <input asp-for="TenKhoanThu" class="form-control rounded-3" placeholder="VD: Học phí học kỳ 1 (2026 - 2027)" required />
+                    <span asp-validation-for="TenKhoanThu" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="MoTa" class="form-label small fw-semibold text-muted">MÔ TẢ CHI TIẾT</label>
+                    <textarea asp-for="MoTa" rows="2" class="form-control rounded-3" placeholder="Ghi chú về định mức học phí, căn cứ quy định..."></textarea>
+                </div>
+            </div>
+
+            <!-- Nhóm 2: Định mức tiền & Thời hạn -->
+            <div class="payment-card-header pb-2 mb-3">
+                <h6 class="payment-card-title text-success">
+                    <i class="bi bi-cash-coin"></i>
+                    <span>2. Định mức số tiền & Thời hạn nộp</span>
+                </h6>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label asp-for="HocKyId" class="form-label small fw-semibold text-muted">ÁP DỤNG HỌC KỲ *</label>
+                    <select asp-for="HocKyId" class="form-select filter-select" required>
+                        @foreach (var hk in Model.DanhSachHocKy)
+                        {
+                            <option value="@hk.HocKyId">@hk.TenHocKy</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="SoTien" class="form-label small fw-semibold text-muted">SỐ TIỀN PHẢI NỘP (VNĐ) *</label>
+                    <input asp-for="SoTien" type="number" step="10000" min="0" class="form-control rounded-3 font-monospace fw-bold text-success fs-6" required />
+                    <span asp-validation-for="SoTien" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="HanThanhToan" class="form-label small fw-semibold text-muted">HẠN THANH TOÁN</label>
+                    <input asp-for="HanThanhToan" type="date" class="form-control filter-select" />
+                </div>
+            </div>
+
+            <!-- Nhóm 3: Đối tượng áp dụng -->
+            <div class="payment-card-header pb-2 mb-3">
+                <h6 class="payment-card-title text-info">
+                    <i class="bi bi-people"></i>
+                    <span>3. Đối tượng sinh viên áp dụng</span>
+                </h6>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label asp-for="DoiTuongApDung" class="form-label small fw-semibold text-muted">PHẠM VI ÁP DỤNG</label>
+                    <select asp-for="DoiTuongApDung" id="selectDoiTuong" class="form-select filter-select" onchange="doiPhanVi(this.value)">
+                        <option value="TOAN_TRUONG">Toàn trường (Tất cả sinh viên)</option>
+                        <option value="THEO_NGANH">Theo ngành đào tạo</option>
+                        <option value="THEO_LOP">Theo lớp chuyên ngành</option>
+                        <option value="THEO_SINH_VIEN">Theo danh sách sinh viên cụ thể</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6" id="wrapGiaTriApDung" style="display:none;">
+                    <label class="form-label small fw-semibold text-muted" id="lblGiaTriApDung">CHỌN ĐỐI TƯỢNG CỤ THỂ</label>
+                    
+                    <!-- Dropdown Ngành -->
+                    <select id="selNganh" class="form-select filter-select d-none">
+                        @foreach (var n in Model.DanhSachNganh)
+                        {
+                            <option value="@n.Id">@n.TenNganh (@n.MaNganh)</option>
+                        }
+                    </select>
+
+                    <!-- Dropdown Lớp -->
+                    <select id="selLop" class="form-select filter-select d-none">
+                        @foreach (var l in Model.DanhSachLop)
+                        {
+                            <option value="@l.Id">@l.TenLop</option>
+                        }
+                    </select>
+
+                    <!-- Input Text (Mã SV) -->
+                    <input type="text" id="txtSinhVien" class="form-control rounded-3 d-none" placeholder="Nhập các mã SV cách nhau bởi dấu phẩy, VD: SV202401, SV202402" />
+
+                    <!-- Hidden input gửi form -->
+                    <input type="hidden" asp-for="GiaTriApDung" id="realGiaTriApDung" />
+                </div>
+
+                <div class="col-12 mt-3">
+                    <div class="form-check form-switch p-3 bg-light rounded-4 border">
+                        <input asp-for="PhatHanhHoaDon" class="form-check-input ms-0 me-2" type="checkbox" role="switch" id="chkPhatHanh" checked>
+                        <label class="form-check-label fw-semibold text-dark" for="chkPhatHanh">
+                            Tự động phát hành hóa đơn học phí cho sinh viên thuộc đối tượng ngay sau khi tạo
+                        </label>
+                        <small class="text-muted d-block ms-5">Sinh viên sẽ thấy ngay khoản thu này trên cổng thanh toán VietQR cá nhân.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                <a asp-action="KhoanThu" class="btn btn-filter-reset px-4">Hủy bỏ</a>
+                <button type="submit" class="btn btn-filter-submit px-4 fw-bold" style="background: linear-gradient(135deg, #008744, #006030);">
+                    <i class="bi bi-check2-circle me-1"></i> Lưu & Phát hành khoản thu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/admin-payment.js" asp-append-version="true"></script>
+    <script>
+        function doiPhanVi(val) {
+            var wrap = document.getElementById('wrapGiaTriApDung');
+            var selNganh = document.getElementById('selNganh');
+            var selLop = document.getElementById('selLop');
+            var txtSv = document.getElementById('txtSinhVien');
+            var realVal = document.getElementById('realGiaTriApDung');
+            var lbl = document.getElementById('lblGiaTriApDung');
+
+            selNganh.classList.add('d-none');
+            selLop.classList.add('d-none');
+            txtSv.classList.add('d-none');
+
+            if (val === 'TOAN_TRUONG') {
+                wrap.style.display = 'none';
+                realVal.value = '';
+            } else if (val === 'THEO_NGANH') {
+                wrap.style.display = 'block';
+                lbl.innerText = 'CHỌN NGÀNH ÁP DỤNG';
+                selNganh.classList.remove('d-none');
+                realVal.value = selNganh.value;
+            } else if (val === 'THEO_LOP') {
+                wrap.style.display = 'block';
+                lbl.innerText = 'CHỌN LỚP ÁP DỤNG';
+                selLop.classList.remove('d-none');
+                realVal.value = selLop.value;
+            } else if (val === 'THEO_SINH_VIEN') {
+                wrap.style.display = 'block';
+                lbl.innerText = 'DANH SÁCH MÃ SINH VIÊN (PHÂN TÁCH BẰNG DẤU PHẨY)';
+                txtSv.classList.remove('d-none');
+                realVal.value = txtSv.value;
+            }
+        }
+
+        document.getElementById('selNganh').addEventListener('change', function() {
+            document.getElementById('realGiaTriApDung').value = this.value;
+        });
+        document.getElementById('selLop').addEventListener('change', function() {
+            document.getElementById('realGiaTriApDung').value = this.value;
+        });
+        document.getElementById('txtSinhVien').addEventListener('input', function() {
+            document.getElementById('realGiaTriApDung').value = this.value;
+        });
+    </script>
+}

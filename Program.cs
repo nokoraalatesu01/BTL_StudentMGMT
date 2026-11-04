@@ -10,6 +10,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     var connectionString = DbConnectionHelper.ResolveConnectionString(builder.Configuration.GetConnectionString("DefaultConnection"));
     options.UseSqlServer(connectionString);
+    options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 });
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -34,12 +35,23 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddScoped<IGiangVienSecurityService, GiangVienSecurityService>();
+builder.Services.AddScoped<IVietQrService, VietQrService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+try
 {
-    await DbSeeder.SeedAsync(scope.ServiceProvider);
+    using (var scope = app.Services.CreateScope())
+    {
+        await DbSeeder.SeedAsync(scope.ServiceProvider);
+    }
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, "Lỗi xảy ra trong quá trình Seed database ban đầu nhưng ứng dụng vẫn tiếp tục chạy.");
 }
 
 if (!app.Environment.IsDevelopment())

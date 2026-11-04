@@ -1,12 +1,34 @@
 :root {
     color-scheme: light;
-    font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-family: var(--font-family-base);
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     color: #172b45;
     background: #f8fafc;
+
+    /* ========== TYPOGRAPHY SYSTEM (EDUCATION DASHBOARD) ========== */
+    --font-size-page-title: 30px;        /* 30-32px: Tiêu đề trang chính */
+    --font-size-page-desc: 14.5px;       /* 14-15px: Mô tả dưới tiêu đề */
+    --font-size-card-title: 13px;        /* 13-14px: Tiêu đề Card / Nhãn */
+    --font-size-stat-gpa: 28px;          /* 28-30px: Giá trị GPA nổi bật */
+    --font-size-stat-val: 22px;          /* 22-24px: Giá trị Xếp loại, Tín chỉ, Mã SV */
+    --font-size-table-th: 12.5px;        /* 12-13px: Tiêu đề bảng */
+    --font-size-table-td: 13.5px;        /* 13-14px: Nội dung dòng bảng */
+    --font-size-sublabel: 12px;          /* 12px: Nhãn phụ, badge, ghi chú nhỏ */
+
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+
+    --line-height-tight: 1.2;
+    --line-height-base: 1.5;
+    --letter-spacing-tight: -0.02em;
+    --letter-spacing-label: 0.04em;
 
     --utc-navy-900: #081728;
     --utc-navy-800: #0c2340;
@@ -518,11 +540,11 @@ body.sidebar-collapsed .sidebar-toggle-topbar {
 }
 
 .student-eyebrow {
-    margin: 0 0 8px;
+    margin: 0 0 6px;
     color: #0284c7;
-    font-size: .72rem;
-    font-weight: 750;
-    letter-spacing: .12em;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .08em;
     text-transform: uppercase;
 }
 
@@ -530,17 +552,19 @@ body.sidebar-collapsed .sidebar-toggle-topbar {
 .student-page-heading h1 {
     margin: 0;
     color: #0c2340;
-    font-size: clamp(1.6rem, 2.8vw, 2.15rem);
-    font-weight: 750;
-    letter-spacing: -.03em;
+    font-size: var(--font-size-page-title, 30px);
+    font-weight: var(--font-weight-bold, 700);
+    letter-spacing: var(--letter-spacing-tight, -0.02em);
+    line-height: 1.25;
 }
 
 .student-welcome p:last-child,
 .student-page-heading > div > p:last-child {
-    margin: 8px 0 0;
+    margin: 6px 0 0;
     color: #64748b;
-    font-size: .92rem;
-    line-height: 1.55;
+    font-size: var(--font-size-page-desc, 14.5px);
+    font-weight: var(--font-weight-regular, 400);
+    line-height: 1.5;
 }
 
 .student-avatar {
@@ -596,82 +620,166 @@ img.student-avatar {
 .student-stat-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 18px;
+    gap: 16px;
     margin-bottom: 24px;
 }
 
 .student-stat-card {
     display: flex;
-    min-height: 110px;
+    min-height: 104px;
     align-items: center;
     gap: 16px;
-    padding: 20px 22px;
-    border: 1px solid #e8edf5;
-    border-radius: 18px;
+    padding: 18px 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
     background: #ffffff;
-    box-shadow: 0 4px 18px rgba(12, 35, 64, 0.035);
-    transition: all .28s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     position: relative;
     overflow: hidden;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .student-stat-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
     border-color: #cbd5e1;
-    box-shadow: 0 14px 28px -4px rgba(12, 35, 64, 0.09), 0 4px 10px rgba(12, 35, 64, 0.03);
+    box-shadow: 0 10px 20px -3px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
 }
 
+/* Thẻ Mã sinh viên - Nhấn mạnh nhận diện */
+.stat-card-masv {
+    background: #ffffff;
+    border-color: #bfdbfe;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
+}
+
+.stat-card-masv:hover {
+    border-color: #93c5fd;
+    box-shadow: 0 10px 22px -3px rgba(37, 99, 235, 0.14);
+}
+
+.stat-value-masv {
+    color: #1d4ed8 !important;
+    font-size: var(--font-size-stat-val, 22px) !important;
+    font-weight: var(--font-weight-bold, 700) !important;
+    letter-spacing: var(--letter-spacing-tight, -0.01em);
+}
+
+/* Thẻ GPA tích lũy - Điểm nhấn thành tích đào tạo */
+.stat-card-gpa {
+    background: #ffffff;
+    border-color: #fed7aa;
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.08);
+}
+
+.stat-card-gpa:hover {
+    border-color: #fdba74;
+    box-shadow: 0 10px 22px -3px rgba(234, 88, 12, 0.14);
+}
+
+.stat-value-gpa {
+    font-size: var(--font-size-stat-gpa, 28px) !important;
+    font-weight: var(--font-weight-bold, 700) !important;
+    color: #0f172a !important;
+    line-height: var(--line-height-tight, 1.2);
+    letter-spacing: var(--letter-spacing-tight, -0.02em);
+}
+
+.stat-gpa-container {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
+.stat-gpa-scale-label {
+    font-size: 13px;
+    font-weight: var(--font-weight-medium, 500);
+    color: #64748b;
+}
+
+.stat-gpa-he4-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--font-size-sublabel, 12px);
+    font-weight: var(--font-weight-semibold, 600);
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #dbeafe;
+    margin-left: 2px;
+}
+
+.stat-gpa-he4-pill i {
+    font-size: 11px;
+    color: #f59e0b;
+}
+
+/* Phần chữ phụ của thẻ Tín chỉ: (3/3 môn) */
+.stat-sub-tc {
+    font-size: 13px;
+    font-weight: var(--font-weight-medium, 500);
+    color: #64748b;
+    margin-left: 4px;
+    letter-spacing: 0;
+}
+
+/* Icon vùng riêng biệt, màu sắc tương phản cao */
 .student-stat-icon {
     display: grid;
     width: 48px;
     height: 48px;
     flex: 0 0 48px;
     place-items: center;
-    border-radius: 14px;
+    border-radius: 12px;
     font-size: 1.35rem;
-    transition: transform 0.25s ease;
+    transition: transform 0.2s ease;
 }
 
 .student-icon-blue {
-    color: #0284c7;
-    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.16);
+    color: #1d4ed8;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
 }
 
 .student-icon-green {
-    color: #16a34a;
-    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.16);
+    color: #15803d;
+    background: #f0fdf4;
+    border: 1px solid #dcfce7;
 }
 
 .student-icon-violet {
-    color: #9333ea;
-    background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
-    box-shadow: 0 4px 12px rgba(147, 51, 234, 0.16);
+    color: #7e22ce;
+    background: #faf5ff;
+    border: 1px solid #f3e8ff;
 }
 
 .student-icon-amber {
-    color: #d97706;
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.18);
+    color: #b45309;
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
 }
 
 .student-stat-card p {
-    margin: 0 0 5px;
+    margin: 0 0 4px;
     color: #64748b;
-    font-size: .75rem;
-    font-weight: 650;
-    letter-spacing: .04em;
+    font-size: var(--font-size-card-title, 13px);
+    font-weight: var(--font-weight-semibold, 600);
+    letter-spacing: var(--letter-spacing-label, 0.04em);
     text-transform: uppercase;
 }
 
 .student-stat-card strong {
     display: block;
-    color: #0c2340;
-    font-size: 1.32rem;
-    font-weight: 780;
-    letter-spacing: -.02em;
-    line-height: 1.2;
+    color: #0f172a;
+    font-size: var(--font-size-stat-val, 22px);
+    font-weight: var(--font-weight-bold, 700);
+    letter-spacing: var(--letter-spacing-tight, -0.01em);
+    line-height: var(--line-height-tight, 1.2);
 }
 
 .student-content-grid {
@@ -704,18 +812,18 @@ img.student-avatar {
 }
 
 .student-panel-heading .student-eyebrow {
-    margin-bottom: 6px;
-    font-size: .68rem;
+    margin-bottom: 4px;
+    font-size: 11.5px;
     color: #0284c7;
-    font-weight: 750;
+    font-weight: var(--font-weight-semibold, 600);
     letter-spacing: .08em;
 }
 
 .student-panel-heading h2 {
     margin: 0;
     color: #0c2340;
-    font-size: 1.15rem;
-    font-weight: 750;
+    font-size: 15px;
+    font-weight: var(--font-weight-semibold, 600);
     letter-spacing: -0.01em;
 }
 
@@ -787,27 +895,29 @@ img.student-avatar {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    font-size: .88rem;
+    font-size: var(--font-size-table-td, 13.5px);
     color: #1e293b;
 }
 
 .student-table th {
-    padding: 14px 16px;
+    padding: 12px 16px;
     border-bottom: 2px solid #e2e8f0;
     background: #f8fafc;
     color: #475569;
-    font-size: .74rem;
-    font-weight: 750;
-    letter-spacing: .06em;
+    font-size: var(--font-size-table-th, 12.5px);
+    font-weight: var(--font-weight-semibold, 600);
+    letter-spacing: var(--letter-spacing-label, 0.04em);
     text-align: left;
     text-transform: uppercase;
     white-space: nowrap;
 }
 
 .student-table td {
-    padding: 14px 16px;
+    padding: 13px 16px;
     border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
+    font-size: var(--font-size-table-td, 13.5px);
+    line-height: 1.45;
     transition: background 0.15s ease;
 }
 
@@ -823,11 +933,11 @@ img.student-avatar {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 4px 12px;
+    padding: 3px 10px;
     border-radius: 20px;
-    font-size: .76rem;
-    font-weight: 700;
-    letter-spacing: .02em;
+    font-size: var(--font-size-sublabel, 12px);
+    font-weight: var(--font-weight-semibold, 600);
+    letter-spacing: 0.01em;
     white-space: nowrap;
 }
 
@@ -843,6 +953,13 @@ img.student-avatar {
     color: #b91c1c;
     border: 1px solid #fecaca;
     box-shadow: 0 2px 6px rgba(239, 68, 68, 0.12);
+}
+
+.student-chip.blue {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
 }
 
 .student-page-heading {
@@ -1046,6 +1163,13 @@ img.student-avatar {
     }
 }
 
+@media (max-width: 900px) and (min-width: 561px) {
+    .student-stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}
+
 @media (max-width: 560px) {
     .student-stat-grid {
         grid-template-columns: 1fr;
@@ -1115,6 +1239,326 @@ img.student-avatar {
     .unlinked-panel {
         margin: 34px auto;
         padding: 28px 20px;
+    }
+}
+
+/* ==========================================================================
+   THỜI KHÓA BIỂU SINH VIÊN (MODERN UNIVERSITY SCHEDULE DASHBOARD)
+   ========================================================================== */
+.tkb-navigator-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04);
+}
+
+.tkb-week-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tkb-week-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: #0f172a;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.tkb-semester-select {
+    min-width: 230px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 6px 12px;
+}
+
+.tkb-matrix-wrap {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    box-shadow: 0 4px 18px rgba(12, 35, 64, 0.04);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.tkb-table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+}
+
+.tkb-table th,
+.tkb-table td {
+    border-right: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: top;
+    padding: 12px 14px;
+}
+
+.tkb-table th:last-child,
+.tkb-table td:last-child {
+    border-right: 0;
+}
+
+.tkb-table tr:last-child td {
+    border-bottom: 0;
+}
+
+/* Cột tiêu đề Ca học bên trái */
+.tkb-ca-col-header {
+    width: 140px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+    vertical-align: middle !important;
+}
+
+.tkb-ca-col-cell {
+    width: 140px;
+    background: #f8fafc;
+    vertical-align: middle !important;
+    text-align: center;
+    padding: 14px 10px;
+}
+
+.tkb-ca-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0c2340;
+    margin-bottom: 2px;
+}
+
+.tkb-ca-tiet {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2563eb;
+    margin-bottom: 3px;
+}
+
+.tkb-ca-time {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #64748b;
+    font-family: var(--font-family-base);
+}
+
+/* Cột ngày trong tuần */
+.tkb-day-header {
+    background: #f8fafc;
+    text-align: center;
+    padding: 14px 10px;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.tkb-day-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.tkb-day-date {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.tkb-day-header.col-today,
+.tkb-cell.col-today {
+    background-color: #fafcff;
+}
+
+.tkb-day-header.col-today .tkb-day-name {
+    color: #1d4ed8;
+}
+
+.tkb-day-badge-today {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #1d4ed8;
+    background: #eff6ff;
+    padding: 1px 6px;
+    border-radius: 6px;
+    margin-top: 3px;
+    border: 1px solid #bfdbfe;
+}
+
+/* Ô thời khóa biểu */
+.tkb-cell {
+    min-height: 110px;
+    height: 110px;
+    background: #ffffff;
+    transition: background 0.15s ease;
+}
+
+.tkb-cell:hover {
+    background: #fbfcfe;
+}
+
+.tkb-cell-empty {
+    height: 100%;
+    min-height: 84px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #cbd5e1;
+    font-size: 13px;
+    user-select: none;
+}
+
+/* Thẻ buổi học (Schedule Card) */
+.tkb-card {
+    position: relative;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    margin-bottom: 8px;
+}
+
+.tkb-card:last-child {
+    margin-bottom: 0;
+}
+
+.tkb-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.09);
+    border-color: #93c5fd;
+    border-left-color: #1d4ed8;
+}
+
+.tkb-card-subject {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.3;
+    margin-bottom: 5px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.tkb-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    font-size: 11.5px;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.tkb-card-meta i {
+    font-size: 11px;
+}
+
+.tkb-card-room {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #0369a1;
+    font-weight: 600;
+    background: #f0f9ff;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid #e0f2fe;
+}
+
+.tkb-card-badge-hp {
+    font-family: monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+/* Buổi học kéo dài từ ca trước */
+.tkb-card.extended {
+    border-left-color: #9333ea;
+    background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%);
+}
+
+.tkb-card-badge-cont {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #7e22ce;
+    background: #f3e8ff;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+/* Buổi học bị trùng lịch */
+.tkb-card.conflict {
+    border-left-color: #dc2626 !important;
+    border-color: #fca5a5 !important;
+    background: #fff5f5;
+}
+
+.tkb-card-badge-conflict {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #b91c1c;
+    background: #fee2e2;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+/* Modal chi tiết */
+.tkb-detail-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+}
+
+.tkb-detail-val {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 991px) {
+    .tkb-table {
+        min-width: 860px;
     }
 }
 

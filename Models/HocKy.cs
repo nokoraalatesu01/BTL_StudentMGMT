@@ -24,4 +24,6 @@ public partial class HocKy
     public string TrangThai { get; set; } = null!;
 
     public virtual NamHoc NamHoc { get; set; } = null!;
+
+    public virtual ICollection<LopHocPhan> LopHocPhans { get; set; } = new List<LopHocPhan>();
 }

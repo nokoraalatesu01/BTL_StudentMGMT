@@ -1,0 +1,264 @@
+@model BTL_StudentMGMT.Models.AdminChiTietKhoanThuViewModel
+@{
+    ViewData["Title"] = "Chi tiết đợt thu học phí";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var d = Model.DotThu;
+}
+
+<div class="container-fluid px-3 py-2 payment-dashboard-wrap">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 payment-header-anim">
+        <div class="d-flex align-items-center gap-3">
+            <div class="payment-header-icon">
+                <i class="bi bi-journal-check"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-light text-dark border font-monospace">@d.MaKhoanThu</span>
+                    <h2 class="payment-header-title mb-0">@d.TenKhoanThu</h2>
+                    @if (d.TrangThai == "ACTIVE")
+                    {
+                        <span class="payment-pill pill-paid">Đang áp dụng</span>
+                    }
+                    else
+                    {
+                        <span class="payment-pill pill-failed">Đã ngừng áp dụng</span>
+                    }
+                </div>
+                <div class="payment-header-subtitle">
+                    Học kỳ: <strong class="text-dark">@(d.HocKy?.TenHocKy)</strong> &bull; Hạn nộp: <strong class="text-danger">@(d.HanThanhToan.HasValue ? d.HanThanhToan.Value.ToString("dd/MM/yyyy") : "Không thời hạn")</strong>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-filter-submit px-3" data-bs-toggle="modal" data-bs-target="#modalSuaKhoanThu" style="background:#1d4ed8;">
+                <i class="bi bi-pencil-square"></i>
+                <span>Chỉnh sửa</span>
+            </button>
+            @if (d.TrangThai == "ACTIVE")
+            {
+                <form method="post" asp-action="NgungKhoanThu" asp-route-id="@d.Id" onsubmit="return confirm('Bạn có chắc chắn muốn ngừng áp dụng khoản thu này? Sinh viên sẽ không thể nộp thêm.');" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger rounded-3 fw-semibold px-3" style="height:40px;">
+                        <i class="bi bi-stop-circle me-1"></i> Ngừng áp dụng
+                    </button>
+                </form>
+            }
+            <a asp-action="KhoanThu" class="btn btn-filter-reset w-auto px-3">
+                <i class="bi bi-arrow-left me-1"></i>
+                <span>Quay lại</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <partial name="_NavTabs" />
+
+    <!-- 4 Thẻ Thống kê Tiến độ (Pastel Theme & Count-up) -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="payment-stat-card card-blue">
+                <div class="stat-header">
+                    <span class="stat-label">TỔNG SINH VIÊN ÁP DỤNG</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-primary" data-counter-target="@Model.TongSinhVien" data-is-currency="false">
+                        @Model.TongSinhVien
+                    </div>
+                    <div class="stat-hint">
+                        <span>Đã phát hành hóa đơn</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="payment-stat-card card-emerald">
+                <div class="stat-header">
+                    <span class="stat-label text-success">SINH VIÊN ĐÃ ĐÓNG</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-success" data-counter-target="@Model.SinhVienDaDong" data-is-currency="false">
+                        @Model.SinhVienDaDong
+                    </div>
+                    <div class="stat-hint text-success">
+                        <i class="bi bi-pie-chart"></i>
+                        <span>@(Model.TongSinhVien > 0 ? (Model.SinhVienDaDong * 100.0 / Model.TongSinhVien).ToString("N1") : "0")% hoàn thành</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="payment-stat-card card-cyan">
+                <div class="stat-header">
+                    <span class="stat-label text-info">TỔNG TIỀN ĐÃ THU</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-dark" data-counter-target="@Model.TongDaThu" data-is-currency="true">
+                        @Model.TongDaThu.ToString("N0") ₫
+                    </div>
+                    <div class="stat-hint">
+                        <span>Kế hoạch: @Model.TongPhaiThu.ToString("N0") ₫</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="payment-stat-card card-rose">
+                <div class="stat-header">
+                    <span class="stat-label text-danger">CÒN PHẢI THU</span>
+                    <div class="stat-badge-icon">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-value text-danger" data-counter-target="@Model.TongConNo" data-is-currency="true">
+                        @Model.TongConNo.ToString("N0") ₫
+                    </div>
+                    <div class="stat-hint text-danger">
+                        <span>@Model.SinhVienChuaDong sinh viên chưa hoàn thành</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh sách hóa đơn sinh viên phát sinh từ đợt này -->
+    <div class="payment-table-card">
+        <div class="payment-card-header px-4 pt-3 pb-2 mb-0">
+            <h6 class="payment-card-title">
+                <i class="bi bi-people text-primary"></i>
+                <span>Danh sách sinh viên trong đợt thu (@Model.DanhSachHoaDon.Count)</span>
+            </h6>
+        </div>
+        <div class="table-responsive">
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th>MÃ HÓA ĐƠN</th>
+                        <th>SINH VIÊN</th>
+                        <th>LỚP</th>
+                        <th>SỐ TIỀN</th>
+                        <th>ĐÃ THANH TOÁN</th>
+                        <th>CÒN PHẢI ĐÓNG</th>
+                        <th>TRẠNG THÁI</th>
+                        <th class="text-end">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.DanhSachHoaDon.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-3 d-block text-secondary mb-2"></i>
+                                Chưa phát hành hóa đơn cho sinh viên nào trong đợt thu này.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var hd in Model.DanhSachHoaDon)
+                    {
+                        <tr>
+                            <td class="font-monospace fw-bold text-dark">@hd.SoHoaDon</td>
+                            <td>
+                                <div class="fw-bold text-dark">@(hd.SinhVien?.HoTen ?? "N/A")</div>
+                                <div class="text-muted font-monospace small">@(hd.SinhVien?.MaSinhVien)</div>
+                            </td>
+                            <td>@(hd.SinhVien?.Lop?.TenLop ?? "Chưa xếp lớp")</td>
+                            <td class="fw-bold font-monospace">@hd.SoTien.ToString("N0") ₫</td>
+                            <td class="fw-bold font-monospace text-success">@hd.DaThanhToan.ToString("N0") ₫</td>
+                            <td class="fw-bold font-monospace text-danger">@hd.ConPhaiDong.ToString("N0") ₫</td>
+                            <td>
+                                @if (hd.TrangThai == "DA_THANH_TOAN")
+                                {
+                                    <span class="payment-pill pill-paid">Đã thanh toán</span>
+                                }
+                                else if (hd.TrangThai == "THANH_TOAN_MOT_PHAN")
+                                {
+                                    <span class="payment-pill pill-pending">Một phần</span>
+                                }
+                                else
+                                {
+                                    <span class="payment-pill pill-failed">Chưa thanh toán</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="ChiTietCongNo" asp-route-sinhVienId="@hd.SinhVienId" class="action-icon-btn btn-vcb" title="Xem công nợ sinh viên">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="payment-pagination-bar">
+            <span>Hiển thị @Model.DanhSachHoaDon.Count hóa đơn phát hành</span>
+            <span>Đối soát tự động qua mã hóa đơn và định mức tín chỉ</span>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chỉnh sửa khoản thu -->
+<div class="modal fade" id="modalSuaKhoanThu" tabindex="-1" aria-labelledby="modalSuaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <form method="post" asp-action="CapNhatKhoanThu">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@d.Id" />
+
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold text-dark" id="modalSuaLabel">Chỉnh sửa khoản thu @d.MaKhoanThu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">TÊN KHOẢN THU *</label>
+                        <input type="text" name="tenKhoanThu" value="@d.TenKhoanThu" class="form-control rounded-3" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">MÔ TẢ</label>
+                        <textarea name="moTa" rows="2" class="form-control rounded-3">@d.MoTa</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">HẠN NỘP HỌC PHÍ</label>
+                        <input type="date" name="hanThanhToan" value="@(d.HanThanhToan.HasValue ? d.HanThanhToan.Value.ToString("yyyy-MM-dd") : "")" class="form-control filter-select" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">SỐ TIỀN ĐỊNH MỨC (VNĐ)</label>
+                        @if (Model.CoTheSuaSoTien)
+                        {
+                            <input type="number" step="10000" name="soTienMoi" value="@d.SoTien.ToString("F0")" class="form-control rounded-3 font-monospace fw-bold text-success fs-6" />
+                            <small class="text-muted d-block mt-1">Khoản thu chưa có giao dịch thành công nào, có thể điều chỉnh số tiền.</small>
+                        }
+                        else
+                        {
+                            <input type="text" value="@d.SoTien.ToString("N0") ₫" class="form-control rounded-3 font-monospace bg-light" readonly />
+                            <div class="alert alert-warning small rounded-3 p-2 mt-2 mb-0 border-0" style="background:#fffbeb; color:#92400e;">
+                                <i class="bi bi-shield-lock-fill me-1"></i> Khoản thu này đã phát sinh giao dịch thanh toán thành công. Quy chế tài chính không cho phép chỉnh sửa số tiền để bảo toàn tính toàn vẹn dữ liệu.
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <button type="button" class="btn btn-filter-reset px-3" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-filter-submit px-4" style="background: linear-gradient(135deg, #008744, #006030);">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-payment.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,42 @@
+@model BTL_StudentMGMT.Models.BieuPhiHocPhiFormViewModel
+@{
+    ViewData["Title"] = "Biểu phí học phí";
+    var fees = ViewBag.BieuPhis as IEnumerable<BTL_StudentMGMT.Models.BieuPhiHocPhiListItemViewModel>
+        ?? Enumerable.Empty<BTL_StudentMGMT.Models.BieuPhiHocPhiListItemViewModel>();
+}
+<section class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><a asp-action="Index" class="text-decoration-none">&larr; Quản lý học phí</a><h1 class="h3 mt-2">Biểu phí học phí</h1></div>
+    </div>
+    @if (TempData["Msg"] is string success) { <div class="alert alert-success">@success</div> }
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <form asp-action="BieuPhi" method="post" class="card shadow-sm">
+                <div class="card-header fw-semibold">Thêm biểu phí</div>
+                <div class="card-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="mb-3"><label asp-for="NamHocId" class="form-label"></label><select asp-for="NamHocId" asp-items="ViewBag.NamHocs" class="form-select"><option value="">Chọn năm học</option></select><span asp-validation-for="NamHocId" class="text-danger"></span></div>
+                    <div class="mb-3"><label asp-for="ChuongTrinhId" class="form-label"></label><select asp-for="ChuongTrinhId" asp-items="ViewBag.ChuongTrinhs" class="form-select"><option value="">Áp dụng mọi chương trình</option></select></div>
+                    <div class="mb-3"><label asp-for="DonGiaTinChi" class="form-label"></label><div class="input-group"><input asp-for="DonGiaTinChi" class="form-control" min="0.01" step="0.01" /><span class="input-group-text">₫</span></div><span asp-validation-for="DonGiaTinChi" class="text-danger"></span></div>
+                    <div class="mb-3"><label asp-for="HieuLucTu" class="form-label"></label><input asp-for="HieuLucTu" type="date" class="form-control" /><span asp-validation-for="HieuLucTu" class="text-danger"></span></div>
+                    <div><label asp-for="HieuLucDen" class="form-label"></label><input asp-for="HieuLucDen" type="date" class="form-control" /><span asp-validation-for="HieuLucDen" class="text-danger"></span></div>
+                </div>
+                <div class="card-footer text-end"><button class="btn btn-primary" type="submit">Lưu biểu phí</button></div>
+            </form>
+        </div>
+        <div class="col-lg-7">
+            <div class="table-responsive bg-white rounded-3 shadow-sm">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light"><tr><th>Năm học</th><th>Chương trình</th><th>Đơn giá/tín chỉ</th><th>Hiệu lực</th></tr></thead>
+                    <tbody>
+                    @foreach (var fee in fees)
+                    {
+                        <tr><td>@fee.NamHoc</td><td>@fee.TenChuongTrinh</td><td>@fee.DonGiaTinChi.ToString("N0") ₫</td><td>@fee.HieuLucTu.ToString("dd/MM/yyyy") - @(fee.HieuLucDen?.ToString("dd/MM/yyyy") ?? "Không thời hạn")</td></tr>
+                    }
+                    @if (!fees.Any()) { <tr><td colspan="4" class="text-center text-muted py-3">Chưa có biểu phí.</td></tr> }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
