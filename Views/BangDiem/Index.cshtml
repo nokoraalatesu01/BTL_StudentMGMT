@@ -144,9 +144,9 @@
     <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
         <!-- Lọc Lớp học phần -->
         <div class="d-flex align-items-center gap-2" style="position:relative; min-width:240px; flex:1;">
-            <i class="bi bi-collection" style="position:absolute; left:12px; color:#94a3b8; font-size:.9rem; pointer-events:none;"></i>
+            <i class="bi bi-collection" style="position:absolute; left:12px; color:#94a3b8; font-size:.9rem; pointer-events:none; z-index:2;"></i>
             <select name="lopHocPhanId" asp-items="ViewBag.DanhSachLopHocPhan"
-                    class="form-select"
+                    class="form-select w-100"
                     style="padding-left:34px; font-size:.875rem; border-color:#d1d5db; color:#374151;">
                 <option value="">-- Tất cả Lớp học phần --</option>
             </select>
@@ -154,9 +154,9 @@
 
         <!-- Lọc sinh viên -->
         <div class="d-flex align-items-center gap-2" style="position:relative; min-width:240px; flex:1;">
-            <i class="bi bi-person" style="position:absolute; left:12px; color:#94a3b8; font-size:.9rem; pointer-events:none;"></i>
+            <i class="bi bi-person" style="position:absolute; left:12px; color:#94a3b8; font-size:.9rem; pointer-events:none; z-index:2;"></i>
             <select name="sinhVienId" asp-items="ViewBag.DanhSachSinhVien"
-                    class="form-select"
+                    class="form-select w-100"
                     style="padding-left:34px; font-size:.875rem; border-color:#d1d5db; color:#374151;">
                 <option value="">-- Tất cả sinh viên --</option>
             </select>
@@ -164,7 +164,7 @@
 
         <!-- Lọc Lần thi -->
         <div class="d-flex align-items-center gap-2" style="position:relative; min-width:160px;">
-            <select name="lanThi" class="form-select" style="font-size:.875rem; border-color:#d1d5db; color:#374151;">
+            <select name="lanThi" class="form-select" style="width:160px; min-width:140px; font-size:.875rem; border-color:#d1d5db; color:#374151;">
                 <option value="">-- Tất cả lần thi --</option>
                 <option value="1" selected="@(ViewBag.LanThi == 1)">Lần thi 1</option>
                 <option value="2" selected="@(ViewBag.LanThi == 2)">Lần thi 2</option>
