@@ -1,0 +1,140 @@
+@model BTL_StudentMGMT.Models.VietQrConfig
+@{
+    ViewData["Title"] = "Cấu hình tài khoản Vietcombank & VietQR";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid px-3 py-2 payment-dashboard-wrap" style="max-width:980px;">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 payment-header-anim">
+        <div class="d-flex align-items-center gap-3">
+            <div class="payment-header-icon">
+                <i class="bi bi-gear-fill"></i>
+            </div>
+            <div>
+                <h2 class="payment-header-title mb-0">
+                    Cấu hình tài khoản Vietcombank & VietQR
+                </h2>
+                <div class="payment-header-subtitle">
+                    Thông tin tài khoản thụ hưởng của Nhà trường để tạo mã VietQR Napas 24/7 và xác thực Webhook
+                </div>
+            </div>
+        </div>
+        <a asp-action="Index" class="btn btn-filter-reset w-auto px-3">
+            <i class="bi bi-arrow-left me-1"></i>
+            <span>Về tổng quan</span>
+        </a>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <partial name="_NavTabs" />
+
+    <div class="payment-card">
+        <form method="post" asp-action="CauHinh">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <!-- Nhóm 1: Thông tin Ngân hàng thụ hưởng -->
+            <div class="payment-card-header pb-2 mb-3">
+                <h6 class="payment-card-title text-success">
+                    <i class="bi bi-bank"></i>
+                    <span>1. Thông tin tài khoản Vietcombank nhận tiền</span>
+                </h6>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label asp-for="BankId" class="form-label fw-semibold small text-muted"></label>
+                    <input asp-for="BankId" class="form-control rounded-3" readonly style="background:#f1f5f9;" />
+                    <small class="text-muted">Mã định danh Vietcombank theo quy định Napas (970436)</small>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="BankName" class="form-label fw-semibold small text-muted"></label>
+                    <input asp-for="BankName" class="form-control rounded-3" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="AccountNumber" class="form-label fw-semibold small text-muted"></label>
+                    <input asp-for="AccountNumber" class="form-control rounded-3 font-monospace fw-bold text-success fs-6" required />
+                    <span asp-validation-for="AccountNumber" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="AccountHolderName" class="form-label fw-semibold small text-muted"></label>
+                    <input asp-for="AccountHolderName" class="form-control rounded-3 fw-bold text-uppercase" required />
+                    <span asp-validation-for="AccountHolderName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Template" class="form-label fw-semibold small text-muted"></label>
+                    <select asp-for="Template" class="form-select filter-select">
+                        <option value="compact2">compact2 (Khuyên dùng: Gọn, có logo VCB & Napas)</option>
+                        <option value="compact">compact (Kèm chi tiết chuyển khoản)</option>
+                        <option value="qr_only">qr_only (Chỉ mã QR)</option>
+                        <option value="print">print (Bản in A4 hóa đơn)</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Environment" class="form-label fw-semibold small text-muted"></label>
+                    <select asp-for="Environment" class="form-select filter-select fw-bold">
+                        <option value="Sandbox">Sandbox (Môi trường thử nghiệm & Mô phỏng)</option>
+                        <option value="Production">Production (Môi trường thật - Xác thực chữ ký)</option>
+                    </select>
+                    <small class="text-muted">Ở Sandbox có sẵn nút test mô phỏng không cần nộp tiền thật.</small>
+                </div>
+            </div>
+
+            <!-- Nhóm 2: Thông tin API & Webhook Secret -->
+            <div class="payment-card-header pb-2 mb-3">
+                <h6 class="payment-card-title text-primary">
+                    <i class="bi bi-shield-lock"></i>
+                    <span>2. Thông số kết nối API & Webhook Secret</span>
+                </h6>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-12">
+                    <label asp-for="ApiBaseUrl" class="form-label fw-semibold small text-muted"></label>
+                    <input asp-for="ApiBaseUrl" class="form-control rounded-3" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="ClientId" class="form-label fw-semibold small text-muted"></label>
+                    <input asp-for="ClientId" class="form-control rounded-3" placeholder="Để trống nếu dùng QuickLink QR" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="ApiKey" class="form-label fw-semibold small text-muted"></label>
+                    <input asp-for="ApiKey" class="form-control rounded-3" type="password" placeholder="Nhập API Key nếu được cấp" />
+                </div>
+                <div class="col-md-12">
+                    <label asp-for="WebhookSecret" class="form-label fw-semibold small text-muted"></label>
+                    <input asp-for="WebhookSecret" class="form-control rounded-3 font-monospace" required />
+                    <small class="text-muted">Khóa bí mật dùng để xác thực tính toàn vẹn (HMAC-SHA256) của dữ liệu Webhook.</small>
+                </div>
+            </div>
+
+            <!-- URL Webhook Endpoint của hệ thống -->
+            <div class="p-3 bg-light rounded-4 border mb-4">
+                <label class="form-label fw-bold small text-dark mb-1">
+                    <i class="bi bi-link-45deg me-1 text-success"></i>URL Webhook tiếp nhận biến động số dư Vietcombank:
+                </label>
+                <div class="input-group">
+                    <input type="text" class="form-control font-monospace small bg-white rounded-start-3" readonly value="https://<your-domain>/api/payment/webhook/vietqr" id="webhookUrlInput" />
+                    <button class="btn btn-outline-secondary rounded-end-3" type="button" onclick="navigator.clipboard.writeText(document.getElementById('webhookUrlInput').value); alert('Đã sao chép URL Webhook!');">
+                        <i class="bi bi-copy"></i> Sao chép
+                    </button>
+                </div>
+                <small class="text-muted mt-1 d-block">
+                    Cung cấp URL này cho Cổng thanh toán hoặc dịch vụ Webhook biến động số dư Vietcombank.
+                </small>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-filter-reset px-4">Hủy bỏ</a>
+                <button type="submit" class="btn btn-filter-submit px-4 fw-bold" style="background: linear-gradient(135deg, #008744, #006030);">
+                    <i class="bi bi-save me-1"></i> Lưu cấu hình
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-payment.js" asp-append-version="true"></script>
+}

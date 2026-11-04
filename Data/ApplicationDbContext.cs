@@ -33,12 +33,15 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<DiemThanhPhan> DiemThanhPhans => Set<DiemThanhPhan>();
     public DbSet<KetQuaHocTap> KetQuaHocTaps => Set<KetQuaHocTap>();
     public DbSet<ChuongTrinhHocBong> ChuongTrinhHocBongs => Set<ChuongTrinhHocBong>();
-    // Schema mở rộng (chưa kích hoạt nghiệp vụ):
-    // public DbSet<BuoiDiemDanh> BuoiDiemDanhs => Set<BuoiDiemDanh>();
-    // public DbSet<ChiTietHoaDonHocPhi> ChiTietHoaDonHocPhis => Set<ChiTietHoaDonHocPhi>();
-    // public DbSet<HoaDonHocPhi> HoaDonHocPhis => Set<HoaDonHocPhi>();
-    // public DbSet<ThanhToan> ThanhToans => Set<ThanhToan>();
-    // public DbSet<BieuPhiHocPhi> BieuPhiHocPhis => Set<BieuPhiHocPhi>();
+    
+    // Hệ thống Học phí & Thanh toán tự động VietQR
+    public DbSet<HoaDonHocPhi> HoaDonHocPhis => Set<HoaDonHocPhi>();
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<BankTransaction> BankTransactions => Set<BankTransaction>();
+    public DbSet<PaymentWebhookLog> PaymentWebhookLogs => Set<PaymentWebhookLog>();
+    public DbSet<VietQrConfig> VietQrConfigs => Set<VietQrConfig>();
+    public DbSet<DotThuHocPhi> DotThuHocPhis => Set<DotThuHocPhi>();
+    public DbSet<NhatKyThanhToan> NhatKyThanhToans => Set<NhatKyThanhToan>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -445,21 +448,84 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         //     entity.HasOne(d => d.HoaDon).WithMany(p => p.ChiTietHoaDonHocPhis).HasForeignKey(d => d.HoaDonId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_CTHD_HD");
         // });
 
-        // modelBuilder.Entity<ThanhToan>(entity =>
-        // {
-        //     entity.ToTable("ThanhToan");
-        //     entity.HasIndex(e => new { e.HoaDonId, e.TrangThai }, "IX_ThanhToan_HD_TrangThai");
-        //     entity.HasIndex(e => e.IdempotencyKey, "UQ_ThanhToan_Idempotency").IsUnique();
-        //     entity.Property(e => e.GhiChu).HasMaxLength(500);
-        //     entity.Property(e => e.IdempotencyKey).HasMaxLength(100).IsUnicode(false);
-        //     entity.Property(e => e.MaGiaoDich).HasMaxLength(100).IsUnicode(false);
-        //     entity.Property(e => e.NguonThanhToan).HasMaxLength(100);
-        //     entity.Property(e => e.PhuongThuc).HasMaxLength(20).IsUnicode(false);
-        //     entity.Property(e => e.SoTien).HasColumnType("decimal(18, 2)");
-        //     entity.Property(e => e.ThoiGianThanhToan).HasPrecision(0).HasDefaultValueSql("(sysutcdatetime())", "DF_ThanhToan_Time");
-        //     entity.Property(e => e.TrangThai).HasMaxLength(20).IsUnicode(false).HasDefaultValue("PENDING", "DF_ThanhToan_TrangThai");
-        //     entity.HasOne(d => d.HoaDon).WithMany(p => p.ThanhToans).HasForeignKey(d => d.HoaDonId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_ThanhToan_HD");
-        // });
+        // Cấu hình Hệ thống Thanh toán Học phí VietQR
+        modelBuilder.Entity<HoaDonHocPhi>(entity =>
+        {
+            entity.ToTable("HoaDonHocPhi");
+            entity.HasIndex(e => e.SoHoaDon).IsUnique();
+            entity.HasIndex(e => new { e.SinhVienId, e.HocKyId });
+            entity.Property(e => e.SoTien).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.DaThanhToan).HasColumnType("decimal(18,2)");
+            entity.HasOne(e => e.SinhVien)
+                  .WithMany()
+                  .HasForeignKey(e => e.SinhVienId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.HocKy)
+                  .WithMany()
+                  .HasForeignKey(e => e.HocKyId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.ToTable("Payment");
+            entity.HasIndex(e => e.TransactionCode).IsUnique();
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.BankTransactionId);
+            entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
+            entity.HasOne(e => e.HoaDonHocPhi)
+                  .WithMany(h => h.Payments)
+                  .HasForeignKey(e => e.HoaDonHocPhiId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.SinhVien)
+                  .WithMany()
+                  .HasForeignKey(e => e.SinhVienId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<BankTransaction>(entity =>
+        {
+            entity.ToTable("BankTransaction");
+            entity.HasIndex(e => e.BankTransactionId).IsUnique();
+            entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
+            entity.HasOne(e => e.Payment)
+                  .WithOne(p => p.BankTransaction)
+                  .HasForeignKey<BankTransaction>(b => b.PaymentId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<PaymentWebhookLog>(entity =>
+        {
+            entity.ToTable("PaymentWebhookLog");
+            entity.HasIndex(e => e.ReceivedAt);
+        });
+
+        modelBuilder.Entity<VietQrConfig>(entity =>
+        {
+            entity.ToTable("VietQrConfig");
+        });
+
+        modelBuilder.Entity<DotThuHocPhi>(entity =>
+        {
+            entity.ToTable("DotThuHocPhi");
+            entity.HasIndex(e => e.MaKhoanThu).IsUnique();
+            entity.Property(e => e.SoTien).HasColumnType("decimal(18,2)");
+            entity.HasOne(e => e.HocKy)
+                  .WithMany()
+                  .HasForeignKey(e => e.HocKyId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasMany(e => e.HoaDonHocPhis)
+                  .WithOne(h => h.DotThu)
+                  .HasForeignKey(h => h.DotThuId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<NhatKyThanhToan>(entity =>
+        {
+            entity.ToTable("NhatKyThanhToan");
+            entity.HasIndex(e => e.ThoiGian);
+            entity.HasIndex(e => e.HanhDong);
+        });
 
         OnModelCreatingPartial(modelBuilder);
     }

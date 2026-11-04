@@ -90,6 +90,60 @@ namespace BTL_StudentMGMT.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.BankTransaction", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("BankTransactionId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Direction")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<long?>("PaymentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RawData")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TransactionContent")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TransactionId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankTransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("PaymentId")
+                        .IsUnique()
+                        .HasFilter("[PaymentId] IS NOT NULL");
+
+                    b.ToTable("BankTransaction", (string)null);
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.ChuongTrinhDaoTao", b =>
                 {
                     b.Property<int>("Id")
@@ -553,6 +607,63 @@ namespace BTL_StudentMGMT.Migrations
                     b.ToTable("GiangViens");
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.HoaDonHocPhi", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("DaThanhToan")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("GhiChu")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateOnly?>("HanThanhToan")
+                        .HasColumnType("date");
+
+                    b.Property<int>("HocKyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayLap")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SinhVienId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SoHoaDon")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("SoTien")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("TenKhoanThu")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HocKyId");
+
+                    b.HasIndex("SoHoaDon")
+                        .IsUnique();
+
+                    b.HasIndex("SinhVienId", "HocKyId");
+
+                    b.ToTable("HoaDonHocPhi", (string)null);
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.HocKy", b =>
                 {
                     b.Property<int>("HocKyId")
@@ -988,6 +1099,128 @@ namespace BTL_StudentMGMT.Migrations
                     b.ToTable("Nganhs");
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.Payment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("BankReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("BankTransactionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("HoaDonHocPhiId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsAutoVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentContent")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("QrUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RawWebhookData")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SinhVienId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TransactionCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankTransactionId");
+
+                    b.HasIndex("HoaDonHocPhiId");
+
+                    b.HasIndex("SinhVienId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TransactionCode")
+                        .IsUnique();
+
+                    b.ToTable("Payment", (string)null);
+                });
+
+            modelBuilder.Entity("BTL_StudentMGMT.Models.PaymentWebhookLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EventId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProcessingStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("ReceivedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("SignatureValid")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceivedAt");
+
+                    b.ToTable("PaymentWebhookLog", (string)null);
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.PhongHoc", b =>
                 {
                     b.Property<int>("PhongHocId")
@@ -1138,6 +1371,70 @@ namespace BTL_StudentMGMT.Migrations
                     b.ToTable("ThanhPhanDiem", (string)null);
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.VietQrConfig", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountHolderName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ApiBaseUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ApiKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("BankId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ClientId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Environment")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Template")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("WebhookSecret")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VietQrConfig", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -1269,6 +1566,16 @@ namespace BTL_StudentMGMT.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("BTL_StudentMGMT.Models.BankTransaction", b =>
+                {
+                    b.HasOne("BTL_StudentMGMT.Models.Payment", "Payment")
+                        .WithOne("BankTransaction")
+                        .HasForeignKey("BTL_StudentMGMT.Models.BankTransaction", "PaymentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.ChuongTrinhDaoTao", b =>
@@ -1428,6 +1735,25 @@ namespace BTL_StudentMGMT.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.HoaDonHocPhi", b =>
+                {
+                    b.HasOne("BTL_StudentMGMT.Models.HocKy", "HocKy")
+                        .WithMany()
+                        .HasForeignKey("HocKyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BTL_StudentMGMT.Models.SinhVien", "SinhVien")
+                        .WithMany()
+                        .HasForeignKey("SinhVienId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("HocKy");
+
+                    b.Navigation("SinhVien");
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.HocKy", b =>
                 {
                     b.HasOne("BTL_StudentMGMT.Models.NamHoc", "NamHoc")
@@ -1538,6 +1864,25 @@ namespace BTL_StudentMGMT.Migrations
                     b.Navigation("DonVi");
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.Payment", b =>
+                {
+                    b.HasOne("BTL_StudentMGMT.Models.HoaDonHocPhi", "HoaDonHocPhi")
+                        .WithMany("Payments")
+                        .HasForeignKey("HoaDonHocPhiId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BTL_StudentMGMT.Models.SinhVien", "SinhVien")
+                        .WithMany()
+                        .HasForeignKey("SinhVienId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("HoaDonHocPhi");
+
+                    b.Navigation("SinhVien");
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.SinhVien", b =>
                 {
                     b.HasOne("BTL_StudentMGMT.Models.Lop", "Lop")
@@ -1625,6 +1970,11 @@ namespace BTL_StudentMGMT.Migrations
                     b.Navigation("LopHocPhans");
                 });
 
+            modelBuilder.Entity("BTL_StudentMGMT.Models.HoaDonHocPhi", b =>
+                {
+                    b.Navigation("Payments");
+                });
+
             modelBuilder.Entity("BTL_StudentMGMT.Models.HocKy", b =>
                 {
                     b.Navigation("LopHocPhans");
@@ -1661,6 +2011,11 @@ namespace BTL_StudentMGMT.Migrations
                     b.Navigation("ChuongTrinhs");
 
                     b.Navigation("Lops");
+                });
+
+            modelBuilder.Entity("BTL_StudentMGMT.Models.Payment", b =>
+                {
+                    b.Navigation("BankTransaction");
                 });
 
             modelBuilder.Entity("BTL_StudentMGMT.Models.PhongHoc", b =>

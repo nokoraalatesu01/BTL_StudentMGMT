@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="~/css/sinhvien.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/portal-ui.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-payment.css" asp-append-version="true" />
     <script>
         (function() {
             try {
@@ -66,6 +67,10 @@
                 <a asp-controller="BangDiem" asp-action="Index" class="@(currentController == "BangDiem" ? "active" : "")" aria-current="@(currentController == "BangDiem" ? "page" : null)">
                     <span class="nav-symbol" aria-hidden="true"><i class="bi bi-award"></i></span>
                     <span>Bảng điểm</span>
+                </a>
+                <a asp-controller="QuanLyThanhToan" asp-action="Index" class="@(currentController == "QuanLyThanhToan" ? "active" : "")" aria-current="@(currentController == "QuanLyThanhToan" ? "page" : null)">
+                    <span class="nav-symbol" aria-hidden="true"><i class="bi bi-wallet2"></i></span>
+                    <span>Quản lý thanh toán</span>
                 </a>
                 <a asp-controller="QuanLyTaiKhoan" asp-action="Index" class="@(currentController == "QuanLyTaiKhoan" ? "active" : "")" aria-current="@(currentController == "QuanLyTaiKhoan" ? "page" : null)">
                     <span class="nav-symbol" aria-hidden="true"><i class="bi bi-shield-lock"></i></span>
@@ -141,4 +146,3 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-

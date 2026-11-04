@@ -1,0 +1,55 @@
+@{
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "Index";
+}
+
+<!-- Navigation Segmented Tabs -->
+<div class="payment-tabs-container">
+    <div class="payment-tabs-list">
+        <a asp-action="Index" class="payment-tab-btn @(currentAction == "Index" ? "active vcb-style" : "")">
+            <i class="bi bi-speedometer2"></i>
+            <span>Tổng quan</span>
+        </a>
+        <a asp-action="KhoanThu" class="payment-tab-btn @(currentAction.Contains("KhoanThu") ? "active vcb-style" : "")">
+            <i class="bi bi-journal-plus"></i>
+            <span>Khoản thu học phí</span>
+        </a>
+        <a asp-action="GiaoDich" class="payment-tab-btn @(currentAction.Contains("GiaoDich") ? "active vcb-style" : "")">
+            <i class="bi bi-clock-history"></i>
+            <span>Danh sách giao dịch</span>
+        </a>
+        <a asp-action="CongNo" class="payment-tab-btn @(currentAction.Contains("CongNo") ? "active vcb-style" : "")">
+            <i class="bi bi-cash-stack"></i>
+            <span>Công nợ sinh viên</span>
+        </a>
+        <a asp-action="DoiSoat" class="payment-tab-btn @(currentAction == "DoiSoat" ? "active vcb-style" : "")">
+            <i class="bi bi-bank"></i>
+            <span>Đối soát Vietcombank</span>
+        </a>
+        <a asp-action="CauHinh" class="payment-tab-btn @(currentAction == "CauHinh" ? "active vcb-style" : "")">
+            <i class="bi bi-gear-fill"></i>
+            <span>Cấu hình VietQR</span>
+        </a>
+    </div>
+    <div class="d-flex align-items-center">
+        <div class="payment-status-badge">
+            <span class="pulse-dot"></span>
+            <span>Vietcombank Napas 24/7 Gateway &bull; Trực tuyến</span>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm mb-4 border-0" style="background:#ecfdf5; color:#065f46; border-left:4px solid #10b981 !important;" role="alert">
+        <i class="bi bi-check-circle-fill me-2 text-success"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm mb-4 border-0" style="background:#fef2f2; color:#991b1b; border-left:4px solid #ef4444 !important;" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    </div>
+}
