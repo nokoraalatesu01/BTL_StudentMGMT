@@ -18,7 +18,7 @@ echo.
 start "" "https://localhost:7263"
 
 :: Chạy dự án với profile https
-dotnet run --launch-profile "https"
+dotnet watch run --launch-profile "https"
 
 if %ERRORLEVEL% NEQ 0 (
     echo.

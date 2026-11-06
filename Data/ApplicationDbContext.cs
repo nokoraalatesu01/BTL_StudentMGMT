@@ -533,6 +533,18 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.HanhDong);
         });
 
+        modelBuilder.Entity<ChiTietHoaDonHocPhi>(entity =>
+        {
+            entity.ToTable("ChiTietHoaDonHocPhi");
+            entity.HasKey(e => e.ChiTietHoaDonId);
+        });
+
+        modelBuilder.Entity<ThanhToan>(entity =>
+        {
+            entity.ToTable("ThanhToan");
+            entity.HasKey(e => e.ThanhToanId);
+        });
+
         OnModelCreatingPartial(modelBuilder);
     }
 

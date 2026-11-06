@@ -304,6 +304,17 @@ input {
     box-shadow: 0 0 0 4px rgba(44, 121, 179, .12);
 }
 
+
+/* Tat mat mac dinh cua Edge */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+.input-wrap input[type="password"]::-ms-reveal,
+.input-wrap input[type="password"]::-ms-clear {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
 .input-wrap input.input-validation-error {
     border-color: #d92d20;
 }

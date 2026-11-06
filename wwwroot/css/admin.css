@@ -241,3 +241,17 @@
         padding: 10px;
     }
 }
+
+/* Dong bo nut Quay lai - Do bong em khi hover, giu nguyen 100% kich thuoc va vi tri */
+.btn-outline-secondary.rounded-pill,
+.btn-modern-outline {
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+}
+
+.btn-outline-secondary.rounded-pill:hover,
+.btn-modern-outline:hover {
+    background-color: #6c757d !important;
+    color: #ffffff !important;
+    border-color: #6c757d !important;
+    box-shadow: 0 2px 6px rgba(108, 117, 125, 0.28) !important;
+}

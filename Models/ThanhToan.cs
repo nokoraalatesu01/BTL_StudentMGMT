@@ -1,7 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace BTL_StudentMGMT.Models;
 
 public class ThanhToan
 {
+    [Key]
     public long ThanhToanId { get; set; }
     public long HoaDonId { get; set; }
     public string? MaGiaoDich { get; set; }

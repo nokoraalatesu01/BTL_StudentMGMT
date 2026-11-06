@@ -477,3 +477,323 @@
     background: #1d4ed8;
     transform: scale(1.12);
 }
+
+
+/* ============================================================
+   PORTAL CUSTOM COMBOBOX / SELECT ENHANCER
+   Tối ưu giao diện dropdown/combobox theo chuẩn hiện đại UTC Portal
+   ============================================================ */
+
+/* CSS Fallback cho thẻ select gốc khi chưa/không chạy JavaScript */
+select.form-select,
+.portal-form-select {
+    cursor: pointer;
+    background-color: #ffffff;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+select.form-select option {
+    padding: 10px 14px;
+    font-size: 0.875rem;
+    font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #ffffff;
+    color: #1e293b;
+    border-radius: 4px;
+}
+
+select.form-select option:hover,
+select.form-select option:focus {
+    background-color: #eff6ff !important;
+    color: #2563eb !important;
+}
+
+select.form-select option:checked {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+/* Khung bọc Combobox tùy biến */
+.portal-select-wrapper {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+.portal-select-wrapper * {
+    box-sizing: border-box;
+}
+
+.portal-select-wrapper.w-100,
+.d-flex > .portal-select-wrapper,
+[style*="flex: 1"] > .portal-select-wrapper,
+[style*="flex:1"] > .portal-select-wrapper {
+    width: 100% !important;
+    display: block;
+    flex: 1 1 auto;
+}
+
+/* Đảm bảo icon absolute trong form lọc luôn nổi lên trên trigger button */
+[style*="position:relative"] > i,
+[style*="position: relative"] > i,
+.portal-select-wrapper ~ i {
+    z-index: 2 !important;
+}
+
+/* Tương thích Bootstrap input-group */
+.input-group > .portal-select-wrapper {
+    flex: 1 1 auto;
+    width: 1% !important;
+    min-width: 0;
+    position: relative;
+}
+
+.input-group > .portal-select-wrapper > .portal-select-trigger {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Thẻ select gốc được ẩn an toàn, giữ nguyên name/id/value để submit form */
+.portal-select-native {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Nút bấm hiển thị Combobox (Trigger) */
+.portal-select-trigger {
+    width: 100%;
+    min-height: 38px;
+    height: 38px;
+    padding: 0 12px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    color: #1e293b;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+}
+
+.portal-select-trigger:hover {
+    border-color: #94a3b8;
+    background-color: #f8fafc;
+}
+
+.portal-select-wrapper.is-open .portal-select-trigger,
+.portal-select-trigger:focus-visible {
+    border-color: #2563eb !important;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+.portal-select-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+    text-align: left;
+    color: #1e293b;
+    font-size: 0.875rem;
+}
+
+.portal-select-label.is-placeholder {
+    color: #64748b;
+    font-weight: 400;
+}
+
+.portal-select-arrow {
+    color: #64748b;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s;
+    display: inline-flex;
+    align-items: center;
+}
+
+.portal-select-wrapper.is-open .portal-select-arrow {
+    transform: rotate(180deg);
+    color: #2563eb;
+}
+
+/* Dropdown Menu nổi */
+.portal-select-dropdown {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    min-width: 100%;
+    max-width: max(100%, 450px);
+    width: auto;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 14px 34px -4px rgba(15, 23, 42, 0.14), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+    padding: 6px;
+    z-index: 1060;
+    display: none;
+    transform-origin: top center;
+}
+
+.portal-select-dropdown.open-up {
+    top: auto;
+    bottom: calc(100% + 5px);
+    transform-origin: bottom center;
+}
+
+.portal-select-wrapper.is-open .portal-select-dropdown {
+    display: block;
+    animation: portalSelectFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes portalSelectFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Ô tìm kiếm nhanh bên trong menu (nếu danh sách có trên 6 lựa chọn) */
+.portal-select-search-wrap {
+    padding: 4px 6px 6px 6px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 4px;
+}
+
+.portal-select-search-input {
+    width: 100%;
+    height: 34px;
+    padding: 0 10px 0 30px;
+    background: #f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E") no-repeat 10px center;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    color: #0f172a;
+    outline: none;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.portal-select-search-input:focus {
+    border-color: #2563eb;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+/* Danh sách các option cuộn mượt */
+.portal-select-options {
+    max-height: 240px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 2px;
+}
+
+/* Custom Scrollbar cho Options */
+.portal-select-options::-webkit-scrollbar {
+    width: 6px;
+}
+.portal-select-options::-webkit-scrollbar-track {
+    background: transparent;
+}
+.portal-select-options::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+.portal-select-options::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Từng phần tử option */
+.portal-select-option {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    color: #334155;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    transition: background 0.15s ease, color 0.15s ease;
+    line-height: 1.35;
+    margin: 1px 0;
+}
+
+.portal-select-option:hover,
+.portal-select-option.is-highlighted {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.portal-select-option.is-placeholder {
+    color: #64748b;
+    font-size: 0.84rem;
+}
+
+.portal-select-option.is-selected {
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.portal-select-option .portal-option-check {
+    display: none;
+    font-size: 0.875rem;
+    color: #2563eb;
+    font-weight: 700;
+}
+
+.portal-select-option.is-selected .portal-option-check {
+    display: inline-block;
+}
+
+.portal-select-option.is-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.portal-select-empty {
+    padding: 16px 12px;
+    text-align: center;
+    font-size: 0.825rem;
+    color: #94a3b8;
+}
+
+
+/* Hỗ trợ khi combobox nằm bên trong .input-group */
+.input-group > .portal-select-wrapper {
+    position: relative;
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+}
+
+.input-group > .portal-select-wrapper > .portal-select-trigger {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.input-group > .portal-select-wrapper:not(:last-child) > .portal-select-trigger {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}

@@ -39,10 +39,7 @@
             </div>
         </div>
         <div class="d-flex gap-2">
-            <a asp-action="GiaoDich" class="btn btn-filter-reset w-auto px-3">
-                <i class="bi bi-arrow-left me-1"></i>
-                <span>Về danh sách</span>
-            </a>
+            <a asp-action="GiaoDich" class="btn btn-outline-secondary btn-sm rounded-pill px-3"><i class="bi bi-arrow-left me-1"></i> Quay lại</a>
             @if (p.Status == "PAID")
             {
                 <button type="button" class="btn btn-filter-submit px-3" onclick="window.print()">

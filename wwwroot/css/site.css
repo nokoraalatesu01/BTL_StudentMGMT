@@ -469,3 +469,27 @@ footer {
   font-size: 0.85rem;
   color: var(--text-muted);
 }
+
+/* Tat mat mac dinh cua Edge */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* Dong bo nut Quay lai - Do bong em khi hover, giu nguyen 100% kich thuoc va vi tri */
+.btn-outline-secondary.rounded-pill,
+.btn-modern-outline,
+.btn-back-pill {
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+}
+
+.btn-outline-secondary.rounded-pill:hover,
+.btn-modern-outline:hover,
+.btn-back-pill:hover {
+    background-color: #6c757d !important;
+    color: #ffffff !important;
+    border-color: #6c757d !important;
+    box-shadow: 0 2px 6px rgba(108, 117, 125, 0.28) !important;
+}
