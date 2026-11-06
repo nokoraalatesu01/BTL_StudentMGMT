@@ -14,6 +14,51 @@ public static class DbSeeder
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DbSeeder");
 
+        // 0. Đảm bảo Database tồn tại và người dùng hiện tại có toàn quyền truy cập
+        try
+        {
+            if (!await db.Database.CanConnectAsync())
+            {
+                logger.LogInformation("Database chưa thể kết nối trực tiếp, kiểm tra và cấp quyền trên SQL Server qua master...");
+                var connStr = db.Database.GetConnectionString();
+                if (!string.IsNullOrEmpty(connStr))
+                {
+                    var builder = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connStr);
+                    var targetDb = builder.InitialCatalog;
+                    if (!string.IsNullOrEmpty(targetDb) && !targetDb.Equals("master", StringComparison.OrdinalIgnoreCase))
+                    {
+                        builder.InitialCatalog = "master";
+                        using var masterConn = new Microsoft.Data.SqlClient.SqlConnection(builder.ConnectionString);
+                        await masterConn.OpenAsync();
+
+                        using var cmd = masterConn.CreateCommand();
+                        cmd.CommandText = $@"
+IF DB_ID(@dbName) IS NULL
+BEGIN
+    EXEC('CREATE DATABASE [' + @dbName + ']');
+END;
+BEGIN TRY
+    DECLARE @currentUser sysname = SUSER_SNAME();
+    IF @currentUser IS NOT NULL AND DB_ID(@dbName) IS NOT NULL
+    BEGIN
+        EXEC('ALTER AUTHORIZATION ON DATABASE::[' + @dbName + '] TO [' + @currentUser + ']');
+    END
+END TRY
+BEGIN CATCH
+END CATCH;
+";
+                        cmd.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@dbName", targetDb));
+                        await cmd.ExecuteNonQueryAsync();
+                        logger.LogInformation("Đã kiểm tra và cấp quyền truy cập Database '{TargetDb}' thành công.", targetDb);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Thông báo kiểm tra database qua master (nếu server giới hạn master, tiếp tục thử MigrateAsync).");
+        }
+
         // 1. Tự động áp dụng Migration an toàn, có logging chi tiết
         try
         {
@@ -790,11 +835,29 @@ BEGIN
     );
     CREATE UNIQUE INDEX [IX_HoaDonHocPhi_SoHoaDon] ON [HoaDonHocPhi] ([SoHoaDon]);
     CREATE INDEX [IX_HoaDonHocPhi_SinhVienId_HocKyId] ON [HoaDonHocPhi] ([SinhVienId], [HocKyId]);
-END;
-
-IF COL_LENGTH(N'[HoaDonHocPhi]', N'DotThuId') IS NULL
+END
+ELSE
 BEGIN
-    ALTER TABLE [HoaDonHocPhi] ADD [DotThuId] int NULL;
+    IF COL_LENGTH(N'[HoaDonHocPhi]', N'Id') IS NULL AND COL_LENGTH(N'[HoaDonHocPhi]', N'HoaDonId') IS NOT NULL
+    BEGIN
+        EXEC sp_rename 'HoaDonHocPhi.HoaDonId', 'Id', 'COLUMN';
+    END;
+    IF COL_LENGTH(N'[HoaDonHocPhi]', N'TenKhoanThu') IS NULL
+    BEGIN
+        ALTER TABLE [HoaDonHocPhi] ADD [TenKhoanThu] nvarchar(200) NOT NULL DEFAULT N'Học phí học kỳ';
+    END;
+    IF COL_LENGTH(N'[HoaDonHocPhi]', N'SoTien') IS NULL
+    BEGIN
+        ALTER TABLE [HoaDonHocPhi] ADD [SoTien] decimal(18,2) NOT NULL DEFAULT 0;
+    END;
+    IF COL_LENGTH(N'[HoaDonHocPhi]', N'DaThanhToan') IS NULL
+    BEGIN
+        ALTER TABLE [HoaDonHocPhi] ADD [DaThanhToan] decimal(18,2) NOT NULL DEFAULT 0;
+    END;
+    IF COL_LENGTH(N'[HoaDonHocPhi]', N'DotThuId') IS NULL
+    BEGIN
+        ALTER TABLE [HoaDonHocPhi] ADD [DotThuId] int NULL;
+    END;
 END;
 
 IF OBJECT_ID(N'[VietQrConfig]', N'U') IS NULL

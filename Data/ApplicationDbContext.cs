@@ -442,34 +442,48 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<HoaDonHocPhi>(entity =>
         {
             entity.ToTable("HoaDonHocPhi");
-            entity.HasKey(e => e.HoaDonId);
-            entity.HasIndex(e => e.SoHoaDon, "UQ_HoaDon_So").IsUnique();
-            entity.HasIndex(e => new { e.SinhVienId, e.HocKyId }, "UQ_HoaDon_SV_HocKy").IsUnique();
-            entity.Property(e => e.GhiChu).HasMaxLength(500);
-            entity.Property(e => e.NgayLap).HasPrecision(0).HasDefaultValueSql("(sysutcdatetime())");
-            entity.Property(e => e.SoHoaDon).HasMaxLength(40).IsUnicode(false);
-            entity.Property(e => e.TrangThai).HasMaxLength(20).IsUnicode(false).HasDefaultValue("ISSUED");
-            entity.Property(e => e.HanThanhToan).HasColumnType("date");
-            entity.HasOne(e => e.HocKy).WithMany().HasForeignKey(e => e.HocKyId).OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(e => e.SinhVien).WithMany().HasForeignKey(e => e.SinhVienId).OnDelete(DeleteBehavior.Restrict);
-        });
-
-        // Cấu hình Hệ thống Thanh toán Học phí VietQR
-        modelBuilder.Entity<HoaDonHocPhi>(entity =>
-        {
-            entity.ToTable("HoaDonHocPhi");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("Id");
             entity.HasIndex(e => e.SoHoaDon).IsUnique();
             entity.HasIndex(e => new { e.SinhVienId, e.HocKyId });
+            entity.Property(e => e.SoHoaDon).HasMaxLength(50);
+            entity.Property(e => e.TenKhoanThu).HasMaxLength(200);
             entity.Property(e => e.SoTien).HasColumnType("decimal(18,2)");
             entity.Property(e => e.DaThanhToan).HasColumnType("decimal(18,2)");
-            entity.HasOne(e => e.SinhVien)
-                  .WithMany()
-                  .HasForeignKey(e => e.SinhVienId)
-                  .OnDelete(DeleteBehavior.Restrict);
+            entity.Property(e => e.TrangThai).HasMaxLength(30).HasDefaultValue("CHUA_THANH_TOAN");
+            entity.Property(e => e.GhiChu).HasMaxLength(500);
+            entity.Property(e => e.NgayLap).HasPrecision(0).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.HanThanhToan).HasColumnType("date");
+
             entity.HasOne(e => e.HocKy)
                   .WithMany()
                   .HasForeignKey(e => e.HocKyId)
                   .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.SinhVien)
+                  .WithMany()
+                  .HasForeignKey(e => e.SinhVienId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.DotThu)
+                  .WithMany(d => d.HoaDonHocPhis)
+                  .HasForeignKey(e => e.DotThuId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasMany(e => e.Payments)
+                  .WithOne(p => p.HoaDonHocPhi)
+                  .HasForeignKey(p => p.HoaDonHocPhiId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(e => e.ChiTietHoaDonHocPhis)
+                  .WithOne(c => c.HoaDon)
+                  .HasForeignKey(c => c.HoaDonId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(e => e.ThanhToans)
+                  .WithOne(t => t.HoaDon)
+                  .HasForeignKey(t => t.HoaDonId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Payment>(entity =>

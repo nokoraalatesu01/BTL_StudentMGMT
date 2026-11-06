@@ -35,6 +35,8 @@ public class HoaDonHocPhiItemViewModel
     public string TrangThai { get; set; } = "CHUA_THANH_TOAN";
     public string? GhiChu { get; set; }
     public bool CoTheThanhToan => ConPhaiDong > 0;
+    public bool DangXuLy { get; set; } = false;
+    public string? ActiveTransactionCode { get; set; }
 }
 
 public class TaoPaymentRequest

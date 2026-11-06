@@ -128,6 +128,40 @@ public class QuanLyThanhToanController : Controller
         return View(model);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> XacNhanGiaoDich(long paymentId, string lyDo, string? maGiaoDichNganHang)
+    {
+        var userName = User.Identity?.Name ?? "Admin";
+        var result = await _paymentService.XacNhanGiaoDichThuCongAsync(paymentId, lyDo, maGiaoDichNganHang, userName);
+        if (result.Success)
+        {
+            TempData["Success"] = result.Message;
+        }
+        else
+        {
+            TempData["Error"] = result.Message;
+        }
+        return RedirectToAction(nameof(ChiTietGiaoDich), new { id = paymentId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> TuChoiGiaoDich(long paymentId, string lyDo)
+    {
+        var userName = User.Identity?.Name ?? "Admin";
+        var result = await _paymentService.TuChoiGiaoDichAsync(paymentId, lyDo, userName);
+        if (result.Success)
+        {
+            TempData["Success"] = result.Message;
+        }
+        else
+        {
+            TempData["Error"] = result.Message;
+        }
+        return RedirectToAction(nameof(ChiTietGiaoDich), new { id = paymentId });
+    }
+
     public async Task<IActionResult> XuatExcelGiaoDich(
         string? search = null, string? status = null, string? bankId = null, string? tuNgay = null, string? denNgay = null)
     {
