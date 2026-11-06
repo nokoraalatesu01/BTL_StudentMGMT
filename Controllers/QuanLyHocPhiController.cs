@@ -120,7 +120,7 @@ public class QuanLyHocPhiController : Controller
         _db.HoaDonHocPhis.Add(invoice);
         await _db.SaveChangesAsync();
         TempData["Msg"] = "Đã tạo hóa đơn học phí.";
-        return RedirectToAction(nameof(ChiTiet), new { id = invoice.HoaDonId });
+        return RedirectToAction(nameof(ChiTiet), new { id = invoice.Id });
     }
 
     [HttpGet]
@@ -129,7 +129,7 @@ public class QuanLyHocPhiController : Controller
         var invoice = await _db.HoaDonHocPhis
             .Include(item => item.ChiTietHoaDonHocPhis)
             .Include(item => item.ThanhToans)
-            .FirstOrDefaultAsync(item => item.HoaDonId == id);
+            .FirstOrDefaultAsync(item => item.Id == id);
         if (invoice == null) return NotFound();
         if (invoice.TrangThai == "CANCELLED" || invoice.ThanhToans.Any(payment => payment.TrangThai is Pending or Completed))
         {
@@ -175,7 +175,7 @@ public class QuanLyHocPhiController : Controller
         var invoice = await _db.HoaDonHocPhis
             .Include(item => item.ChiTietHoaDonHocPhis)
             .Include(item => item.ThanhToans)
-            .FirstOrDefaultAsync(item => item.HoaDonId == id);
+            .FirstOrDefaultAsync(item => item.Id == id);
         if (invoice == null) return NotFound();
         if (invoice.TrangThai == "CANCELLED" || invoice.ThanhToans.Any(payment => payment.TrangThai is Pending or Completed))
         {
@@ -193,7 +193,7 @@ public class QuanLyHocPhiController : Controller
             ModelState.AddModelError(nameof(model.SoTinChi), "Tổng học phí vượt giới hạn lưu trữ.");
         }
 
-        if (await _db.HoaDonHocPhis.AnyAsync(item => item.HoaDonId != id && item.SinhVienId == model.SinhVienId && item.HocKyId == model.HocKyId))
+        if (await _db.HoaDonHocPhis.AnyAsync(item => item.Id != id && item.SinhVienId == model.SinhVienId && item.HocKyId == model.HocKyId))
         {
             ModelState.AddModelError(nameof(model.HocKyId), "Sinh viên đã có hóa đơn trong học kỳ này.");
         }
@@ -233,7 +233,7 @@ public class QuanLyHocPhiController : Controller
             .Include(item => item.HocKy).ThenInclude(semester => semester.NamHoc)
             .Include(item => item.ChiTietHoaDonHocPhis)
             .Include(item => item.ThanhToans.OrderByDescending(payment => payment.ThoiGianThanhToan))
-            .FirstOrDefaultAsync(item => item.HoaDonId == id);
+            .FirstOrDefaultAsync(item => item.Id == id);
         if (invoice == null) return NotFound();
         return View(new HocPhiChiTietViewModel
         {
@@ -286,7 +286,7 @@ public class QuanLyHocPhiController : Controller
     {
         await using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
         var invoice = await _db.HoaDonHocPhis.Include(item => item.ThanhToans)
-            .FirstOrDefaultAsync(item => item.HoaDonId == id);
+            .FirstOrDefaultAsync(item => item.Id == id);
         if (invoice == null) return NotFound();
         if (invoice.TrangThai == "PAID" || invoice.ThanhToans.Any(payment => payment.TrangThai == Completed))
         {

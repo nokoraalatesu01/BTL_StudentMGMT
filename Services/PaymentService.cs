@@ -58,7 +58,19 @@ public class PaymentService : IPaymentService
 
         if (!string.IsNullOrWhiteSpace(trangThai))
         {
-            query = query.Where(h => h.TrangThai == trangThai);
+            if (trangThai == "DANG_XU_LY")
+            {
+                var activePendingHdIds = await _db.Payments
+                    .Where(p => p.SinhVienId == sinhVienId && p.Status == "PENDING" && p.ExpiredAt > DateTime.UtcNow)
+                    .Select(p => p.HoaDonHocPhiId)
+                    .Distinct()
+                    .ToListAsync();
+                query = query.Where(h => activePendingHdIds.Contains(h.Id));
+            }
+            else
+            {
+                query = query.Where(h => h.TrangThai == trangThai);
+            }
         }
 
         var list = await query.OrderByDescending(h => h.NgayLap).ToListAsync();
@@ -78,6 +90,10 @@ public class PaymentService : IPaymentService
         var daThanhToan = allStudentInvoices.Sum(h => h.DaThanhToan);
         var soKhoanConNo = allStudentInvoices.Count(h => h.ConPhaiDong > 0);
 
+        var pendingPayments = await _db.Payments
+            .Where(p => p.SinhVienId == sinhVienId && p.Status == "PENDING" && p.ExpiredAt > DateTime.UtcNow)
+            .ToListAsync();
+
         return new SinhVienHocPhiViewModel
         {
             SinhVien = student,
@@ -88,19 +104,25 @@ public class PaymentService : IPaymentService
             SelectedHocKyId = hocKyId,
             SelectedTrangThai = trangThai,
             VietQrConfig = config,
-            DanhSachHocPhi = list.Select(h => new HoaDonHocPhiItemViewModel
+            DanhSachHocPhi = list.Select(h =>
             {
-                Id = h.Id,
-                SoHoaDon = h.SoHoaDon,
-                TenKhoanThu = h.TenKhoanThu,
-                TenHocKy = h.HocKy?.TenHocKy ?? "Học kỳ chính",
-                TenNamHoc = h.HocKy?.NamHoc?.MaNamHoc,
-                SoTien = h.SoTien,
-                DaThanhToan = h.DaThanhToan,
-                NgayLap = h.NgayLap,
-                HanThanhToan = h.HanThanhToan,
-                TrangThai = h.TrangThai,
-                GhiChu = h.GhiChu
+                var pending = pendingPayments.FirstOrDefault(p => p.HoaDonHocPhiId == h.Id);
+                return new HoaDonHocPhiItemViewModel
+                {
+                    Id = h.Id,
+                    SoHoaDon = h.SoHoaDon,
+                    TenKhoanThu = h.TenKhoanThu,
+                    TenHocKy = h.HocKy?.TenHocKy ?? "Học kỳ chính",
+                    TenNamHoc = h.HocKy?.NamHoc?.MaNamHoc,
+                    SoTien = h.SoTien,
+                    DaThanhToan = h.DaThanhToan,
+                    NgayLap = h.NgayLap,
+                    HanThanhToan = h.HanThanhToan,
+                    TrangThai = h.TrangThai,
+                    GhiChu = h.GhiChu,
+                    DangXuLy = pending != null,
+                    ActiveTransactionCode = pending?.TransactionCode
+                };
             }).ToList()
         };
     }
@@ -124,6 +146,33 @@ public class PaymentService : IPaymentService
 
         var config = await _vietQrService.GetConfigAsync();
         var amount = hoaDon.ConPhaiDong;
+
+        // Chống tạo thanh toán trùng lặp: Nếu đã có một giao dịch PENDING còn hiệu lực cho hóa đơn này, tái sử dụng nó
+        var existingPendingPayment = await _db.Payments
+            .Where(p => p.HoaDonHocPhiId == hoaDon.Id 
+                     && p.SinhVienId == sinhVienId 
+                     && p.Status == "PENDING" 
+                     && p.ExpiredAt > DateTime.UtcNow)
+            .OrderByDescending(p => p.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        if (existingPendingPayment != null)
+        {
+            return new TaoPaymentResponse
+            {
+                Success = true,
+                TransactionCode = existingPendingPayment.TransactionCode,
+                QrUrl = existingPendingPayment.QrUrl ?? "",
+                BankId = config.BankId,
+                BankName = config.BankName,
+                AccountNumber = config.AccountNumber,
+                AccountHolderName = config.AccountHolderName,
+                Amount = existingPendingPayment.Amount,
+                PaymentContent = existingPendingPayment.PaymentContent,
+                ExpiredAt = existingPendingPayment.ExpiredAt,
+                IsSandbox = string.Equals(config.Environment, "Sandbox", StringComparison.OrdinalIgnoreCase)
+            };
+        }
 
         // Sinh mã giao dịch duy nhất
         var uniqueSuffix = Guid.NewGuid().ToString("N").Substring(0, 6).ToUpperInvariant();
@@ -365,6 +414,12 @@ public class PaymentService : IPaymentService
 
     public async Task<(bool Success, string Message)> SimulateTransferAsync(string transactionCode, decimal? customAmount = null)
     {
+        var config = await _vietQrService.GetConfigAsync();
+        if (!string.Equals(config.Environment, "Sandbox", StringComparison.OrdinalIgnoreCase))
+        {
+            return (false, "Chức năng mô phỏng thanh toán chỉ được phép hoạt động trên môi trường Sandbox (thử nghiệm)!");
+        }
+
         var payment = await _db.Payments
             .Include(p => p.SinhVien)
             .FirstOrDefaultAsync(p => p.TransactionCode == transactionCode);
@@ -866,6 +921,102 @@ public class PaymentService : IPaymentService
             WebhookLogs = webhookLogs,
             AuditLogs = auditLogs
         };
+    }
+
+    public async Task<(bool Success, string Message)> XacNhanGiaoDichThuCongAsync(
+        long paymentId, string lyDo, string? maGiaoDichNganHang, string nguoiThucHien)
+    {
+        if (string.IsNullOrWhiteSpace(lyDo))
+        {
+            return (false, "Bắt buộc phải nhập lý do xác nhận thu tiền.");
+        }
+
+        using var trans = await _db.Database.BeginTransactionAsync();
+        try
+        {
+            var payment = await _db.Payments
+                .Include(p => p.HoaDonHocPhi)
+                .Include(p => p.SinhVien)
+                .FirstOrDefaultAsync(p => p.Id == paymentId);
+
+            if (payment == null)
+            {
+                return (false, "Không tìm thấy giao dịch.");
+            }
+
+            if (payment.Status == "PAID")
+            {
+                return (false, "Giao dịch này đã được xác nhận thanh toán trước đó.");
+            }
+
+            var trangThaiTruoc = payment.Status;
+            payment.Status = "PAID";
+            payment.PaidAt = DateTime.UtcNow;
+            payment.IsAutoVerified = false; // Đánh dấu là duyệt thủ công bởi Admin
+            if (!string.IsNullOrWhiteSpace(maGiaoDichNganHang))
+            {
+                payment.BankTransactionId = maGiaoDichNganHang.Trim();
+            }
+
+            // Cập nhật hóa đơn học phí
+            if (payment.HoaDonHocPhi != null)
+            {
+                payment.HoaDonHocPhi.DaThanhToan += payment.Amount;
+                if (payment.HoaDonHocPhi.ConPhaiDong <= 0)
+                {
+                    payment.HoaDonHocPhi.TrangThai = "DA_THANH_TOAN";
+                }
+                else
+                {
+                    payment.HoaDonHocPhi.TrangThai = "THANH_TOAN_MOT_PHAN";
+                }
+            }
+
+            await _db.SaveChangesAsync();
+
+            await GhiNhatKyAuditAsync("XAC_NHAN_THANH_TOAN", "Payment", payment.Id.ToString(), nguoiThucHien,
+                lyDo, maGiaoDichNganHang, trangThaiTruoc, "PAID",
+                $"Admin {nguoiThucHien} duyệt thủ công giao dịch {payment.TransactionCode}, số tiền {payment.Amount:N0}đ");
+
+            await trans.CommitAsync();
+            return (true, $"Đã xác nhận thanh toán thành công cho giao dịch {payment.TransactionCode}.");
+        }
+        catch (Exception ex)
+        {
+            await trans.RollbackAsync();
+            _logger.LogError(ex, "Lỗi khi Admin xác nhận giao dịch {Id}", paymentId);
+            return (false, "Lỗi hệ thống khi xác nhận giao dịch: " + ex.Message);
+        }
+    }
+
+    public async Task<(bool Success, string Message)> TuChoiGiaoDichAsync(
+        long paymentId, string lyDo, string nguoiThucHien)
+    {
+        if (string.IsNullOrWhiteSpace(lyDo))
+        {
+            return (false, "Bắt buộc phải nhập lý do từ chối giao dịch.");
+        }
+
+        var payment = await _db.Payments.FindAsync(paymentId);
+        if (payment == null)
+        {
+            return (false, "Không tìm thấy giao dịch.");
+        }
+
+        if (payment.Status == "PAID")
+        {
+            return (false, "Không thể từ chối giao dịch đã thanh toán thành công.");
+        }
+
+        var trangThaiTruoc = payment.Status;
+        payment.Status = "CANCELLED";
+        await _db.SaveChangesAsync();
+
+        await GhiNhatKyAuditAsync("TU_CHOI_GIAO_DICH", "Payment", payment.Id.ToString(), nguoiThucHien,
+            lyDo, null, trangThaiTruoc, "CANCELLED",
+            $"Admin {nguoiThucHien} từ chối/hủy giao dịch {payment.TransactionCode}");
+
+        return (true, $"Đã từ chối giao dịch {payment.TransactionCode}.");
     }
 
     // =========================================================================
