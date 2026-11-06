@@ -14,6 +14,7 @@ public class QuanLyHocPhiController : Controller
 {
     private const string Pending = "PENDING";
     private const string Completed = "COMPLETED";
+    private static bool _tablesEnsured;
     private readonly ApplicationDbContext _db;
     private readonly IFileUploadService _fileUploadService;
 
@@ -25,6 +26,12 @@ public class QuanLyHocPhiController : Controller
 
     public async Task<IActionResult> Index(string? tuKhoa, int? hocKyId, string? trangThai)
     {
+        if (!_tablesEnsured)
+        {
+            await DbSeeder.EnsurePaymentTablesAsync(_db);
+            _tablesEnsured = true;
+        }
+
         var query = _db.HoaDonHocPhis.AsNoTracking()
             .Include(invoice => invoice.SinhVien)
             .Include(invoice => invoice.HocKy)
@@ -456,9 +463,15 @@ public class QuanLyHocPhiController : Controller
         DaThanhToan = GetCompletedPayments(invoice)
     };
 
-    private static decimal GetInvoiceTotal(HoaDonHocPhi invoice) =>
-        invoice.ChiTietHoaDonHocPhis.Sum(item => Math.Max(0, item.SoLuong * item.DonGia - item.SoTienGiam));
+    private static decimal GetInvoiceTotal(HoaDonHocPhi invoice)
+    {
+        var detailSum = invoice.ChiTietHoaDonHocPhis.Sum(item => Math.Max(0, item.SoLuong * item.DonGia - item.SoTienGiam));
+        return detailSum > 0 ? detailSum : invoice.SoTien;
+    }
 
-    private static decimal GetCompletedPayments(HoaDonHocPhi invoice) =>
-        invoice.ThanhToans.Where(payment => payment.TrangThai == Completed).Sum(payment => payment.SoTien);
+    private static decimal GetCompletedPayments(HoaDonHocPhi invoice)
+    {
+        var paymentSum = invoice.ThanhToans.Where(payment => payment.TrangThai == Completed).Sum(payment => payment.SoTien);
+        return paymentSum > 0 ? paymentSum : invoice.DaThanhToan;
+    }
 }

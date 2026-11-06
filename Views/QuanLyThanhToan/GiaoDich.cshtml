@@ -40,40 +40,41 @@
     <!-- Bộ lọc -->
     <div class="payment-filter-card">
         <form method="get" asp-action="GiaoDich" class="row g-2 align-items-end">
-            <div class="col-md-3">
+            <div class="col-12 col-md-4 col-xl-3">
                 <label class="form-label small fw-semibold text-muted mb-1">Tìm kiếm</label>
                 <div class="filter-input-wrap">
                     <i class="bi bi-search filter-input-icon"></i>
                     <input type="text" name="search" value="@Model.Search" class="form-control form-control-sm" placeholder="Mã GD, Mã SV, Họ tên..." />
                 </div>
             </div>
-            <div class="col-md-2">
+            <div class="col-6 col-md-4 col-xl-2">
                 <label class="form-label small fw-semibold text-muted mb-1">Trạng thái</label>
                 <select name="status" class="form-select form-select-sm filter-select">
                     <option value="">-- Tất cả trạng thái --</option>
                     <option value="PAID" selected="@(Model.Status == "PAID")">Đã thanh toán (Paid)</option>
-                    <option value="PENDING" selected="@(Model.Status == "PENDING")">Chờ quét QR (Pending)</option>
-                    <option value="EXPIRED" selected="@(Model.Status == "EXPIRED")">Hết hạn (Expired)</option>
-                    <option value="FAILED" selected="@(Model.Status == "FAILED")">Thất bại (Failed)</option>
+                    <option value="PENDING" selected="@(Model.Status == "PENDING")">Chờ thanh toán (Pending)</option>
+                    <option value="PROCESSING" selected="@(Model.Status == "PROCESSING")">Đang xử lý (Processing)</option>
+                    <option value="EXPIRED" selected="@(Model.Status == "EXPIRED")">Đã hết hạn (Expired)</option>
                     <option value="CANCELLED" selected="@(Model.Status == "CANCELLED")">Đã hủy (Cancelled)</option>
+                    <option value="FAILED" selected="@(Model.Status == "FAILED")">Thất bại (Failed)</option>
                     <option value="AMOUNT_MISMATCH" selected="@(Model.Status == "AMOUNT_MISMATCH")">Sai số tiền (Review)</option>
                 </select>
             </div>
-            <div class="col-md-2">
+            <div class="col-6 col-md-4 col-xl-2">
                 <label class="form-label small fw-semibold text-muted mb-1">Từ ngày</label>
-                <input type="date" name="tuNgay" value="@Model.TuNgay" class="form-control form-control-sm filter-select" />
+                <input type="date" name="tuNgay" value="@Model.TuNgay" lang="vi-VN" class="form-control form-control-sm filter-select" placeholder="dd/MM/yyyy" title="Từ ngày (dd/MM/yyyy)" />
             </div>
-            <div class="col-md-2">
+            <div class="col-6 col-md-4 col-xl-2">
                 <label class="form-label small fw-semibold text-muted mb-1">Đến ngày</label>
-                <input type="date" name="denNgay" value="@Model.DenNgay" class="form-control form-control-sm filter-select" />
+                <input type="date" name="denNgay" value="@Model.DenNgay" lang="vi-VN" class="form-control form-control-sm filter-select" placeholder="dd/MM/yyyy" title="Đến ngày (dd/MM/yyyy)" />
             </div>
-            <div class="col-md-3">
+            <div class="col-12 col-md-8 col-xl-3">
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn-filter-submit flex-grow-1">
+                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1 d-inline-flex align-items-center justify-content-center gap-1 shadow-sm" style="height: 38px; border-radius: 9px; font-weight: 600; background: #008744; border-color: #008744;">
                         <i class="bi bi-funnel-fill"></i> Lọc dữ liệu
                     </button>
-                    <a asp-action="GiaoDich" class="btn btn-filter-reset" title="Xóa lọc">
-                        <i class="bi bi-arrow-counterclockwise"></i>
+                    <a asp-action="GiaoDich" class="btn btn-outline-secondary btn-sm px-3 d-inline-flex align-items-center justify-content-center" style="height: 38px; border-radius: 9px;" title="Xóa bộ lọc / Tải lại">
+                        <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
                     </a>
                 </div>
             </div>
@@ -85,24 +86,24 @@
         <div class="payment-card-header px-4 pt-3 pb-2 mb-0">
             <h6 class="payment-card-title">
                 <i class="bi bi-list-ul text-primary"></i>
-                <span>Danh sách giao dịch (@Model.TotalItems kết quả &bull; Tổng tiền: <span class="text-success font-monospace">@Model.TongTienFilter.ToString("N0") ₫</span>)</span>
+                <span>Danh sách giao dịch (@Model.TotalItems kết quả &bull; Tổng tiền: <span class="text-success font-monospace">@Model.TongTienFilter.ToString("N0")&nbsp;₫</span>)</span>
             </h6>
         </div>
-        <div class="table-responsive">
-            <table class="payment-table">
+        <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table class="payment-table align-middle" style="min-width: 1250px; width: 100%;">
                 <thead>
                     <tr>
-                        <th style="width:50px;">STT</th>
-                        <th>MÃ GIAO DỊCH</th>
-                        <th>SINH VIÊN</th>
-                        <th>LỚP</th>
-                        <th>KHOẢN THU</th>
-                        <th>SỐ TIỀN</th>
-                        <th>PHƯƠNG THỨC</th>
-                        <th>THỜI GIAN TẠO</th>
-                        <th>THỜI GIAN NHẬN</th>
-                        <th>TRẠNG THÁI</th>
-                        <th class="text-end">THAO TÁC</th>
+                        <th style="width: 50px; text-align: center;">STT</th>
+                        <th style="width: 180px;">MÃ GIAO DỊCH</th>
+                        <th style="width: 190px;">SINH VIÊN</th>
+                        <th style="width: 120px;">LỚP</th>
+                        <th style="min-width: 180px;">KHOẢN THU</th>
+                        <th style="width: 140px; text-align: right;">SỐ TIỀN</th>
+                        <th style="width: 110px; text-align: center;">PHƯƠNG THỨC</th>
+                        <th style="width: 140px; text-align: center;">THỜI GIAN TẠO</th>
+                        <th style="width: 140px; text-align: center;">THỜI GIAN NHẬN</th>
+                        <th style="width: 150px; text-align: center;">TRẠNG THÁI</th>
+                        <th style="width: 80px; text-align: center;">THAO TÁC</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -119,8 +120,8 @@
                     @foreach (var p in Model.DanhSachGiaoDich)
                     {
                         <tr>
-                            <td class="text-muted text-center">@(stt++)</td>
-                            <td>
+                            <td class="text-muted text-center" style="white-space: nowrap;">@(stt++)</td>
+                            <td style="white-space: nowrap;">
                                 <a asp-action="ChiTietGiaoDich" asp-route-id="@p.Id" class="fw-bold font-monospace text-decoration-none text-primary d-block">
                                     @p.TransactionCode
                                 </a>
@@ -129,45 +130,59 @@
                                     <small class="text-muted d-block font-monospace" style="font-size:11px;">Ref: @p.BankTransactionId</small>
                                 }
                             </td>
-                            <td>
+                            <td style="white-space: nowrap;">
                                 <div class="fw-bold text-dark">@(p.SinhVien?.HoTen ?? "N/A")</div>
                                 <div class="text-muted font-monospace small">@(p.SinhVien?.MaSinhVien)</div>
                             </td>
-                            <td>@(p.SinhVien?.Lop?.TenLop ?? "Chưa xếp lớp")</td>
-                            <td class="text-secondary">@(p.HoaDonHocPhi?.TenKhoanThu ?? "Học phí")</td>
-                            <td class="fw-bold font-monospace text-success fs-6">@p.Amount.ToString("N0") ₫</td>
+                            <td style="white-space: nowrap;">
+                                <span class="badge bg-light text-dark border font-monospace">@(p.SinhVien?.Lop?.TenLop ?? "Chưa xếp lớp")</span>
+                            </td>
                             <td>
+                                <div class="text-secondary" style="max-width: 250px; line-height: 1.35;">@(p.HoaDonHocPhi?.TenKhoanThu ?? "Học phí")</div>
+                            </td>
+                            <td class="text-end" style="white-space: nowrap;">
+                                <span class="fw-bold font-monospace text-success fs-6">@p.Amount.ToString("N0")&nbsp;₫</span>
+                            </td>
+                            <td class="text-center" style="white-space: nowrap;">
                                 <span class="badge bg-light text-dark border">
                                     <i class="bi bi-qr-code me-1 text-success"></i>VietQR
                                 </span>
                             </td>
-                            <td class="small text-muted">@p.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td class="small text-muted">
+                            <td class="small text-muted text-center" style="white-space: nowrap;">@p.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="small text-muted text-center" style="white-space: nowrap;">
                                 @(p.PaidAt.HasValue ? p.PaidAt.Value.ToString("dd/MM/yyyy HH:mm") : "-")
                             </td>
-                            <td>
-                                @if (p.Status == "PAID")
+                            <td class="text-center" style="white-space: nowrap;">
+                                @if (p.Status == "PAID" || p.Status == "SUCCESS")
                                 {
-                                    <span class="payment-pill pill-paid">Đã thanh toán</span>
+                                    <span class="payment-pill pill-paid"><i class="bi bi-check-circle-fill me-1"></i>Đã thanh toán</span>
                                 }
                                 else if (p.Status == "PENDING")
                                 {
-                                    <span class="payment-pill pill-pending">Chờ quét QR</span>
+                                    <span class="payment-pill pill-pending"><i class="bi bi-hourglass-split me-1"></i>Chờ thanh toán</span>
+                                }
+                                else if (p.Status == "PROCESSING")
+                                {
+                                    <span class="payment-pill pill-cyan"><i class="bi bi-arrow-repeat me-1"></i>Đang xử lý</span>
                                 }
                                 else if (p.Status == "EXPIRED")
                                 {
-                                    <span class="payment-pill pill-neutral">Hết hạn</span>
+                                    <span class="payment-pill pill-neutral"><i class="bi bi-clock-history me-1"></i>Đã hết hạn</span>
+                                }
+                                else if (p.Status == "CANCELLED")
+                                {
+                                    <span class="payment-pill pill-neutral"><i class="bi bi-slash-circle me-1"></i>Đã hủy</span>
                                 }
                                 else if (p.Status == "AMOUNT_MISMATCH")
                                 {
-                                    <span class="payment-pill pill-failed">Cần đối soát</span>
+                                    <span class="payment-pill pill-failed"><i class="bi bi-exclamation-triangle-fill me-1"></i>Sai số tiền</span>
                                 }
                                 else
                                 {
-                                    <span class="payment-pill pill-failed">@p.Status</span>
+                                    <span class="payment-pill pill-failed"><i class="bi bi-x-circle-fill me-1"></i>@p.Status</span>
                                 }
                             </td>
-                            <td class="text-end">
+                            <td class="text-center" style="white-space: nowrap;">
                                 <a asp-action="ChiTietGiaoDich" asp-route-id="@p.Id" class="action-icon-btn btn-vcb" title="Chi tiết giao dịch">
                                     <i class="bi bi-eye"></i>
                                 </a>

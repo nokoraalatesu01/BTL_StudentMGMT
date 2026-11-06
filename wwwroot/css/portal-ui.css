@@ -628,6 +628,17 @@ select.form-select option:checked {
     align-items: center;
 }
 
+.has-open-select {
+    position: relative !important;
+    z-index: 1050 !important;
+    overflow: visible !important;
+}
+
+.portal-select-wrapper.is-open {
+    position: relative !important;
+    z-index: 1060 !important;
+}
+
 .portal-select-wrapper.is-open .portal-select-arrow {
     transform: rotate(180deg);
     color: #2563eb;
@@ -646,7 +657,7 @@ select.form-select option:checked {
     border-radius: 12px;
     box-shadow: 0 14px 34px -4px rgba(15, 23, 42, 0.14), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
     padding: 6px;
-    z-index: 1060;
+    z-index: 1070;
     display: none;
     transform-origin: top center;
 }

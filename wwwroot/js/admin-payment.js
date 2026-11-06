@@ -100,9 +100,16 @@
                                 delay: 0.25,
                                 onUpdate: () => {
                                     if (isCurrency) {
-                                        counterEl.textContent = Math.round(counterObj.val).toLocaleString('vi-VN') + ' ₫';
+                                        counterEl.innerHTML = Math.round(counterObj.val).toLocaleString('vi-VN') + '<span class="stat-currency">₫</span>';
                                     } else {
                                         counterEl.textContent = Math.round(counterObj.val).toLocaleString('vi-VN');
+                                    }
+                                },
+                                onComplete: () => {
+                                    if (isCurrency) {
+                                        counterEl.innerHTML = Math.round(rawTarget).toLocaleString('vi-VN') + '<span class="stat-currency">₫</span>';
+                                    } else {
+                                        counterEl.textContent = Math.round(rawTarget).toLocaleString('vi-VN');
                                     }
                                 }
                             });
