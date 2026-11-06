@@ -480,42 +480,77 @@ public class PaymentService : IPaymentService
         {
             hoaDonQuery = hoaDonQuery.Where(h => h.SinhVien.Lop != null && h.SinhVien.Lop.NganhId == nganhId.Value);
         }
-        if (!string.IsNullOrWhiteSpace(tuNgay) && DateTime.TryParse(tuNgay, out var dTu))
+        if (!string.IsNullOrWhiteSpace(tuNgay))
         {
-            hoaDonQuery = hoaDonQuery.Where(h => h.NgayLap >= dTu);
+            if (DateTime.TryParseExact(tuNgay, new[] { "yyyy-MM-dd", "dd/MM/yyyy", "d/M/yyyy" }, 
+                    System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dTu)
+                || DateTime.TryParse(tuNgay, out dTu))
+            {
+                hoaDonQuery = hoaDonQuery.Where(h => h.NgayLap >= dTu.Date);
+            }
         }
-        if (!string.IsNullOrWhiteSpace(denNgay) && DateTime.TryParse(denNgay, out var dDen))
+        if (!string.IsNullOrWhiteSpace(denNgay))
         {
-            var dDenEnd = dDen.Date.AddDays(1).AddTicks(-1);
-            hoaDonQuery = hoaDonQuery.Where(h => h.NgayLap <= dDenEnd);
+            if (DateTime.TryParseExact(denNgay, new[] { "yyyy-MM-dd", "dd/MM/yyyy", "d/M/yyyy" }, 
+                    System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dDen)
+                || DateTime.TryParse(denNgay, out dDen))
+            {
+                var dDenEnd = dDen.Date.AddDays(1).AddTicks(-1);
+                hoaDonQuery = hoaDonQuery.Where(h => h.NgayLap <= dDenEnd);
+            }
+        }
+
+        // Phục hồi lại trạng thái PENDING nguyên bản nếu từng bị thay đổi tự động
+        var mistakenlyCancelled = await _db.Payments
+            .Where(p => p.Status == "CANCELLED" && p.BankTransactionId == null && p.PaidAt == null)
+            .ToListAsync();
+        if (mistakenlyCancelled.Count > 0)
+        {
+            foreach (var p in mistakenlyCancelled)
+            {
+                p.Status = "PENDING";
+            }
+            await _db.SaveChangesAsync();
         }
 
         var hoaDons = await hoaDonQuery.ToListAsync();
 
+        // 1. Tổng phải thu: Tổng các khoản học phí thực tế phải thu của sinh viên trong phạm vi bộ lọc
         var tongHocPhiPhaiThu = hoaDons.Sum(h => h.SoTien);
-        var tongTienDaThu = hoaDons.Sum(h => h.DaThanhToan);
 
-        // 2. Query Payments theo trạng thái & số lượng
-        var paymentQuery = _db.Payments.AsQueryable();
+        // 2. Query Payments gắn với tập hóa đơn đã lọc (đảm bảo đồng bộ thống kê 100%)
+        var baseFilteredPaymentQuery = _db.Payments
+            .Where(p => hoaDonQuery.Select(h => h.Id).Contains(p.HoaDonHocPhiId));
+
+        var paymentQuery = baseFilteredPaymentQuery;
         if (thang.HasValue && thang.Value > 0)
         {
             paymentQuery = paymentQuery.Where(p => p.CreatedAt.Month == thang.Value);
         }
 
-        var soGiaoDichThanhCong = await paymentQuery.CountAsync(p => p.Status == "PAID");
-        var soGiaoDichDangCho = await paymentQuery.CountAsync(p => p.Status == "PENDING");
+        // Tiền đã thu: Tổng số tiền của các giao dịch đã được xác nhận thanh toán thành công (Status == "PAID")
+        var tienThanhToanThanhCong = await baseFilteredPaymentQuery
+            .Where(p => p.Status == "PAID" || p.Status == "SUCCESS")
+            .SumAsync(p => (decimal?)p.Amount) ?? 0m;
+
+        // Đảm bảo không bỏ sót các khoản thu trực tiếp tại phòng tài vụ và đồng bộ với giao dịch trực tuyến
+        var tongTienDaThu = Math.Max(hoaDons.Sum(h => h.DaThanhToan), tienThanhToanThanhCong);
+
+        // Số lượng giao dịch phân theo trạng thái nghiệp vụ chuẩn xác (Giữ nguyên trạng thái Database)
+        var soGiaoDichThanhCong = await paymentQuery.CountAsync(p => p.Status == "PAID" || p.Status == "SUCCESS");
+        var soGiaoDichDangCho = await paymentQuery.CountAsync(p => p.Status == "PENDING" || p.Status == "PROCESSING");
         var soGiaoDichThatBai = await paymentQuery.CountAsync(p => p.Status == "FAILED" || p.Status == "EXPIRED" || p.Status == "CANCELLED" || p.Status == "AMOUNT_MISMATCH");
 
-        // 3. Biểu đồ 1: Doanh thu theo tháng (6 tháng gần nhất)
+        // 3. Biểu đồ 1: Doanh thu theo tháng (6 tháng gần nhất - tính theo tập lọc)
         var chartThangLabels = new List<string>();
         var chartThangData = new List<decimal>();
         for (int i = 5; i >= 0; i--)
         {
             var targetMonth = DateTime.UtcNow.AddMonths(-i);
-            var label = $"Tháng {targetMonth.Month:D2}/{targetMonth.Year}";
+            var label = $"T{targetMonth.Month:D2}/{targetMonth.Year}";
             chartThangLabels.Add(label);
 
-            var sumMonth = await _db.Payments
+            var sumMonth = await baseFilteredPaymentQuery
                 .Where(p => p.Status == "PAID" && p.CreatedAt.Month == targetMonth.Month && p.CreatedAt.Year == targetMonth.Year)
                 .SumAsync(p => (decimal?)p.Amount) ?? 0m;
             chartThangData.Add(sumMonth);
@@ -556,8 +591,8 @@ public class PaymentService : IPaymentService
             }
         }
 
-        // 6. Danh sách 10 giao dịch gần nhất & 10 logs gần nhất
-        var recentPayments = await _db.Payments
+        // 6. Danh sách 10 giao dịch gần nhất & 10 logs gần nhất (theo bộ lọc)
+        var recentPayments = await paymentQuery
             .Include(p => p.SinhVien)
                 .ThenInclude(s => s.Lop)
             .Include(p => p.HoaDonHocPhi)
@@ -855,15 +890,25 @@ public class PaymentService : IPaymentService
             query = query.Where(p => p.PaymentMethod.Contains(bankId));
         }
 
-        if (!string.IsNullOrWhiteSpace(tuNgay) && DateTime.TryParse(tuNgay, out var dTu))
+        if (!string.IsNullOrWhiteSpace(tuNgay))
         {
-            query = query.Where(p => p.CreatedAt >= dTu);
+            if (DateTime.TryParseExact(tuNgay, new[] { "yyyy-MM-dd", "dd/MM/yyyy", "d/M/yyyy" }, 
+                    System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dTu)
+                || DateTime.TryParse(tuNgay, out dTu))
+            {
+                query = query.Where(p => p.CreatedAt >= dTu.Date);
+            }
         }
 
-        if (!string.IsNullOrWhiteSpace(denNgay) && DateTime.TryParse(denNgay, out var dDen))
+        if (!string.IsNullOrWhiteSpace(denNgay))
         {
-            var dDenEnd = dDen.Date.AddDays(1).AddTicks(-1);
-            query = query.Where(p => p.CreatedAt <= dDenEnd);
+            if (DateTime.TryParseExact(denNgay, new[] { "yyyy-MM-dd", "dd/MM/yyyy", "d/M/yyyy" }, 
+                    System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dDen)
+                || DateTime.TryParse(denNgay, out dDen))
+            {
+                var dDenEnd = dDen.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(p => p.CreatedAt <= dDenEnd);
+            }
         }
 
         var totalItems = await query.CountAsync();

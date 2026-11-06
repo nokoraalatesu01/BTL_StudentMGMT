@@ -38,6 +38,7 @@ builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IGiangVienSecurityService, GiangVienSecurityService>();
 builder.Services.AddScoped<IVietQrService, VietQrService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<ITimetableService, TimetableService>();
 
 var app = builder.Build();
 

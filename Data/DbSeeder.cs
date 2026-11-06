@@ -811,7 +811,7 @@ END CATCH;
         return user;
     }
 
-    public static async Task EnsurePaymentTablesAsync(ApplicationDbContext db, ILogger logger)
+    public static async Task EnsurePaymentTablesAsync(ApplicationDbContext db, ILogger? logger = null)
     {
         try
         {
@@ -979,13 +979,64 @@ BEGIN
     );
     CREATE INDEX [IX_NhatKyThanhToan_ThoiGian] ON [NhatKyThanhToan] ([ThoiGian]);
 END;
+
+IF OBJECT_ID(N'[BieuPhiHocPhi]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [BieuPhiHocPhi] (
+        [BieuPhiId] int NOT NULL IDENTITY(1,1),
+        [ChuongTrinhId] int NULL,
+        [NamHocId] int NOT NULL,
+        [DonGiaTinChi] decimal(18,2) NOT NULL,
+        [LoaiTien] varchar(3) NOT NULL DEFAULT 'VND',
+        [HieuLucTu] date NOT NULL,
+        [HieuLucDen] date NULL,
+        CONSTRAINT [PK_BieuPhiHocPhi] PRIMARY KEY ([BieuPhiId])
+    );
+    CREATE INDEX [IX_BieuPhiHocPhi_NamHocId] ON [BieuPhiHocPhi] ([NamHocId]);
+END;
+
+IF OBJECT_ID(N'[ChiTietHoaDonHocPhi]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [ChiTietHoaDonHocPhi] (
+        [ChiTietHoaDonId] bigint NOT NULL IDENTITY(1,1),
+        [HoaDonId] bigint NOT NULL,
+        [LoaiKhoanThu] varchar(30) NOT NULL DEFAULT 'HOCPHI',
+        [MoTa] nvarchar(300) NOT NULL DEFAULT N'',
+        [SoLuong] decimal(10,2) NOT NULL DEFAULT 1,
+        [DonGia] decimal(18,2) NOT NULL DEFAULT 0,
+        [SoTienGiam] decimal(18,2) NOT NULL DEFAULT 0,
+        CONSTRAINT [PK_ChiTietHoaDonHocPhi] PRIMARY KEY ([ChiTietHoaDonId]),
+        CONSTRAINT [FK_ChiTietHoaDonHocPhi_HoaDonHocPhi_HoaDonId] FOREIGN KEY ([HoaDonId]) REFERENCES [HoaDonHocPhi] ([Id]) ON DELETE CASCADE
+    );
+    CREATE INDEX [IX_ChiTietHoaDonHocPhi_HoaDonId] ON [ChiTietHoaDonHocPhi] ([HoaDonId]);
+END;
+
+IF OBJECT_ID(N'[ThanhToan]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [ThanhToan] (
+        [ThanhToanId] bigint NOT NULL IDENTITY(1,1),
+        [HoaDonId] bigint NOT NULL,
+        [MaGiaoDich] varchar(50) NULL,
+        [SoTien] decimal(18,2) NOT NULL DEFAULT 0,
+        [ThoiGianThanhToan] datetime2 NOT NULL DEFAULT sysutcdatetime(),
+        [PhuongThuc] varchar(30) NOT NULL DEFAULT 'VIETQR',
+        [TrangThai] varchar(30) NOT NULL DEFAULT 'PENDING',
+        [NguonThanhToan] nvarchar(100) NULL,
+        [IdempotencyKey] varchar(100) NULL,
+        [GhiChu] nvarchar(500) NULL,
+        [AnhMinhChung] nvarchar(500) NULL,
+        CONSTRAINT [PK_ThanhToan] PRIMARY KEY ([ThanhToanId]),
+        CONSTRAINT [FK_ThanhToan_HoaDonHocPhi_HoaDonId] FOREIGN KEY ([HoaDonId]) REFERENCES [HoaDonHocPhi] ([Id]) ON DELETE CASCADE
+    );
+    CREATE INDEX [IX_ThanhToan_HoaDonId] ON [ThanhToan] ([HoaDonId]);
+END;
 ";
             await db.Database.ExecuteSqlRawAsync(sql);
-            logger.LogInformation("Khởi tạo an toàn cấu trúc bảng Thanh toán VietQR & Học phí thành công.");
+            logger?.LogInformation("Khởi tạo an toàn cấu trúc bảng Thanh toán VietQR & Học phí thành công.");
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Lỗi khi chạy script EnsurePaymentTablesAsync.");
+            logger?.LogWarning(ex, "Lỗi khi chạy script EnsurePaymentTablesAsync.");
         }
     }
 }
