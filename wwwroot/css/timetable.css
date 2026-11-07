@@ -185,16 +185,19 @@
 }
 
 .tkb-range-display {
-    font-size: 0.95rem;
-    font-weight: 700;
+    font-size: 0.82rem;
+    font-weight: 600;
     color: var(--tkb-text-main);
-    background: var(--tkb-bg);
-    padding: 6px 14px;
+    background: #f8fafc;
+    padding: 0 10px;
+    height: 35px;
     border-radius: 8px;
     border: 1px solid var(--tkb-border);
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .tkb-view-toggle .btn {
@@ -1119,11 +1122,11 @@
     font-weight: 700;
 }
 
-/* Grid nội dung Timeline (550px tương ứng từ 7:00 đến 18:00, 50px mỗi tiếng) */
+/* Grid nội dung Timeline (670px tương ứng từ 7:00 đến 18:00, 50px mỗi tiếng) */
 .utc-timeline-grid {
     display: grid;
     grid-template-columns: 80px repeat(7, 1fr);
-    height: 550px;
+    height: 670px;
     position: relative;
 }
 
@@ -1132,7 +1135,7 @@
     background: #f8fafc;
     border-right: 1px solid var(--tkb-border);
     position: relative;
-    height: 550px;
+    height: 670px;
 }
 
 .utc-hour-marker {
@@ -1150,7 +1153,7 @@
 /* 7 Cột thứ */
 .utc-day-column {
     position: relative;
-    height: 550px;
+    height: 670px;
     border-right: 1px solid var(--tkb-border);
     background: #ffffff;
 }
@@ -1274,3 +1277,376 @@
     color: #0f172a;
 }
 
+
+/* ==========================================================================
+   ENHANCED TOOLBAR, TIMETABLE & COURSE SECTION STYLES (MODERN REDESIGN)
+   ========================================================================== */
+
+/* Thanh điều hướng 2 hàng: Toolbar + Bộ lọc */
+.tkb-toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.tkb-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid var(--tkb-border);
+}
+
+.tkb-filter-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--tkb-text-main);
+    white-space: nowrap;
+}
+
+.tkb-filter-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 160px;
+}
+
+.filter-caption {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--tkb-text-muted);
+    margin: 0;
+    white-space: nowrap;
+}
+
+.filter-item-wide {
+    flex-grow: 1;
+    min-width: 220px;
+}
+
+.filter-select {
+    height: 36px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid var(--tkb-border);
+    background-color: #ffffff;
+    color: var(--tkb-text-main);
+}
+
+.filter-select:focus {
+    border-color: var(--tkb-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    outline: none;
+}
+
+/* Header icon */
+.tkb-header-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+/* Timeline Day Header */
+.utc-day-name {
+    font-size: 0.80rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.utc-day-date-num {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.utc-timeline-head-cell.is-today {
+    background: #eff6ff !important;
+    border-bottom: 3px solid #2563eb !important;
+}
+
+.utc-timeline-head-cell.is-today .utc-day-name {
+    color: #1d4ed8;
+    font-weight: 800;
+}
+
+.utc-timeline-head-cell.is-today .utc-day-date-num {
+    color: #1d4ed8;
+}
+
+.utc-today-badge {
+    display: inline-block;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 999px;
+    margin-top: 3px;
+    line-height: 1.3;
+}
+
+/* Event Card Refinements */
+.utc-event-card {
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08);
+}
+
+.utc-event-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px -3px rgba(15, 23, 42, 0.16);
+    z-index: 20;
+}
+
+.utc-card-time {
+    font-size: 0.70rem;
+    font-weight: 600;
+    color: #ffffff;
+    opacity: 0.95;
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+}
+
+.utc-card-period-pill {
+    background: rgba(255, 255, 255, 0.22);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.utc-card-room-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+}
+
+.utc-card-lecturer {
+    font-size: 0.73rem;
+    color: #64748b;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 82%;
+}
+
+.utc-event-card:hover .utc-card-action-icon {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+/* Course Section Full Width Table */
+.utc-section-card.w-100 {
+    width: 100% !important;
+}
+
+.utc-table-container-full {
+    max-height: 520px;
+    overflow-y: auto;
+}
+
+.utc-section-table thead th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--tkb-border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.utc-section-table tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    font-size: 0.86rem;
+}
+
+.utc-section-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* ===== COMPACT 1-ROW TOOLBAR & FULL-TEXT TIMETABLE CARDS ===== */
+.tkb-unified-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+@media (min-width: 992px) {
+    .tkb-unified-toolbar {
+        flex-wrap: nowrap !important;
+    }
+}
+
+.tkb-nav-compact-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+}
+
+.tkb-date-picker-compact {
+    width: 125px !important;
+    max-width: 125px !important;
+    height: 35px;
+    padding: 0 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid var(--tkb-border);
+    background: #ffffff;
+    color: var(--tkb-text-main);
+    flex-shrink: 0;
+}
+
+.tkb-date-picker-compact:focus {
+    border-color: var(--tkb-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    outline: none;
+}
+
+.tkb-filter-compact-group {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+.tkb-filter-compact-group .portal-select-wrapper,
+.tkb-filter-compact-group > .portal-select-wrapper {
+    display: inline-flex !important;
+    width: auto !important;
+    flex: 0 0 auto !important;
+    max-width: 100% !important;
+}
+
+.tkb-filter-compact-group .portal-select-wrapper:first-of-type,
+.tkb-filter-compact-group .portal-select-wrapper:first-of-type .portal-select-trigger,
+.tkb-filter-compact-group select[name="namHocId"] {
+    width: 125px !important;
+    min-width: 115px !important;
+    max-width: 145px !important;
+}
+
+.tkb-filter-compact-group .portal-select-wrapper:last-of-type,
+.tkb-filter-compact-group .portal-select-wrapper:last-of-type .portal-select-trigger,
+.tkb-filter-compact-group select[name="hocKyId"] {
+    width: 230px !important;
+    min-width: 195px !important;
+    max-width: 280px !important;
+}
+
+.filter-select-compact {
+    height: 35px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid var(--tkb-border);
+    background-color: #ffffff;
+    color: var(--tkb-text-main);
+    min-width: 120px;
+    max-width: 260px;
+}
+
+.filter-select-compact:focus {
+    border-color: var(--tkb-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    outline: none;
+}
+
+/* Event Card: Full Text & Full Info */
+.utc-card-lecturer {
+    font-size: 0.73rem !important;
+    color: #475569 !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    line-height: 1.25 !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+}
+
+.utc-card-section {
+    font-weight: 600 !important;
+    font-size: 0.77rem !important;
+    line-height: 1.3 !important;
+    word-break: break-word !important;
+    margin-bottom: 4px !important;
+    color: #0f172a !important;
+}
+
+.utc-card-room-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    border: 1px solid #fecaca !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    padding: 2px 7px !important;
+    border-radius: 6px !important;
+    margin-bottom: 4px !important;
+    width: fit-content !important;
+}
+
+.utc-event-card {
+    border-radius: 10px !important;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08) !important;
+}
+
+.utc-event-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 22px -3px rgba(15, 23, 42, 0.16) !important;
+    z-index: 25 !important;
+}
