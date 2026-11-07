@@ -5,7 +5,18 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>$(NoWarn);NU1902;NU1903</NoWarn>
+    <DefaultItemExcludes>$(DefaultItemExcludes);wwwroot\uploads\**;App_Data\**</DefaultItemExcludes>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Loại trừ thư mục uploads và App_Data khỏi dotnet watch để không kích hoạt Hot Reload khi người dùng upload/xóa ảnh avatar/file -->
+    <Content Update="wwwroot\uploads\**" Watch="false" />
+    <Content Update="App_Data\**" Watch="false" />
+    <Watch Remove="wwwroot\uploads\**\*" />
+    <Watch Remove="wwwroot\uploads\**" />
+    <Watch Remove="App_Data\**\*" />
+    <Watch Remove="App_Data\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.13" />

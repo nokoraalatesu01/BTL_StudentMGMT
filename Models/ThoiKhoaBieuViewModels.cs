@@ -126,68 +126,33 @@ public static class CaHocHelper
 
     public static (int TopPx, int HeightPx, string StartStr, string EndStr) CalculateTimelinePosition(int tietBatDau, int soTiet)
     {
-        int tietKetThuc = tietBatDau + soTiet - 1;
-        string startStr;
-        string endStr;
-        int top;
-        int height;
+        int tietKetThuc = Math.Max(tietBatDau, tietBatDau + soTiet - 1);
+        string startStr = GioCacTiet.ContainsKey(tietBatDau) ? GioCacTiet[tietBatDau].Start : "07:00";
+        string endStr = GioCacTiet.ContainsKey(tietKetThuc) ? GioCacTiet[tietKetThuc].End : "18:00";
 
-        // Bảng quy chuẩn giờ học UTC:
-        // Ca 12: 07:00 - 09:30; Ca 34: 09:35 - 12:00; Ca 56: 13:00 - 15:10; Ca 78: 15:35 - 18:00
-        // Timeline lưới giờ: Mỗi giờ = 50px (từ 7:00 đến 18:00 = 11 block x 50px = 550px)
-        if (tietBatDau <= 2)
-        {
-            top = 0; // 07:00
-            startStr = "07:00";
-            if (tietKetThuc >= 4)
-            {
-                // Kéo dài cả Ca 12 và Ca 34 (Tiết 1-4: 07:00 - 12:00 = 5 giờ x 50px = 250px)
-                height = 250;
-                endStr = "12:00";
-            }
-            else
-            {
-                // Ca 12 (07:00 - 09:30 = 2.5 giờ x 50px = 125px)
-                height = 125;
-                endStr = "09:30";
-            }
-        }
-        else if (tietBatDau <= 4)
-        {
-            // Ca 34 (09:35 - 12:00 = top 130px, height 120px)
-            top = 130;
-            height = 120;
-            startStr = "09:35";
-            endStr = "12:00";
-        }
-        else if (tietBatDau <= 6)
-        {
-            // Ca 56 (13:00 - 15:10)
-            top = 300; // 13:00 (cách 7:00 đúng 6 giờ = 300px)
-            startStr = "13:00";
-            if (tietKetThuc >= 8)
-            {
-                // Kéo dài cả Ca 56 và Ca 78 (Tiết 5-8: 13:00 - 18:00 = 5 giờ x 50px = 250px)
-                height = 250;
-                endStr = "18:00";
-            }
-            else
-            {
-                // Ca 56 (13:00 - 15:10)
-                height = 115;
-                endStr = "15:10";
-            }
-        }
-        else
-        {
-            // Ca 78 (15:35 - 18:00)
-            top = 430; // 15:35
-            height = 120;
-            startStr = "15:35";
-            endStr = "18:00";
-        }
+        int startMinutes = ToMinutesFrom7AM(startStr);
+        int endMinutes = ToMinutesFrom7AM(endStr);
+        int durationMinutes = Math.Max(60, endMinutes - startMinutes);
+
+        // Mỗi 1 giờ (60 phút) = 50px trong timeline
+        int top = (int)Math.Round(startMinutes * 50.0 / 60.0);
+        int height = (int)Math.Round(durationMinutes * 50.0 / 60.0);
+
+        // Đảm bảo chiều cao tối thiểu 140px để hiển thị đầy đủ không bị che (Tiêu đề, Giờ, Phòng học, Giảng viên)
+        height = Math.Max(height, 140);
 
         return (top, height, startStr, endStr);
+    }
+
+    private static int ToMinutesFrom7AM(string timeStr)
+    {
+        var parts = timeStr.Split(':');
+        if (parts.Length == 2 && int.TryParse(parts[0], out int h) && int.TryParse(parts[1], out int m))
+        {
+            int totalMinutes = h * 60 + m;
+            return Math.Max(0, totalMinutes - 7 * 60);
+        }
+        return 0;
     }
 
     public static string GetKhungGio(int tietBatDau, int soTiet)
