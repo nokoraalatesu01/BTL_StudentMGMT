@@ -3,7 +3,7 @@
     ViewData["Title"] = "Lịch giảng dạy & Thời khóa biểu";
     Layout = "_GiangVienLayout";
     var gv = Model.GiangVien;
-    var hours = new[] { "7:00", "8:00", "9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00" };
+    var hours = new[] { "7:00", "8:00", "9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00" };
 }
 
 <link rel="stylesheet" href="~/css/timetable.css" asp-append-version="true" />
@@ -123,282 +123,128 @@
     </div>
 }
 
-<!-- ===== BỘ ĐIỀU HƯỚNG TUẦN / THÁNG & BỘ LỌC DỮ LIỆU ===== -->
+<!-- ===== BỘ ĐIỀU HƯỚNG & BỘ LỌC TẬP TRUNG (1 HÀNG DUY NHẤT) ===== -->
 <div class="tkb-control-panel">
-    <form method="get" asp-action="LichGiangDay" class="row g-2 align-items-center" id="tkbFilterForm">
+    <form method="get" asp-action="LichGiangDay" id="tkbFilterForm" class="tkb-unified-toolbar">
         <input type="hidden" name="viewMode" value="@Model.ViewMode" id="hiddenViewMode" />
         <input type="hidden" name="ngay" value="@(Model.ViewMode == "month" ? Model.ThangView?.NgayDauThang.ToString("yyyy-MM-dd") : Model.NgayDauTuan.ToString("yyyy-MM-dd"))" id="hiddenNgay" />
 
-        <!-- Nút chuyển Tuần / Tháng -->
-        <div class="col-12 col-xl-auto">
-            <div class="btn-group tkb-view-toggle p-1 bg-light rounded-3 border" role="group">
-                <a asp-action="LichGiangDay"
-                   asp-route-viewMode="week"
-                   asp-route-hocKyId="@Model.SelectedHocKyId"
-                   asp-route-namHocId="@Model.SelectedNamHocId"
-                   asp-route-monHocId="@Model.SelectedMonHocId"
-                   asp-route-ngay="@Model.NgayDauTuan.ToString("yyyy-MM-dd")"
-                   class="btn btn-sm @(Model.ViewMode == "week" ? "btn-primary shadow-sm" : "btn-light text-muted")">
-                    <i class="bi bi-calendar3-week me-1"></i> Lịch tuần
-                </a>
-                <a asp-action="LichGiangDay"
-                   asp-route-viewMode="month"
-                   asp-route-hocKyId="@Model.SelectedHocKyId"
-                   asp-route-namHocId="@Model.SelectedNamHocId"
-                   asp-route-monHocId="@Model.SelectedMonHocId"
-                   asp-route-ngay="@Model.NgayDauTuan.ToString("yyyy-MM-dd")"
-                   class="btn btn-sm @(Model.ViewMode == "month" ? "btn-primary shadow-sm" : "btn-light text-muted")">
-                    <i class="bi bi-calendar3 me-1"></i> Lịch tháng
-                </a>
-            </div>
+        <!-- Cụm bên trái: Lịch tuần / Lịch tháng -->
+        <div class="btn-group tkb-view-toggle p-1 bg-light rounded-3 border flex-shrink-0" role="group">
+            <a asp-action="LichGiangDay"
+               asp-route-viewMode="week"
+               asp-route-hocKyId="@Model.SelectedHocKyId"
+               asp-route-namHocId="@Model.SelectedNamHocId"
+               asp-route-ngay="@Model.NgayDauTuan.ToString("yyyy-MM-dd")"
+               class="btn btn-sm @(Model.ViewMode == "week" ? "btn-primary shadow-sm" : "btn-light text-muted")">
+                <i class="bi bi-calendar3-week me-1"></i> Lịch tuần
+            </a>
+            <a asp-action="LichGiangDay"
+               asp-route-viewMode="month"
+               asp-route-hocKyId="@Model.SelectedHocKyId"
+               asp-route-namHocId="@Model.SelectedNamHocId"
+               asp-route-ngay="@Model.NgayDauTuan.ToString("yyyy-MM-dd")"
+               class="btn btn-sm @(Model.ViewMode == "month" ? "btn-primary shadow-sm" : "btn-light text-muted")">
+                <i class="bi bi-calendar3 me-1"></i> Lịch tháng
+            </a>
         </div>
 
-        <!-- Điều hướng thời gian -->
-        <div class="col-12 col-xl-auto">
-            <div class="d-flex align-items-center gap-1 tkb-nav-btns">
-                @if (Model.ViewMode == "month" && Model.ThangView != null)
-                {
+        <!-- Cụm ở giữa: Điều hướng ngày & Chọn ngày & Badge Tuần -->
+        <div class="tkb-nav-compact-group">
+            @if (Model.ViewMode == "month" && Model.ThangView != null)
+            {
+                <div class="btn-group" role="group">
                     <a asp-action="LichGiangDay"
                        asp-route-viewMode="month"
                        asp-route-hocKyId="@Model.SelectedHocKyId"
                        asp-route-namHocId="@Model.SelectedNamHocId"
-                       asp-route-monHocId="@Model.SelectedMonHocId"
                        asp-route-ngay="@Model.ThangView.ThangTruocParam"
-                       class="btn btn-outline-secondary" title="Tháng trước">
+                       class="btn btn-sm btn-outline-secondary" title="Tháng trước">
                         <i class="bi bi-chevron-left"></i>
                     </a>
                     <a asp-action="LichGiangDay"
                        asp-route-viewMode="month"
                        asp-route-hocKyId="@Model.SelectedHocKyId"
                        asp-route-namHocId="@Model.SelectedNamHocId"
-                       asp-route-monHocId="@Model.SelectedMonHocId"
-                       asp-route-ngay="@Model.ThangView.ThangHienTaiParam"
-                       class="btn btn-outline-primary" title="Về tháng hiện tại">
-                        Hôm nay
-                    </a>
-                    <a asp-action="LichGiangDay"
-                       asp-route-viewMode="month"
-                       asp-route-hocKyId="@Model.SelectedHocKyId"
-                       asp-route-namHocId="@Model.SelectedNamHocId"
-                       asp-route-monHocId="@Model.SelectedMonHocId"
                        asp-route-ngay="@Model.ThangView.ThangSauParam"
-                       class="btn btn-outline-secondary" title="Tháng sau">
+                       class="btn btn-sm btn-outline-secondary" title="Tháng sau">
                         <i class="bi bi-chevron-right"></i>
                     </a>
-                    <span class="tkb-range-display">
-                        <i class="bi bi-calendar-month text-primary"></i> @Model.ThangView.TieuDeThang
-                    </span>
-                }
-                else
-                {
+                </div>
+                <span class="tkb-range-display">
+                    <i class="bi bi-calendar-month text-primary"></i> @Model.ThangView.TieuDeThang
+                </span>
+            }
+            else
+            {
+                <div class="btn-group" role="group">
                     <a asp-action="LichGiangDay"
                        asp-route-viewMode="week"
                        asp-route-hocKyId="@Model.SelectedHocKyId"
                        asp-route-namHocId="@Model.SelectedNamHocId"
-                       asp-route-monHocId="@Model.SelectedMonHocId"
                        asp-route-ngay="@Model.NgayTruocUrlParam"
-                       class="btn btn-outline-secondary" title="Tuần trước">
+                       class="btn btn-sm btn-outline-secondary" title="Tuần trước">
                         <i class="bi bi-chevron-left"></i> Tuần trước
                     </a>
                     <a asp-action="LichGiangDay"
                        asp-route-viewMode="week"
                        asp-route-hocKyId="@Model.SelectedHocKyId"
                        asp-route-namHocId="@Model.SelectedNamHocId"
-                       asp-route-monHocId="@Model.SelectedMonHocId"
-                       asp-route-ngay="@Model.NgayHienTaiUrlParam"
-                       class="btn btn-outline-primary" title="Về tuần hiện tại">
-                        Hôm nay
-                    </a>
-                    <a asp-action="LichGiangDay"
-                       asp-route-viewMode="week"
-                       asp-route-hocKyId="@Model.SelectedHocKyId"
-                       asp-route-namHocId="@Model.SelectedNamHocId"
-                       asp-route-monHocId="@Model.SelectedMonHocId"
                        asp-route-ngay="@Model.NgaySauUrlParam"
-                       class="btn btn-outline-secondary" title="Tuần sau">
+                       class="btn btn-sm btn-outline-secondary" title="Tuần sau">
                         Tuần sau <i class="bi bi-chevron-right"></i>
                     </a>
-                    <input type="date" name="ngay" value="@Model.NgayDauTuanParam"
-                           class="form-control form-control-sm tkb-date-picker"
-                           onchange="document.getElementById('tkbFilterForm').submit()"
-                           title="Chọn ngày để chuyển đến tuần tương ứng" />
-                    <span class="tkb-range-display">
-                        <i class="bi bi-calendar-week text-primary"></i> @Model.ChuoiTuanHienThi
-                    </span>
-                }
-            </div>
+                </div>
+                <input type="date" name="ngay" value="@Model.NgayDauTuanParam"
+                       class="form-control form-control-sm tkb-date-picker-compact"
+                       onchange="document.getElementById('tkbFilterForm').submit()"
+                       title="Chọn ngày để chuyển đến tuần tương ứng" />
+                <span class="tkb-range-display">
+                    <i class="bi bi-calendar-week text-primary"></i> @Model.ChuoiTuanHienThi
+                </span>
+            }
         </div>
 
-        <!-- Bộ lọc Năm học, Học kỳ & Môn học -->
-        <div class="col-12 col-xl ms-auto">
-            <div class="row g-2 justify-content-end">
-                <div class="col-6 col-sm-auto" style="min-width: 140px;">
-                    <select name="namHocId" class="form-select form-select-sm filter-select" onchange="document.getElementById('tkbFilterForm').submit()">
-                        <option value="">-- Tất cả năm học --</option>
-                        @foreach (var nh in Model.DanhSachNamHoc)
-                        {
-                            <option value="@nh.NamHocId" selected="@(Model.SelectedNamHocId == nh.NamHocId ? "selected" : null)">
-                                @nh.MaNamHoc
-                            </option>
-                        }
-                    </select>
-                </div>
-                <div class="col-6 col-sm-auto" style="min-width: 170px;">
-                    <select name="hocKyId" class="form-select form-select-sm filter-select" onchange="document.getElementById('tkbFilterForm').submit()">
-                        <option value="">-- Tất cả học kỳ --</option>
-                        @foreach (var hk in Model.DanhSachHocKy)
-                        {
-                            <option value="@hk.HocKyId" selected="@(Model.SelectedHocKyId == hk.HocKyId ? "selected" : null)">
-                                @hk.TenHocKy @(hk.TrangThai == "DANG_MO" ? "(Đang mở)" : "")
-                            </option>
-                        }
-                    </select>
-                </div>
-                <div class="col-12 col-sm-auto" style="min-width: 190px;">
-                    <select name="monHocId" class="form-select form-select-sm filter-select" onchange="document.getElementById('tkbFilterForm').submit()">
-                        <option value="">-- Tất cả môn phụ trách --</option>
-                        @foreach (var m in Model.DanhSachMonHoc)
-                        {
-                            <option value="@m.Id" selected="@(Model.SelectedMonHocId == m.Id ? "selected" : null)">
-                                @m.MaMon - @m.TenMon
-                            </option>
-                        }
-                    </select>
-                </div>
-            </div>
+        <!-- Cụm bên phải: Năm học & Học kỳ (Cùng 1 dòng, bỏ môn phụ trách) -->
+        <div class="tkb-filter-compact-group ms-auto" style="display:flex; flex-direction:row; flex-wrap:nowrap; gap:8px; align-items:center;">
+            <select name="namHocId" class="form-select form-select-sm filter-select-compact" style="width: 125px; min-width: 115px; flex: 0 0 auto;" onchange="document.getElementById('tkbFilterForm').submit()" title="Năm học">
+                <option value="">-- Năm học --</option>
+                @foreach (var nh in Model.DanhSachNamHoc)
+                {
+                    <option value="@nh.NamHocId" selected="@(Model.SelectedNamHocId == nh.NamHocId ? "selected" : null)">
+                        @nh.MaNamHoc
+                    </option>
+                }
+            </select>
+            <select name="hocKyId" class="form-select form-select-sm filter-select-compact" style="width: 230px; min-width: 195px; flex: 0 0 auto;" onchange="document.getElementById('tkbFilterForm').submit()" title="Học kỳ">
+                <option value="">-- Học kỳ --</option>
+                @foreach (var hk in Model.DanhSachHocKy)
+                {
+                    <option value="@hk.HocKyId" selected="@(Model.SelectedHocKyId == hk.HocKyId ? "selected" : null)">
+                        @hk.TenHocKy @(hk.TrangThai == "DANG_MO" ? "(Đang mở)" : "")
+                    </option>
+                }
+            </select>
         </div>
     </form>
 </div>
 
-<!-- ===== KHU VỰC PHÍA TRÊN: BẢNG LỚP HỌC PHẦN + LỊCH THÁNG MINI (CHUẨN UTC) ===== -->
-<div class="utc-top-row">
-    <!-- Cột trái: Bảng Lớp học phần phụ trách -->
-    <div class="utc-section-card">
-        <div class="utc-card-header-bar">
-            <h5>
-                <i class="bi bi-people-fill text-primary"></i> Lớp học phần phụ trách (@Model.DanhSachLopHocPhan.Count lớp)
-            </h5>
-            <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:0.75rem;">
-                Học kỳ chính khóa
-            </span>
-        </div>
-        <div class="table-responsive utc-table-container">
-            <table class="utc-section-table">
-                <thead>
-                    <tr>
-                        <th style="width: 170px;">Mã lớp</th>
-                        <th>Tên môn/lớp</th>
-                        <th style="width: 110px;">Lớp phụ trách</th>
-                        <th style="width: 70px;">Số TC</th>
-                        <th style="width: 130px;">Thời gian</th>
-                        <th style="width: 100px;">Phòng học</th>
-                        <th style="width: 80px;">Sĩ số</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.DanhSachLopHocPhan.Count == 0)
-                    {
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
-                                <em>Chưa có lớp học phần nào được phân công trong học kỳ này</em>
-                            </td>
-                        </tr>
-                    }
-                    else
-                    {
-                        @foreach (var lhp in Model.DanhSachLopHocPhan)
-                        {
-                            <tr>
-                                <td class="fw-bold text-primary font-monospace small">@lhp.MaLopHocPhan</td>
-                                <td class="fw-semibold text-dark">@lhp.TenLopHocPhan</td>
-                                <td class="text-dark small">@(lhp.LopPhuTrach ?? "Đại trà")</td>
-                                <td class="text-center fw-bold">@lhp.SoTinChi</td>
-                                <td class="text-muted small">@lhp.ThoiGianHoc</td>
-                                <td class="text-danger fw-semibold small">@lhp.PhongHoc</td>
-                                <td class="text-center fw-semibold">@lhp.SiSo SV</td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Cột phải: Widget Lịch tháng Mini -->
-    <div class="utc-mini-cal-card">
-        @if (Model.MiniCalendar != null)
-        {
-            <div class="utc-mini-cal-header">
-                <span class="utc-mini-cal-title">
-                    Tháng @(Model.MiniCalendar.Thang)-@(Model.MiniCalendar.Nam)
-                </span>
-                <div class="utc-mini-cal-nav">
-                    <a asp-action="LichGiangDay"
-                       asp-route-hocKyId="@Model.SelectedHocKyId"
-                       asp-route-namHocId="@Model.SelectedNamHocId"
-                       asp-route-monHocId="@Model.SelectedMonHocId"
-                       asp-route-ngay="@Model.MiniCalendar.ThangTruocParam"
-                       class="utc-mini-cal-nav-btn" title="Tháng trước">
-                        <i class="bi bi-chevron-left"></i>
-                    </a>
-                    <a asp-action="LichGiangDay"
-                       asp-route-hocKyId="@Model.SelectedHocKyId"
-                       asp-route-namHocId="@Model.SelectedNamHocId"
-                       asp-route-monHocId="@Model.SelectedMonHocId"
-                       asp-route-ngay="@Model.MiniCalendar.ThangSauParam"
-                       class="utc-mini-cal-nav-btn" title="Tháng sau">
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
-                </div>
-            </div>
-            <div class="utc-mini-cal-body">
-                <div class="utc-mini-cal-weekdays">
-                    <span>T2</span>
-                    <span>T3</span>
-                    <span>T4</span>
-                    <span>T5</span>
-                    <span>T6</span>
-                    <span>T7</span>
-                    <span>Cn</span>
-                </div>
-                <div class="utc-mini-cal-grid">
-                    @foreach (var week in Model.MiniCalendar.CacTuan)
-                    {
-                        @foreach (var day in week.CacNgay)
-                        {
-                            var dayClass = "utc-mini-cal-day";
-                            if (!day.LaThangHienTai) { dayClass += " is-outside"; }
-                            if (day.LaHomNay) { dayClass += " is-today"; }
-                            if (day.LaTuanHienTai) { dayClass += " is-current-week"; }
-
-                            <a href="?ngay=@day.NgayUrlParam&hocKyId=@Model.SelectedHocKyId&namHocId=@Model.SelectedNamHocId&monHocId=@Model.SelectedMonHocId"
-                               class="@dayClass"
-                               title="@day.Ngay.ToString("dd/MM/yyyy") (Bấm để xem lịch giảng dạy tuần này)">
-                                @if (day.LaHomNay)
-                                {
-                                    <span class="day-number-badge">@day.Ngay.Day</span>
-                                }
-                                else
-                                {
-                                    <span>@day.Ngay.Day</span>
-                                }
-                            </a>
-                        }
-                    }
-                </div>
-            </div>
-        }
-    </div>
-</div>
-
-<!-- ===== KHU VỰC PHÍA DƯỚI: LỊCH GIẢNG DẠY (CHUẨN UTC TIMETABLE GRID) ===== -->
+<!-- ===== TRỌNG TÂM: LỊCH GIẢNG DẠY (CHUẨN UTC TIMETABLE GRID) ===== -->
 <div class="utc-timetable-card">
     <div class="utc-timetable-header-bar">
-        <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
-            <i class="bi bi-calendar-event text-primary"></i> Lịch giảng dạy
-        </h5>
-        <div class="text-muted small">
-            <span>Thời gian: <strong class="text-dark">@Model.ChuoiTuanHienThi</strong></span>
+        <div class="d-flex align-items-center gap-2">
+            <div class="tkb-header-icon" style="background:#eff6ff; color:#2563eb;">
+                <i class="bi bi-calendar-range-fill"></i>
+            </div>
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">Lịch giảng dạy trong tuần</h5>
+                <small class="text-muted">Bấm vào từng lớp giảng dạy để xem danh sách sinh viên và vào sổ điểm danh</small>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 fw-semibold" style="font-size:0.85rem;">
+                <i class="bi bi-clock-history me-1"></i> @Model.ChuoiTuanHienThi
+            </span>
         </div>
     </div>
 
@@ -435,7 +281,7 @@
                             <span class="tkb-month-day-num">@day.Ngay.Day</span>
                             @if (day.TongBuoiHoc > 0)
                             {
-                                <span class="badge bg-primary-subtle text-primary" style="font-size:0.65rem;">@day.TongBuoiHoc buổi dạy</span>
+                                <span class="badge bg-success-subtle text-success" style="font-size:0.65rem;">@day.TongBuoiHoc ca dạy</span>
                             }
                         </div>
 
@@ -460,7 +306,7 @@
                 <!-- Hàng Header các Thứ trong tuần -->
                 <div class="utc-timeline-days-header">
                     <div class="utc-timeline-head-cell time-axis-head">
-                        <i class="bi bi-clock"></i>
+                        <i class="bi bi-clock-fill text-muted mb-1 fs-6"></i>
                         <span>Giờ VN</span>
                     </div>
                     @foreach (var ngay in Model.CacNgayTrongTuan)
@@ -469,8 +315,12 @@
                         if (ngay.LaHomNay) { headClass += " is-today"; }
 
                         <div class="@headClass">
-                            <span class="utc-day-date-num">@ngay.Ngay.ToString("dd")</span>
                             <span class="utc-day-name">@ngay.Thu</span>
+                            <span class="utc-day-date-num">@ngay.Ngay.ToString("dd/MM")</span>
+                            @if (ngay.LaHomNay)
+                            {
+                                <span class="utc-today-badge">Hôm nay</span>
+                            }
                         </div>
                     }
                 </div>
@@ -498,7 +348,7 @@
 
                         <div class="@dayColClass">
                             <!-- Đường kẻ ngang phân cách mỗi giờ -->
-                            @for (int h = 0; h <= 11; h++)
+                            @for (int h = 0; h < hours.Length; h++)
                             {
                                 <div class="utc-hour-gridline" style="top: @(h * 50)px;"></div>
                             }
@@ -512,13 +362,13 @@
                                      role="button"
                                      onclick="xemChiTietBuoiHoc(@card.LopHocPhanId, '@(card.NgayHoc?.ToString("yyyy-MM-dd") ?? "")', 'giangvien')"
                                      onkeypress="if(event.key === 'Enter') this.click();"
-                                     title="@card.TenMon (@card.MaMon)&#10;Khung giờ: @card.KhungGio (Tiết @card.TietBatDau–@card.TietKetThuc)&#10;Phòng: @card.PhongHoc&#10;Sĩ số: @card.SiSo SV&#10;👉 Bấm để xem chi tiết buổi học và điểm danh">
+                                     title="@card.TenMon (@card.MaMon)&#10;Khung giờ: @card.KhungGio (Tiết @card.TietBatDau–@card.TietKetThuc)&#10;Phòng: @card.PhongHoc&#10;Lớp: @card.TenLopHocPhan&#10;👉 Bấm để xem danh sách SV & điểm danh">
 
                                     <!-- Tiêu đề thẻ màu đặc trưng (Solid Color Header) -->
                                     <div class="utc-card-header">
                                         <div class="utc-card-title">@card.TenMon</div>
                                         <div class="utc-card-time">
-                                            @card.KhungGio (Tiết @card.TietBatDau-@card.TietKetThuc)
+                                            <i class="bi bi-clock-fill me-1"></i>@card.KhungGio <span class="utc-card-period-pill">Tiết @card.TietBatDau-@card.TietKetThuc</span>
                                         </div>
                                     </div>
 
@@ -528,17 +378,17 @@
                                             <div class="utc-card-section">
                                                 @card.TenLopHocPhan
                                             </div>
-                                            <div class="utc-card-room">
-                                                <i class="bi bi-geo-alt-fill"></i> Phòng: @card.PhongHoc
+                                            <div class="utc-card-room-badge">
+                                                <i class="bi bi-geo-alt-fill"></i> Phòng: <strong>@card.PhongHoc</strong>
                                             </div>
                                         </div>
 
                                         <div class="utc-card-footer">
-                                            <span class="text-truncate text-muted" style="max-width: 85%;">
-                                                <i class="bi bi-people"></i> Sĩ số: @card.SiSo SV
+                                            <span class="utc-card-lecturer">
+                                                <i class="bi bi-people-fill"></i> Sĩ số: @card.SiSo SV
                                             </span>
-                                            <span class="utc-card-action-icon" title="Chi tiết">
-                                                <i class="bi bi-plus-lg"></i>
+                                            <span class="utc-card-action-icon" title="Chi tiết & Điểm danh">
+                                                <i class="bi bi-chevron-right"></i>
                                             </span>
                                         </div>
                                     </div>
@@ -550,6 +400,80 @@
             </div>
         </div>
     }
+</div>
+
+<!-- ===== KHU VỰC PHÍA DƯỚI: DANH SÁCH LỚP HỌC PHẦN PHỤ TRÁCH (FULL WIDTH 100%) ===== -->
+<div class="utc-section-card w-100 mb-4">
+    <div class="utc-card-header-bar">
+        <div class="d-flex align-items-center gap-2">
+            <div class="tkb-header-icon" style="background:#ecfdf5; color:#059669;">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">Lớp học phần phụ trách (@Model.DanhSachLopHocPhan.Count lớp)</h5>
+                <small class="text-muted">Danh sách các lớp học phần được phân công giảng dạy trong học kỳ này</small>
+            </div>
+        </div>
+        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fw-semibold" style="font-size:0.85rem;">
+            <i class="bi bi-bookmark-check-fill me-1"></i> Học kỳ chính khóa
+        </span>
+    </div>
+    <div class="table-responsive utc-table-container-full">
+        <table class="utc-section-table table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 140px;">Mã lớp HP</th>
+                    <th style="min-width: 260px;">Tên môn / lớp học phần</th>
+                    <th style="width: 130px;">Lớp phụ trách</th>
+                    <th style="width: 80px;" class="text-center">Số TC</th>
+                    <th style="width: 200px;" class="text-center">Thời gian học</th>
+                    <th style="width: 120px;" class="text-center">Phòng học</th>
+                    <th style="width: 100px;" class="text-center">Sĩ số</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.DanhSachLopHocPhan.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox fs-2 text-muted d-block mb-2"></i>
+                            <em>Chưa có lớp học phần nào được phân công trong học kỳ này</em>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var lhp in Model.DanhSachLopHocPhan)
+                    {
+                        <tr>
+                            <td>
+                                <span class="badge bg-primary-subtle text-primary font-monospace px-2 py-1 fs-7">@lhp.MaLopHocPhan</span>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark fs-6">@lhp.TenLopHocPhan</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border px-2 py-1">@(lhp.LopPhuTrach ?? "Đại trà")</span>
+                            </td>
+                            <td class="text-center fw-bold">@lhp.SoTinChi</td>
+                            <td class="text-center text-muted small">
+                                <span class="d-inline-flex align-items-center gap-1 bg-light px-2 py-1 rounded border">
+                                    <i class="bi bi-calendar-event text-primary"></i>
+                                    <span>@lhp.ThoiGianHoc</span>
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fw-semibold">
+                                    <i class="bi bi-geo-alt-fill me-1"></i>@lhp.PhongHoc
+                                </span>
+                            </td>
+                            <td class="text-center fw-semibold text-primary">@lhp.SiSo SV</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!-- ===== MODAL CHI TIẾT BUỔI HỌC (BOOTSTRAP MODAL) ===== -->

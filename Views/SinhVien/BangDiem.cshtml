@@ -8,8 +8,8 @@
 <div class="student-page-heading">
     <div>
         <p class="student-eyebrow">KẾT QUẢ ĐÀO TẠO TÍN CHỈ</p>
-        <h1>Bảng điểm & Lịch sử học tập</h1>
-        <p>Bảo toàn đầy đủ lịch sử các lần học, học lại, học cải thiện và thi lại theo quy chế đào tạo tín chỉ.</p>
+        <h1>Bảng điểm & Kết quả học tập</h1>
+        <p>Bảng điểm tích lũy chính thức ghi nhận số lần học, lần thi theo quy chế đào tạo tín chỉ.</p>
     </div>
     <a class="student-back-link" asp-action="Index"><i class="bi bi-arrow-left" aria-hidden="true"></i> Về tổng quan</a>
 </div>
@@ -53,7 +53,6 @@
             <p class="student-eyebrow mb-1">KẾT QUẢ TÍCH LŨY</p>
             <h2 class="m-0">Bảng điểm tích lũy chính thức (Dùng tính GPA)</h2>
         </div>
-        <span class="student-chip green"><i class="bi bi-check2-circle"></i> Chuẩn tín chỉ</span>
     </div>
 
     @if (Model.Diems.Count == 0)
@@ -75,6 +74,7 @@
                         <th>Mã HP</th>
                         <th>Tên học phần</th>
                         <th class="text-center">TC</th>
+                        <th class="text-center">Lần học</th>
                         <th class="text-center">CC (10%)</th>
                         <th class="text-center">GK (30%)</th>
                         <th class="text-center">CK (60%)</th>
@@ -92,12 +92,9 @@
                             <td><strong style="color: var(--blue-600);">@diem.MonHoc?.MaMon</strong></td>
                             <td>
                                 <div>@diem.MonHoc?.TenMon</div>
-                                @if (diem.LoaiHoc != "HOC_LAN_DAU")
-                                {
-                                    <small class="text-muted">(@diem.TenLoaiHoc - Lần @diem.LanHoc)</small>
-                                }
                             </td>
                             <td class="text-center font-monospace">@(diem.MonHoc?.SoTinChi ?? 0)</td>
+                            <td class="text-center font-monospace" style="color:#475569; font-weight:600;">@diem.LanHoc</td>
                             <td class="text-center">@diem.DiemChuyenCan.ToString("0.0")</td>
                             <td class="text-center">@diem.DiemGiuaKy.ToString("0.0")</td>
                             <td class="text-center">@diem.DiemCuoiKyApDung.ToString("0.0")</td>
@@ -113,118 +110,6 @@
                                 {
                                     <span class="student-chip red">Học lại</span>
                                 }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-</section>
-
-<!-- BẢNG LỊCH SỬ TẤT CẢ CÁC LẦN HỌC (HỌC LẠI, THI LẠI, CẢI THIỆN) -->
-<section class="student-panel p-0 overflow-hidden mb-4">
-    <div class="student-panel-heading p-3 border-bottom d-flex justify-content-between align-items-center">
-        <div>
-            <p class="student-eyebrow mb-1">LỊCH SỬ ĐÀO TẠO</p>
-            <h2 class="m-0">Lịch sử quá trình học tập chi tiết từng lần</h2>
-        </div>
-        <span class="student-chip blue"><i class="bi bi-clock-history"></i> Toàn bộ lịch sử</span>
-    </div>
-
-    @if (Model.Diems.Count > 0)
-    {
-        <div class="student-table-wrap">
-            <table class="student-table">
-                <thead>
-                    <tr>
-                        <th>Môn học</th>
-                        <th>Học kỳ / Lớp HP</th>
-                        <th class="text-center">Loại học</th>
-                        <th class="text-center">Lần học</th>
-                        <th class="text-center">Lần thi</th>
-                        <th class="text-center">Điểm tổng kết</th>
-                        <th class="text-center">Điểm chữ</th>
-                        <th class="text-center">Kết quả</th>
-                        <th class="text-center">Tích lũy GPA</th>
-                        <th>Ghi chú</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var diem in Model.Diems.OrderBy(d => d.MonHoc?.TenMon).ThenBy(d => d.LanHoc).ThenBy(d => d.LanThi))
-                    {
-                        var isPass = diem.IsDat;
-                        <tr>
-                            <td>
-                                <strong>@diem.MonHoc?.TenMon</strong>
-                                <div class="text-muted small">Mã: @diem.MonHoc?.MaMon (TC: @diem.MonHoc?.SoTinChi)</div>
-                            </td>
-                            <td>
-                                <div>@(diem.HocKy?.TenHocKy ?? diem.LopHocPhan?.HocKy?.TenHocKy ?? "—")</div>
-                                @if (diem.LopHocPhan != null)
-                                {
-                                    <small class="text-muted">LHP: @diem.LopHocPhan.MaLopHocPhan</small>
-                                }
-                            </td>
-                            <td class="text-center">
-                                @if (diem.LoaiHoc == "HOC_LAI")
-                                {
-                                    <span class="badge" style="background:#ffedd5; color:#c2410c; font-weight:700;">Học lại</span>
-                                }
-                                else if (diem.LoaiHoc == "HOC_CAI_THIEN")
-                                {
-                                    <span class="badge" style="background:#f3e8ff; color:#7e22ce; font-weight:700;">Cải thiện</span>
-                                }
-                                else
-                                {
-                                    <span class="badge" style="background:#f0fdf4; color:#15803d; font-weight:700;">Lần đầu</span>
-                                }
-                            </td>
-                            <td class="text-center font-monospace">@diem.LanHoc</td>
-                            <td class="text-center font-monospace">
-                                @if (diem.LanThi == 2 || diem.DiemCuoiKyLan2.HasValue)
-                                {
-                                    <span class="badge bg-warning text-dark">Thi L2</span>
-                                }
-                                else
-                                {
-                                    <span>L1</span>
-                                }
-                            </td>
-                            <td class="text-center">
-                                <strong style="color:@(isPass ? "var(--blue-600)" : "#dc2626"); font-size:1rem;">
-                                    @diem.DiemTongKet.ToString("0.0")
-                                </strong>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge @(isPass ? "bg-primary" : "bg-danger")">@diem.DiemChu</span>
-                            </td>
-                            <td class="text-center">
-                                @if (isPass)
-                                {
-                                    <span class="student-chip green">Đạt</span>
-                                }
-                                else
-                                {
-                                    <span class="student-chip red">Không đạt</span>
-                                }
-                            </td>
-                            <td class="text-center">
-                                @if (diem.SuDungTinhTichLuy)
-                                {
-                                    <span class="badge bg-success" title="Điểm đạt này được chọn để tính vào GPA tích lũy">
-                                        <i class="bi bi-check-lg"></i> Tính tích lũy
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary" title="Bản ghi cũ hoặc không đạt - Không tính vào GPA">
-                                        Lịch sử
-                                    </span>
-                                }
-                            </td>
-                            <td class="small text-muted">
-                                @(diem.GhiChu ?? "—")
                             </td>
                         </tr>
                     }
