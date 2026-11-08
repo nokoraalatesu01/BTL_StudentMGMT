@@ -123,6 +123,16 @@
                         </div>
                     </div>
                 </div>
+                <!-- Chuyển đổi ngôn ngữ Quốc tế hóa (Localization) -->
+                <div class="d-flex align-items-center me-3">
+                    <form asp-controller="Language" asp-action="SetLanguage" asp-route-returnUrl="@Context.Request.Path" method="post" class="d-inline m-0">
+                        <select name="culture" onchange="this.form.submit()" class="form-select form-select-sm border bg-light rounded-pill px-3 shadow-none fw-semibold text-secondary" style="font-size: 0.8rem; cursor: pointer;">
+                            <option value="vi-VN" selected="@(System.Globalization.CultureInfo.CurrentCulture.Name == "vi-VN" ? "selected" : null)">🇻🇳 Tiếng Việt</option>
+                            <option value="en-US" selected="@(System.Globalization.CultureInfo.CurrentCulture.Name == "en-US" ? "selected" : null)">🇬🇧 English</option>
+                        </select>
+                    </form>
+                </div>
+
                 <div class="topbar-user">
                     <div class="topbar-avatar-wrap">
                         <span class="topbar-avatar" aria-hidden="true">@accountInitial</span>
@@ -148,6 +158,11 @@
     <script src="~/lib/gsap/gsap.min.js"></script>
     <script src="~/js/portal.js" asp-append-version="true"></script>
     <script src="~/js/custom-combobox.js" asp-append-version="true"></script>
+
+    <!-- Tích hợp Rich Text Editor (CKEditor 5) cho thẻ textarea -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
+    <script src="~/js/rich-editor.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

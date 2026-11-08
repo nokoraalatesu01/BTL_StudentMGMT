@@ -98,41 +98,60 @@
 
 <!-- ===== BỘ LỌC ===== -->
 <div class="content-card p-3 mb-3">
-    <form method="get" class="d-flex flex-wrap gap-2 align-items-center filter-card-form">
-
-        <!-- Ô tìm kiếm -->
-        <div class="input-group" style="width:280px; min-width:200px;">
-            <span class="input-group-text border-end-0 pe-1">
-                <i class="bi bi-search" style="font-size:.85rem;"></i>
-            </span>
-            <input name="tuKhoa" value="@ViewBag.TuKhoa"
-                   class="form-control border-start-0 ps-1"
-                   placeholder="Tìm theo tên, mã SV, lớp, email..." />
+    <form method="get" class="row g-2 align-items-center filter-card-form">
+        <!-- 1. Ô tìm kiếm -->
+        <div class="col-12 col-md-4">
+            <div class="input-group">
+                <span class="input-group-text border-end-0 bg-white text-muted pe-2" style="border-color:#cbd5e1; height:40px; border-radius:10px 0 0 10px;">
+                    <i class="bi bi-search" style="font-size:.85rem; color:#64748b;"></i>
+                </span>
+                <input name="tuKhoa" value="@ViewBag.TuKhoa"
+                       class="form-control border-start-0 ps-1"
+                       style="border-color:#cbd5e1; font-size:.875rem; height:40px; border-radius:0 10px 10px 0;"
+                       placeholder="Tìm theo tên, mã SV, lớp, email..." />
+            </div>
         </div>
 
-        <!-- Lọc khoa/lớp -->
-        <select name="lopId" asp-items="ViewBag.DanhSachLop"
-                class="form-select" style="width:220px; min-width:160px;">
-            <option value="">-- Tất cả Khoa / Viện / Lớp --</option>
-        </select>
+        <!-- 2. Lọc Khoa / Viện / Lớp -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <select name="lopId" asp-items="ViewBag.DanhSachLop"
+                    class="form-select" style="font-size:.875rem; border-color:#cbd5e1; height:40px; width:100%; border-radius:10px;">
+                <option value="">-- Tất cả Khoa / Viện / Lớp --</option>
+            </select>
+        </div>
 
-        <!-- Lọc trạng thái -->
-        <select name="trangThai" class="form-select" style="width:155px; min-width:130px;">
-            <option value="">-- Trạng thái --</option>
-            @foreach (var trangThai in BTL_StudentMGMT.Models.SinhVien.TrangThaiOptions)
-            {
-                <option value="@trangThai" selected="@(ViewBag.TrangThai == trangThai)">@trangThai</option>
-            }
-        </select>
+        <!-- 3. Lọc Trạng thái -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <select name="trangThai" class="form-select" style="font-size:.875rem; border-color:#cbd5e1; height:40px; width:100%; border-radius:10px;">
+                <option value="">-- Tất cả trạng thái --</option>
+                @foreach (var trangThai in BTL_StudentMGMT.Models.SinhVien.TrangThaiOptions)
+                {
+                    <option value="@trangThai" selected="@(ViewBag.TrangThai == trangThai)">@trangThai</option>
+                }
+            </select>
+        </div>
 
-        <!-- Nút Lọc -->
-        <button type="submit" class="btn-filter"><i class="bi bi-funnel"></i> Lọc</button>
+        <!-- 4. Thao tác (Lọc + Đặt lại) -->
+        <div class="col-12 col-md-2">
+            <div class="d-flex gap-2 w-100">
+                <button type="submit" class="btn-filter-submit flex-grow-1" style="height:40px; border-radius:10px;">
+                    <i class="bi bi-funnel-fill"></i> Lọc
+                </button>
+                <a asp-action="Index" class="btn-filter-reset" title="Đặt lại bộ lọc" style="height:40px; width:40px; min-width:40px; border-radius:10px;">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </div>
 
-        <!-- Reset -->
-        <a asp-action="Index" class="btn-reset" title="Đặt lại bộ lọc">
-            <i class="bi bi-arrow-counterclockwise"></i>
-        </a>
-
+        @if (!string.IsNullOrEmpty(ViewBag.LastSearchTime as string))
+        {
+            <div class="col-12 mt-1">
+                <div class="d-flex align-items-center gap-1 small text-muted" style="font-size: 0.78rem;">
+                    <i class="bi bi-clock-history text-primary"></i>
+                    <span>Phiên lọc gần nhất: <strong>@ViewBag.LastSearchTime</strong></span>
+                </div>
+            </div>
+        }
     </form>
 </div>
 

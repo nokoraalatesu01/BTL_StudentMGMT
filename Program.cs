@@ -34,6 +34,27 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddControllersWithViews();
+
+// Cấu hình Quốc tế hóa & Đa ngôn ngữ (Localization / i18n)
+builder.Services.AddLocalization();
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { "vi-VN", "en-US" };
+    options.SetDefaultCulture("vi-VN")
+        .AddSupportedCultures(supportedCultures)
+        .AddSupportedUICultures(supportedCultures);
+});
+
+// Cấu hình Distributed Memory Cache & Session (Phục vụ lưu trữ dữ liệu phiên làm việc)
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Name = ".UTC.StudentPortal.Session";
+});
+
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IGiangVienSecurityService, GiangVienSecurityService>();
 builder.Services.AddScoped<IVietQrService, VietQrService>();
@@ -63,7 +84,25 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// Thiết lập các HTTP Security Headers chuẩn OWASP (Bảo vệ chống Clickjacking, MIME sniffing, XSS)
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
+    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    await next();
+});
+
 app.UseRouting();
+
+// Kích hoạt Middleware đa ngôn ngữ (Localization)
+app.UseRequestLocalization();
+
+// Kích hoạt Session Middleware (đặt sau UseRouting và trước UseAuthentication/UseAuthorization)
+app.UseSession();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -72,3 +111,4 @@ app.MapControllerRoute(
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();
+// hot reload touch

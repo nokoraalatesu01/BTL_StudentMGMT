@@ -47,8 +47,10 @@
                     <span asp-validation-for="HanThanhToan" class="text-danger"></span>
                 </div>
                 <div class="col-12">
-                    <label asp-for="GhiChu" class="form-label"></label>
-                    <textarea asp-for="GhiChu" class="form-control" rows="3"></textarea>
+                    <label asp-for="GhiChu" class="form-label fw-bold">
+                        <i class="bi bi-pencil-square text-primary me-1"></i>Ghi chú hóa đơn (Rich Text Editor)
+                    </label>
+                    <textarea asp-for="GhiChu" class="form-control rich-editor" rows="4" placeholder="Nhập ghi chú chi tiết về hóa đơn học phí, thông tin miễn giảm..."></textarea>
                     <span asp-validation-for="GhiChu" class="text-danger"></span>
                 </div>
             </div>

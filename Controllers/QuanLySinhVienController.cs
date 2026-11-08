@@ -65,9 +65,19 @@ public class QuanLySinhVienController : Controller
             .Take(pageSize)
             .ToListAsync();
 
+        // LÀM VIỆC VỚI SESSION: Lưu lại tiêu chí lọc gần nhất của người dùng
+        if (!string.IsNullOrWhiteSpace(tuKhoa) || lopId.HasValue || !string.IsNullOrWhiteSpace(trangThai))
+        {
+            HttpContext.Session.SetString("QLSV_LastTuKhoa", tuKhoa ?? "");
+            HttpContext.Session.SetString("QLSV_LastLopId", lopId?.ToString() ?? "");
+            HttpContext.Session.SetString("QLSV_LastTrangThai", trangThai ?? "");
+            HttpContext.Session.SetString("QLSV_LastSearchTime", DateTime.Now.ToString("HH:mm:ss dd/MM/yyyy"));
+        }
+
         ViewBag.TuKhoa = tuKhoa;
         ViewBag.LopId = lopId;
         ViewBag.TrangThai = trangThai;
+        ViewBag.LastSearchTime = HttpContext.Session.GetString("QLSV_LastSearchTime");
         ViewBag.DanhSachLop = new SelectList(
             await _db.Lops.OrderBy(l => l.TenLop).ToListAsync(),
             "Id",
