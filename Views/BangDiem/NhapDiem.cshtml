@@ -1,576 +1,751 @@
-@model BTL_StudentMGMT.Models.DiemFormViewModel
+@model BTL_StudentMGMT.Models.NhapDiemExcelViewModel
 @{
-    ViewData["Title"] = "Nhập điểm học phần";
+    ViewData["Title"] = "Nhập bảng điểm học phần theo lớp";
     Layout = (User.IsInRole("Admin") || User.IsInRole("PGV")) ? "_AdminLayout" : "_GiangVienLayout";
+    bool hasData = Model.LopId.HasValue && Model.MonHocId.HasValue && Model.DanhSachSinhVien.Count > 0;
 }
 
 <!-- ===== HEADER TRANG ===== -->
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
     <div>
         <div class="d-flex align-items-center gap-2 mb-1" style="font-size: .8rem; color: #64748b;">
-            <span style="color: #94a3b8;">Đào tạo</span>
+            <span style="color: #94a3b8;">Đào tạo tín chỉ</span>
             <span style="color: #cbd5e1;">›</span>
             <a asp-action="Index" style="color: #6366f1; text-decoration: none; font-weight: 700; text-transform: uppercase; font-size: .72rem; letter-spacing: .06em;">BẢNG ĐIỂM</a>
             <span style="color: #cbd5e1;">›</span>
-            <span style="color: #475569; font-weight: 600;">Nhập điểm học phần</span>
+            <span style="color: #475569; font-weight: 600;">Nhập điểm học phần dạng Excel</span>
         </div>
         <h3 class="fw-bold mb-1" style="color: #0f172a; font-size: 1.55rem; letter-spacing: -.02em;">
-            Nhập bảng điểm học phần
+            Nhập bảng điểm học phần theo lớp
         </h3>
         <p class="mb-0 text-muted" style="font-size: .875rem;">
-            Ghi nhận điểm quá trình, điểm thi kết thúc môn; hỗ trợ thi lại lần 2 và quản lý lịch sử học phần.
+            Chọn Khoa › Chọn Lớp › Chọn Môn học được phân công để nhập điểm nhanh toàn bộ danh sách lớp như bảng tính Excel.
         </p>
     </div>
-    <a asp-action="Index" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
-       style="height: 40px; border-radius: 8px; font-weight: 600; font-size: .875rem; padding: 0 16px;">
-        <i class="bi bi-arrow-left"></i> Về bảng điểm
-    </a>
-</div>
-
-<div class="row justify-content-center">
-    <div class="col-lg-10 col-xl-9">
-
-        <!-- ===== LỊCH SỬ CÁC LẦN HỌC TRƯỚC (NẾU CÓ) ===== -->
-        @if (Model.LichSuDiemMonHoc != null && Model.LichSuDiemMonHoc.Count > 0)
-        {
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" style="border: 1px solid #fed7aa !important; background: #fffcf8;">
-                <div class="px-4 py-3 d-flex align-items-center justify-content-between" style="border-bottom: 1px solid #ffedd5; background: #fff7ed;">
-                    <div class="d-flex align-items-center gap-2">
-                        <div style="width: 32px; height: 32px; border-radius: 8px; background: #ffedd5; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
-                            <i class="bi bi-clock-history"></i>
-                        </div>
-                        <div>
-                            <span class="fw-bold" style="color: #9a3412; font-size: .88rem; letter-spacing: .02em;">
-                                LỊCH SỬ KẾT QUẢ CÁC LẦN HỌC TRƯỚC CỦA MÔN NÀY
-                            </span>
-                            <div style="font-size: .75rem; color: #b45309;">Hệ thống theo dõi tiến trình học lại &amp; cải thiện điểm của sinh viên</div>
-                        </div>
-                    </div>
-                    <span class="badge" style="background: #fef3c7; color: #b45309; font-weight: 700; font-size: .78rem; padding: 6px 12px; border-radius: 20px; border: 1px solid #fde68a;">
-                        Đã học @Model.LichSuDiemMonHoc.Count lần
-                    </span>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" style="font-size: .84rem;">
-                        <thead style="background: #fffbf5; font-size: .75rem; text-transform: uppercase; color: #78350f; letter-spacing: .04em;">
-                            <tr>
-                                <th class="ps-4">Lớp học phần / Học kỳ</th>
-                                <th class="text-center">Loại học</th>
-                                <th class="text-center">Lần</th>
-                                <th class="text-center">CC</th>
-                                <th class="text-center">GK</th>
-                                <th class="text-center">CK</th>
-                                <th class="text-center">Tổng kết</th>
-                                <th class="text-center">Chữ</th>
-                                <th class="text-center">Kết quả</th>
-                                <th class="text-center pe-4">Tích lũy</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var ls in Model.LichSuDiemMonHoc)
-                            {
-                                <tr>
-                                    <td class="ps-4">
-                                        <div style="font-weight: 700; color: #1e293b;">@(ls.LopHocPhan?.MaLopHocPhan ?? "Học phần chung")</div>
-                                        <small style="color: #64748b; font-size: .75rem;">@(ls.HocKy?.TenHocKy ?? "—")</small>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge" style="background: #f1f5f9; color: #334155; font-weight: 600; font-size: .75rem;">@ls.TenLoaiHoc</span>
-                                    </td>
-                                    <td class="text-center font-monospace fw-bold" style="color: #475569;">@ls.LanHoc</td>
-                                    <td class="text-center">@ls.DiemChuyenCan.ToString("0.0")</td>
-                                    <td class="text-center">@ls.DiemGiuaKy.ToString("0.0")</td>
-                                    <td class="text-center">
-                                        @if (ls.LanThi == 2 && ls.DiemCuoiKyLan2.HasValue)
-                                        {
-                                            <span style="color: #64748b;">L1: @ls.DiemCuoiKy.ToString("0.0")</span>
-                                            <span class="badge bg-danger-subtle text-danger fw-bold ms-1">L2: @ls.DiemCuoiKyLan2.Value.ToString("0.0")</span>
-                                        }
-                                        else
-                                        {
-                                            <span>@ls.DiemCuoiKy.ToString("0.0")</span>
-                                        }
-                                    </td>
-                                    <td class="text-center">
-                                        <strong style="color: #0f172a; font-size: .92rem;">@ls.DiemTongKet.ToString("0.0")</strong>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge @(ls.IsDat ? "bg-primary" : "bg-danger")" style="font-weight: 700; font-size: .75rem; padding: 4px 8px;">
-                                            @ls.DiemChu
-                                        </span>
-                                    </td>
-                                    <td class="text-center">
-                                        @if (ls.IsDat)
-                                        {
-                                            <span class="badge" style="background: #dcfce7; color: #15803d; font-weight: 700; font-size: .75rem; padding: 4px 8px;">
-                                                <i class="bi bi-check-circle-fill me-1"></i>Đạt
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge" style="background: #fee2e2; color: #b91c1c; font-weight: 700; font-size: .75rem; padding: 4px 8px;">
-                                                <i class="bi bi-x-circle-fill me-1"></i>Chưa đạt
-                                            </span>
-                                        }
-                                    </td>
-                                    <td class="text-center pe-4">
-                                        @if (ls.SuDungTinhTichLuy)
-                                        {
-                                            <span class="badge" style="background: #e0e7ff; color: #4338ca; font-weight: 700; font-size: .72rem; padding: 4px 8px;">Tính GPA</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge" style="background: #f1f5f9; color: #94a3b8; font-weight: 600; font-size: .72rem; padding: 4px 8px;">Bỏ qua</span>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        }
-
-        <!-- ===== BIỂU MẪU NHẬP ĐIỂM CHÍNH ===== -->
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
-            <!-- Header Card -->
-            <div class="px-4 py-3 d-flex align-items-center justify-content-between" style="border-bottom: 1px solid #f1f5f9; background: #fafbfc;">
-                <div class="d-flex align-items-center gap-3">
-                    <div style="width: 40px; height: 40px; border-radius: 10px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
-                        <i class="bi bi-pencil-square"></i>
-                    </div>
-                    <div>
-                        <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.05rem;">Ghi nhận kết quả học tập</h5>
-                        <p class="mb-0 text-muted" style="font-size: .8rem;">Chọn lớp học phần, sinh viên và nhập điểm thành phần</p>
-                    </div>
-                </div>
-                <span class="badge" style="background: #f1f5f9; color: #475569; font-weight: 600; font-size: .78rem; padding: 6px 12px; border-radius: 6px;">
-                    <i class="bi bi-shield-check text-success me-1"></i>Kiểm soát đào tạo
-                </span>
-            </div>
-
-            <!-- Form Content -->
-            <div class="p-4">
-                <form method="post" asp-action="NhapDiem" id="formNhapDiem">
-                    <input type="hidden" asp-for="Id" />
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 mb-4" role="alert"></div>
-
-                    <!-- MỤC 1: ĐỐI TƯỢNG HỌC PHẦN & SINH VIÊN -->
-                    <div class="mb-4">
-                        <div class="d-flex align-items-center gap-2 mb-3 pb-2" style="border-bottom: 1px solid #f1f5f9;">
-                            <span class="badge rounded-circle p-2" style="background: #eff6ff; color: #2563eb; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 800;">1</span>
-                            <span class="fw-bold" style="color: #1e293b; font-size: .92rem;">Thông tin học phần &amp; Sinh viên</span>
-                        </div>
-
-                        <div class="row g-3">
-                            <!-- Chọn Lớp học phần -->
-                            <div class="col-md-6">
-                                <label asp-for="LopHocPhanId" class="form-label small fw-semibold text-secondary">
-                                    Lớp học phần <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0 text-muted">
-                                        <i class="bi bi-collection"></i>
-                                    </span>
-                                    <select asp-for="LopHocPhanId" asp-items="ViewBag.DanhSachLopHocPhan" class="form-select border-start-0 ps-0" id="selectLhp">
-                                        <option value="">-- Chọn Lớp học phần --</option>
-                                    </select>
-                                </div>
-                                <span asp-validation-for="LopHocPhanId" class="text-danger small"></span>
-                            </div>
-
-                            <!-- Chọn môn học -->
-                            <div class="col-md-6">
-                                <label asp-for="MonHocId" class="form-label small fw-semibold text-secondary">
-                                    Môn học <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0 text-muted">
-                                        <i class="bi bi-book"></i>
-                                    </span>
-                                    <select asp-for="MonHocId" asp-items="ViewBag.DanhSachMonHoc" class="form-select border-start-0 ps-0" id="selectMonHoc">
-                                        <option value="">-- Chọn Môn học --</option>
-                                    </select>
-                                </div>
-                                <span asp-validation-for="MonHocId" class="text-danger small"></span>
-                            </div>
-
-                            <!-- Chọn sinh viên -->
-                            <div class="col-md-6">
-                                <label asp-for="SinhVienId" class="form-label small fw-semibold text-secondary">
-                                    Sinh viên nhận điểm <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0 text-muted">
-                                        <i class="bi bi-person"></i>
-                                    </span>
-                                    <select asp-for="SinhVienId" asp-items="ViewBag.DanhSachSinhVien" class="form-select border-start-0 ps-0" id="selectSinhVien">
-                                        <option value="">-- Chọn Sinh Viên Cần Nhập Điểm --</option>
-                                    </select>
-                                </div>
-                                <span asp-validation-for="SinhVienId" class="text-danger small"></span>
-                            </div>
-
-                            <!-- Học kỳ -->
-                            <div class="col-md-6">
-                                <label asp-for="HocKyId" class="form-label small fw-semibold text-secondary">Học kỳ đào tạo</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0 text-muted">
-                                        <i class="bi bi-calendar3"></i>
-                                    </span>
-                                    <select asp-for="HocKyId" asp-items="ViewBag.DanhSachHocKy" class="form-select border-start-0 ps-0">
-                                        <option value="">-- Theo Lớp học phần --</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- MỤC 2: CẤU HÌNH LẦN HỌC & LẦN THI -->
-                    <div class="mb-4">
-                        <div class="d-flex align-items-center gap-2 mb-3 pb-2" style="border-bottom: 1px solid #f1f5f9;">
-                            <span class="badge rounded-circle p-2" style="background: #eff6ff; color: #2563eb; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 800;">2</span>
-                            <span class="fw-bold" style="color: #1e293b; font-size: .92rem;">Hình thức học &amp; Lần thi</span>
-                        </div>
-
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label asp-for="LoaiHoc" class="form-label small fw-semibold text-secondary">
-                                    Loại hình thức học <span class="text-danger">*</span>
-                                </label>
-                                <select asp-for="LoaiHoc" class="form-select" id="selectLoaiHoc">
-                                    <option value="HOC_LAN_DAU">Học lần đầu</option>
-                                    <option value="HOC_LAI">Học lại (do trượt môn F)</option>
-                                    <option value="HOC_CAI_THIEN">Học cải thiện (nâng điểm D, C...)</option>
-                                </select>
-                                <span asp-validation-for="LoaiHoc" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label asp-for="LanHoc" class="form-label small fw-semibold text-secondary">Số lần học</label>
-                                <input asp-for="LanHoc" type="number" min="1" max="10" class="form-control" />
-                                <span asp-validation-for="LanHoc" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label asp-for="LanThi" class="form-label small fw-semibold text-secondary">Lần thi kết thúc môn</label>
-                                <select asp-for="LanThi" class="form-select" id="selectLanThi">
-                                    <option value="1">Lần thi 1 (Chính thức)</option>
-                                    <option value="2">Lần thi 2 (Thi lại kết thúc HP)</option>
-                                </select>
-                                <span asp-validation-for="LanThi" class="text-danger small"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- MỤC 3: ĐIỂM SỐ THÀNH PHẦN -->
-                    <div class="mb-4">
-                        <div class="d-flex align-items-center gap-2 mb-3 pb-2" style="border-bottom: 1px solid #f1f5f9;">
-                            <span class="badge rounded-circle p-2" style="background: #eff6ff; color: #2563eb; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 800;">3</span>
-                            <span class="fw-bold" style="color: #1e293b; font-size: .92rem;">Điểm số thành phần (Thang điểm 10)</span>
-                        </div>
-
-                        <div class="row g-3">
-                            <!-- Chuyên cần -->
-                            <div class="col-md-4">
-                                <div class="score-card-input p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #e2e8f0;">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <label asp-for="DiemChuyenCan" class="fw-bold mb-0 text-dark small">Chuyên cần</label>
-                                        <span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700; font-size: .72rem;">10%</span>
-                                    </div>
-                                    <input asp-for="DiemChuyenCan" type="number" step="0.1" min="0" max="10"
-                                           class="form-control score-box-field" id="inpCC" placeholder="0 - 10" />
-                                    <span asp-validation-for="DiemChuyenCan" class="text-danger small mt-1 d-block"></span>
-                                </div>
-                            </div>
-
-                            <!-- Giữa kỳ -->
-                            <div class="col-md-4">
-                                <div class="score-card-input p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #e2e8f0;">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <label asp-for="DiemGiuaKy" class="fw-bold mb-0 text-dark small">Giữa kỳ</label>
-                                        <span class="badge" style="background: #e0e7ff; color: #4338ca; font-weight: 700; font-size: .72rem;">30%</span>
-                                    </div>
-                                    <input asp-for="DiemGiuaKy" type="number" step="0.1" min="0" max="10"
-                                           class="form-control score-box-field" id="inpGK" placeholder="0 - 10" />
-                                    <span asp-validation-for="DiemGiuaKy" class="text-danger small mt-1 d-block"></span>
-                                </div>
-                            </div>
-
-                            <!-- Cuối kỳ Lần 1 -->
-                            <div class="col-md-4">
-                                <div class="score-card-input p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #e2e8f0;">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <label asp-for="DiemCuoiKy" class="fw-bold mb-0 text-dark small">Cuối kỳ Lần 1</label>
-                                        <span class="badge" style="background: #f3e8ff; color: #7e22ce; font-weight: 700; font-size: .72rem;">60%</span>
-                                    </div>
-                                    <input asp-for="DiemCuoiKy" type="number" step="0.1" min="0" max="10"
-                                           class="form-control score-box-field" id="inpCK" placeholder="0 - 10" />
-                                    <span asp-validation-for="DiemCuoiKy" class="text-danger small mt-1 d-block"></span>
-                                </div>
-                            </div>
-
-                            <!-- Điểm thi lần 2 (nếu có) -->
-                            <div class="col-12" id="divThiLan2" style="@(Model.LanThi == 2 || Model.DiemCuoiKyLan2.HasValue ? "" : "display:none;")">
-                                <div class="p-3 rounded-3" style="background: #fff1f2; border: 1.5px dashed #f43f5e;">
-                                    <div class="row align-items-center g-3">
-                                        <div class="col-md-8">
-                                            <label asp-for="DiemCuoiKyLan2" class="text-danger fw-bold d-flex align-items-center gap-2 mb-1">
-                                                <i class="bi bi-arrow-repeat fs-5"></i>
-                                                Điểm thi kết thúc môn lần 2 (Thi lại kết thúc HP)
-                                            </label>
-                                            <div class="text-muted small">
-                                                Khi nhập điểm thi lần 2, hệ thống sẽ tự động dùng điểm này thay thế cho điểm lần 1 để tính tổng kết.
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input asp-for="DiemCuoiKyLan2" type="number" step="0.1" min="0" max="10"
-                                                   class="form-control score-box-field border-danger" id="inpCK2" placeholder="Nhập điểm thi L2..." />
-                                            <span asp-validation-for="DiemCuoiKyLan2" class="text-danger small mt-1 d-block"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Ghi chú nghiệp vụ -->
-                            <div class="col-12">
-                                <label asp-for="GhiChu" class="form-label small fw-semibold text-secondary">Ghi chú nghiệp vụ</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0 text-muted">
-                                        <i class="bi bi-chat-left-text"></i>
-                                    </span>
-                                    <input asp-for="GhiChu" class="form-control border-start-0 ps-0" placeholder="Lý do học lại, cải thiện hoặc thi lại..." />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- WIDGET XEM TRƯỚC TỔNG KẾT -->
-                    <div class="score-summary-widget p-4 rounded-4 mb-4">
-                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                            <div>
-                                <div class="score-summary-label">ƯỚC TÍNH ĐIỂM TỔNG KẾT HỌC PHẦN (THANG 10)</div>
-                                <div class="d-flex align-items-center gap-3 mt-1">
-                                    <span id="txtTongKet" class="score-big-number">—</span>
-                                    <span id="txtDiemChu" class="badge-grade-preview">Chưa nhập</span>
-                                </div>
-                                <small class="text-muted" style="font-size: .78rem;">
-                                    Công thức: CC (10%) + GK (30%) + CK (60%)
-                                </small>
-                            </div>
-                            <div class="text-end">
-                                <span id="txtDanhGia" class="badge-eval-preview">Chưa nhập đủ điểm</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- NÚT THAO TÁC -->
-                    <div class="d-flex align-items-center gap-3 pt-2">
-                        <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2"
-                                style="height: 44px; padding: 0 28px; font-weight: 700; font-size: .92rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(37,99,235,.25);">
-                            <i class="bi bi-check2-circle fs-5"></i> Lưu kết quả học phần
-                        </button>
-                        <a asp-action="Index" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
-                           style="height: 44px; padding: 0 22px; font-weight: 600; font-size: .92rem; border-radius: 8px;">
-                            Hủy bỏ
-                        </a>
-                    </div>
-                </form>
-            </div>
-        </div>
-
+    <div class="d-flex align-items-center gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
+           style="height: 40px; border-radius: 8px; font-weight: 600; font-size: .875rem; padding: 0 16px;">
+            <i class="bi bi-arrow-left"></i> Về danh sách điểm
+        </a>
     </div>
 </div>
+
+@if (TempData["Msg"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2 shadow-sm" role="alert" style="border-left: 4px solid #16a34a;">
+        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+        <div class="fw-semibold">@TempData["Msg"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2 shadow-sm" role="alert" style="border-left: 4px solid #dc2626;">
+        <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+        <div class="fw-semibold">@TempData["Error"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- ===== KHỐI 1: BỘ CHỌN PHÂN CẤP (KHOA -> LỚP -> MÔN HỌC) ===== -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4" style="border: 1px solid #e2e8f0 !important;">
+    <div class="px-4 py-3 d-flex align-items-center justify-content-between" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge rounded-circle p-2" style="background: #eff6ff; color: #2563eb; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: .8rem; font-weight: 800;">1</span>
+            <span class="fw-bold text-dark" style="font-size: .95rem;">Bộ lọc phân cấp: Khoa › Lớp sinh hoạt › Môn học</span>
+        </div>
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill" style="font-weight: 600; font-size: .75rem;">
+            <i class="bi bi-shield-lock me-1"></i>Chỉ hiển thị phạm vi giảng viên có quyền
+        </span>
+    </div>
+
+    <div class="p-4">
+        <form method="get" asp-action="NhapDiem" id="filterForm">
+            <div class="row g-3 align-items-end">
+                <!-- Dropdown 1: Khoa -->
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-secondary mb-1">
+                        1. Khoa / Đơn vị đào tạo <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
+                            <i class="bi bi-buildings"></i>
+                        </span>
+                        <select name="khoaId" id="selectKhoa" class="form-select border-start-0 ps-0" asp-items="ViewBag.DanhSachKhoa">
+                            <option value="">-- Chọn Khoa đào tạo --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dropdown 2: Lớp -->
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-secondary mb-1">
+                        2. Lớp sinh hoạt / Hành chính <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
+                            <i class="bi bi-people"></i>
+                        </span>
+                        <select name="lopId" id="selectLop" class="form-select border-start-0 ps-0" asp-items="ViewBag.DanhSachLop">
+                            <option value="">-- Chọn Lớp --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dropdown 3: Môn học -->
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold text-secondary mb-1">
+                        3. Môn học giảng dạy <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
+                            <i class="bi bi-book"></i>
+                        </span>
+                        <select name="monHocId" id="selectMonHoc" class="form-select border-start-0 ps-0" asp-items="ViewBag.DanhSachMonHoc">
+                            <option value="">-- Chọn Môn học được phân công --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Nút Tải bảng điểm -->
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2 fw-semibold"
+                            id="btnTaiBangDiem" style="height: 42px; border-radius: 8px;">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Tải bảng điểm
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== KHỐI 2: BẢNG NHẬP ĐIỂM DẠNG EXCEL ===== -->
+@if (hasData)
+{
+    <form method="post" asp-action="NhapDiem" id="excelScoreForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="KhoaId" />
+        <input type="hidden" asp-for="LopId" />
+        <input type="hidden" asp-for="MonHocId" />
+        <input type="hidden" asp-for="LopHocPhanId" />
+        <input type="hidden" asp-for="HocKyId" />
+        <input type="hidden" asp-for="TenKhoa" />
+        <input type="hidden" asp-for="TenLop" />
+        <input type="hidden" asp-for="TenMonHoc" />
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4" style="border: 1px solid #cbd5e1 !important;">
+            <!-- Thanh điều khiển & Thống kê bảng tính Excel -->
+            <div class="px-4 py-3 d-flex flex-wrap align-items-center justify-content-between gap-3"
+                 style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-bottom: 2px solid #86efac;">
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: #15803d; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 4px 10px rgba(21,128,61,.25);">
+                        <i class="bi bi-file-earmark-excel-fill"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h5 class="fw-bold mb-0" style="color: #14532d; font-size: 1.15rem;">
+                                @Model.TenMonHoc
+                            </h5>
+                            @if (Model.SoTinChi.HasValue)
+                            {
+                                <span class="badge" style="background: #dcfce7; color: #166534; font-weight: 700; border: 1px solid #bbf7d0;">
+                                    @Model.SoTinChi Tín chỉ
+                                </span>
+                            }
+                            <span class="badge" style="background: #e0e7ff; color: #3730a3; font-weight: 700; border: 1px solid #c7d2fe;">
+                                Lớp: @Model.TenLop
+                            </span>
+                        </div>
+                        <div class="small text-muted mt-1">
+                            <span>Khoa: <strong>@Model.TenKhoa</strong></span>
+                            @if (!string.IsNullOrEmpty(Model.TenLopHocPhan))
+                            {
+                                <span class="ms-2">| Lớp học phần: <strong>@Model.TenLopHocPhan</strong></span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thống kê nhanh & Nút Lưu trên đỉnh -->
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2 text-end">
+                        <div class="stat-pill px-3 py-1 rounded-3" style="background: #fff; border: 1px solid #bbf7d0;">
+                            <div style="font-size: .7rem; font-weight: 700; color: #15803d; text-transform: uppercase;">TỔNG SỐ</div>
+                            <div class="fw-bold" style="color: #0f172a; font-size: 1rem;" id="badgeTongSo">@Model.TongSoSinhVien SV</div>
+                        </div>
+                        <div class="stat-pill px-3 py-1 rounded-3" style="background: #fff; border: 1px solid #bbf7d0;">
+                            <div style="font-size: .7rem; font-weight: 700; color: #2563eb; text-transform: uppercase;">ĐÃ ĐỦ ĐIỂM</div>
+                            <div class="fw-bold text-primary" style="font-size: 1rem;" id="badgeDaNhapDu">@Model.SoLuongDaNhapDu / @Model.TongSoSinhVien</div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success d-inline-flex align-items-center gap-2 px-4 shadow-sm"
+                            style="height: 42px; font-weight: 700; border-radius: 8px; background: #16a34a; border-color: #15803d;">
+                        <i class="bi bi-floppy-fill"></i> Lưu bảng điểm
+                    </button>
+                </div>
+            </div>
+
+            <!-- Thanh hướng dẫn phím tắt như Excel -->
+            <div class="px-4 py-2 d-flex flex-wrap align-items-center justify-content-between gap-2"
+                 style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: .8rem; color: #475569;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-keyboard text-primary fs-6"></i>
+                    <span><strong>Thao tác như Excel:</strong> Nhấn <kbd class="px-2 py-0.5 bg-dark text-white rounded">Enter</kbd> hoặc <kbd class="px-2 py-0.5 bg-dark text-white rounded">↓</kbd> để nhảy xuống sinh viên tiếp theo; nhấn <kbd class="px-2 py-0.5 bg-dark text-white rounded">Tab</kbd> hoặc <kbd class="px-2 py-0.5 bg-dark text-white rounded">→</kbd> để sang cột điểm kế tiếp.</span>
+                </div>
+                <div class="text-muted fst-italic">
+                    <i class="bi bi-info-circle me-1"></i>Hệ thống tự động tính điểm tổng kết &amp; xếp loại khi đã nhập đủ CC, GK, CK.
+                </div>
+            </div>
+
+            <!-- Bảng dữ liệu Grid Excel -->
+            <div class="table-responsive" style="max-height: 650px; overflow-y: auto;">
+                <table class="table table-bordered table-hover align-middle mb-0 excel-table" id="tableExcelScore" style="font-size: .88rem;">
+                    <thead class="sticky-top" style="background: #f1f5f9; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,.04);">
+                        <tr class="text-center align-middle" style="font-size: .78rem; font-weight: 800; letter-spacing: .03em; color: #1e293b; text-transform: uppercase;">
+                            <th style="width: 48px; background: #e2e8f0;">STT</th>
+                            <th style="width: 120px;">Mã Sinh Viên</th>
+                            <th style="min-width: 200px;" class="text-start ps-3">Họ và Tên</th>
+                            <th style="width: 110px;">Ngày sinh</th>
+                            <th style="width: 115px; background: #e0f2fe; color: #0369a1; border-color: #bae6fd;">
+                                Chuyên cần<br /><span class="badge bg-white text-primary border" style="font-size:.7rem;">10%</span>
+                            </th>
+                            <th style="width: 115px; background: #e0e7ff; color: #4338ca; border-color: #c7d2fe;">
+                                Giữa kỳ<br /><span class="badge bg-white text-primary border" style="font-size:.7rem;">30%</span>
+                            </th>
+                            <th style="width: 115px; background: #f3e8ff; color: #7e22ce; border-color: #e9d5ff;">
+                                Cuối kỳ<br /><span class="badge bg-white text-primary border" style="font-size:.7rem;">60%</span>
+                            </th>
+                            <th style="width: 110px; background: #dcfce7; color: #15803d; border-color: #bbf7d0;">
+                                Tổng kết<br /><span style="font-size:.7rem; font-weight:normal;">(Hệ 10)</span>
+                            </th>
+                            <th style="width: 85px; background: #f0fdf4; color: #166534;">Điểm chữ</th>
+                            <th style="width: 75px; background: #f0fdf4; color: #166534;">Hệ 4</th>
+                            <th style="width: 100px;">Đánh giá</th>
+                            <th style="min-width: 160px;" class="text-start">Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.DanhSachSinhVien.Count; i++)
+                        {
+                            var sv = Model.DanhSachSinhVien[i];
+                            string ccVal = sv.DiemChuyenCan.HasValue ? sv.DiemChuyenCan.Value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) : "";
+                            string gkVal = sv.DiemGiuaKy.HasValue ? sv.DiemGiuaKy.Value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) : "";
+                            string ckVal = sv.DiemCuoiKy.HasValue ? sv.DiemCuoiKy.Value.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) : "";
+
+                            <tr class="excel-row" data-row-index="@i">
+                                <td class="text-center font-monospace fw-bold text-muted bg-light" style="font-size: .82rem;">
+                                    @(i + 1)
+                                    <input type="hidden" name="DanhSachSinhVien[@i].SinhVienId" value="@sv.SinhVienId" />
+                                    <input type="hidden" name="DanhSachSinhVien[@i].DiemId" value="@sv.DiemId" />
+                                    <input type="hidden" name="DanhSachSinhVien[@i].LopHocPhanId" value="@sv.LopHocPhanId" />
+                                    <input type="hidden" name="DanhSachSinhVien[@i].MaSinhVien" value="@sv.MaSinhVien" />
+                                    <input type="hidden" name="DanhSachSinhVien[@i].HoTen" value="@sv.HoTen" />
+                                </td>
+                                <td class="text-center font-monospace fw-bold" style="color: #2563eb;">
+                                    @sv.MaSinhVien
+                                </td>
+                                <td class="ps-3 fw-bold text-dark text-nowrap">
+                                    @sv.HoTen
+                                </td>
+                                <td class="text-center text-muted small">
+                                    @sv.NgaySinhStr
+                                </td>
+
+                                <!-- Ô Chuyên cần (10%) -->
+                                <td class="p-1 text-center cell-input-wrap">
+                                    <input type="number" step="0.1" min="0" max="10"
+                                           name="DanhSachSinhVien[@i].DiemChuyenCan"
+                                           value="@ccVal"
+                                           class="form-control excel-cell-input col-score col-cc"
+                                           data-row="@i" data-col="cc" data-col-idx="0"
+                                           placeholder="—" />
+                                </td>
+
+                                <!-- Ô Giữa kỳ (30%) -->
+                                <td class="p-1 text-center cell-input-wrap">
+                                    <input type="number" step="0.1" min="0" max="10"
+                                           name="DanhSachSinhVien[@i].DiemGiuaKy"
+                                           value="@gkVal"
+                                           class="form-control excel-cell-input col-score col-gk"
+                                           data-row="@i" data-col="gk" data-col-idx="1"
+                                           placeholder="—" />
+                                </td>
+
+                                <!-- Ô Cuối kỳ (60%) -->
+                                <td class="p-1 text-center cell-input-wrap">
+                                    <input type="number" step="0.1" min="0" max="10"
+                                           name="DanhSachSinhVien[@i].DiemCuoiKy"
+                                           value="@ckVal"
+                                           class="form-control excel-cell-input col-score col-ck"
+                                           data-row="@i" data-col="ck" data-col-idx="2"
+                                           placeholder="—" />
+                                </td>
+
+                                <!-- Điểm Tổng kết (Chỉ hiển thị khi đủ 3 cột) -->
+                                <td class="text-center cell-tongket">
+                                    <span class="txt-tongket fw-bold fs-6" style="color: #1e3a8a;">
+                                        @(sv.IsDuDiem && sv.DiemTongKet.HasValue ? sv.DiemTongKet.Value.ToString("0.0") : "—")
+                                    </span>
+                                </td>
+
+                                <!-- Điểm chữ -->
+                                <td class="text-center cell-diemchu">
+                                    <span class="txt-diemchu">
+                                        @if (sv.IsDuDiem && !string.IsNullOrEmpty(sv.DiemChu))
+                                        {
+                                            <span class="badge @(sv.IsDat ? "bg-primary" : "bg-danger")" style="font-weight: 700; font-size: .8rem; min-width: 32px;">
+                                                @sv.DiemChu
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </span>
+                                </td>
+
+                                <!-- Điểm hệ 4 -->
+                                <td class="text-center font-monospace cell-he4">
+                                    <span class="txt-he4 fw-semibold text-secondary">
+                                        @(sv.IsDuDiem && sv.DiemHe4.HasValue ? sv.DiemHe4.Value.ToString("0.0") : "—")
+                                    </span>
+                                </td>
+
+                                <!-- Đánh giá kết quả -->
+                                <td class="text-center cell-danhgia">
+                                    <span class="txt-danhgia">
+                                        @if (sv.IsDuDiem)
+                                        {
+                                            @if (sv.IsDat)
+                                            {
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-weight: 700; font-size: .75rem;">
+                                                    <i class="bi bi-check-circle me-1"></i>Đạt
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" style="font-weight: 700; font-size: .75rem;">
+                                                    <i class="bi bi-x-circle me-1"></i>Chưa đạt
+                                                </span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-muted border px-2 py-1" style="font-size: .72rem; font-weight: 600;">
+                                                Chưa đủ điểm
+                                            </span>
+                                        }
+                                    </span>
+                                </td>
+
+                                <!-- Ghi chú -->
+                                <td class="p-1">
+                                    <input type="text"
+                                           name="DanhSachSinhVien[@i].GhiChu"
+                                           value="@sv.GhiChu"
+                                           class="form-control form-control-sm excel-note-input"
+                                           data-row="@i" data-col="note" data-col-idx="3"
+                                           placeholder="Ghi chú thêm..."
+                                           style="font-size: .82rem; height: 36px;" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer thanh công cụ dưới đáy -->
+            <div class="px-4 py-3 d-flex flex-wrap align-items-center justify-content-between gap-3"
+                 style="background: #f8fafc; border-top: 1px solid #e2e8f0;">
+                <div class="d-flex align-items-center gap-2 text-muted" style="font-size: .85rem;">
+                    <i class="bi bi-shield-check text-success fs-5"></i>
+                    <span>Tất cả điểm số sau khi lưu sẽ tự động ghi nhận vào CSDL, cập nhật bảng điểm tích lũy GPA của sinh viên.</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <a asp-action="Index" class="btn btn-outline-secondary px-3" style="height: 44px; border-radius: 8px; font-weight: 600;">
+                        Hủy thao tác
+                    </a>
+                    <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2 px-5 shadow-sm fw-bold"
+                            id="btnSaveBottom" style="height: 44px; border-radius: 8px; font-size: .95rem; background: #2563eb; border: none; box-shadow: 0 4px 14px rgba(37,99,235,.28) !important;">
+                        <i class="bi bi-check2-circle fs-5"></i> Lưu bảng điểm toàn lớp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+}
+else
+{
+    <!-- ===== TRẠNG THÁI CHỜ CHỌN ĐỦ ĐIỀU KIỆN ===== -->
+    <div class="card border-0 shadow-sm rounded-4 text-center p-5 bg-white mb-4" style="border: 1px dashed #cbd5e1 !important;">
+        <div class="py-4">
+            <div style="width: 76px; height: 76px; border-radius: 20px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 2.4rem; margin: 0 auto 18px auto;">
+                <i class="bi bi-table"></i>
+            </div>
+            <h4 class="fw-bold text-dark mb-2">Chưa tải danh sách bảng điểm</h4>
+            <p class="text-muted mx-auto mb-4" style="max-width: 540px; font-size: .92rem;">
+                Vui lòng chọn <strong>Khoa</strong>, <strong>Lớp sinh hoạt</strong> và <strong>Môn học</strong> ở bộ lọc phía trên, sau đó bấm nút <strong>"Tải bảng điểm"</strong> để mở giao diện nhập điểm nhanh dạng Excel.
+            </p>
+            <div class="d-inline-flex flex-wrap gap-2 text-muted small p-2 px-3 rounded-pill bg-light border">
+                <span><i class="bi bi-check-circle-fill text-success me-1"></i>Nhập điểm đến đâu ghi nhận đến đó</span>
+                <span class="text-black-50">•</span>
+                <span><i class="bi bi-check-circle-fill text-success me-1"></i>Tự động tính tổng kết khi đủ điểm</span>
+                <span class="text-black-50">•</span>
+                <span><i class="bi bi-check-circle-fill text-success me-1"></i>Nhấn Enter xuống dòng người tiếp theo</span>
+            </div>
+        </div>
+    </div>
+}
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <style>
-        .form-control, .form-select {
+        .form-select, .form-control {
             height: 42px;
             font-size: .875rem;
             border-color: #cbd5e1;
             border-radius: 8px;
             color: #1e293b;
-            transition: border-color .15s ease, box-shadow .15s ease;
+            transition: all .15s ease;
         }
-        .form-control:focus, .form-select:focus {
+        .form-select:focus, .form-control:focus {
             border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            box-shadow: 0 0 0 3px rgba(37,99,235,.12);
         }
         .input-group-text {
             border-color: #cbd5e1;
             border-radius: 8px 0 0 8px;
             font-size: .95rem;
         }
-        .score-card-input {
+
+        /* Excel Table Custom Styling */
+        .excel-table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .excel-table th {
+            border-top: 1px solid #cbd5e1;
+            border-bottom: 2px solid #cbd5e1;
+            padding: 10px 8px;
+            vertical-align: middle;
+        }
+        .excel-table td {
+            padding: 4px 6px;
+            vertical-align: middle;
+            border-color: #e2e8f0;
+        }
+        .excel-row {
+            transition: background-color .12s ease;
+        }
+        .excel-row:hover {
+            background-color: #f8fafc !important;
+        }
+        .excel-row.excel-row-active {
+            background-color: #eff6ff !important;
+        }
+
+        /* Ô nhập điểm Excel */
+        .excel-cell-input {
+            height: 38px !important;
+            font-size: 1.05rem !important;
+            font-weight: 700 !important;
+            color: #0f172a !important;
+            text-align: center !important;
+            border-radius: 6px !important;
+            border: 1.5px solid #cbd5e1 !important;
+            background: #ffffff !important;
+            padding: 0 6px !important;
             transition: all .15s ease;
         }
-        .score-card-input:focus-within {
-            border-color: #3b82f6 !important;
-            background: #fff !important;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
-        }
-        .score-box-field {
-            font-size: 1.3rem !important;
-            font-weight: 800 !important;
-            text-align: center !important;
-            height: 48px !important;
-            color: #0f172a !important;
-            border-radius: 8px !important;
-        }
-        .score-box-field:focus {
-            box-shadow: none !important;
+        .excel-cell-input:focus {
             border-color: #2563eb !important;
+            background: #ffffff !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22) !important;
+            outline: none !important;
+            z-index: 2;
         }
-        .score-summary-widget {
-            background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
-            border: 1.5px solid #bfdbfe;
-            box-shadow: inset 0 1px 2px rgba(255,255,255,0.8);
+        .excel-cell-input.score-valid {
+            border-color: #10b981 !important;
+            color: #047857 !important;
         }
-        .score-summary-label {
-            font-size: .75rem;
-            font-weight: 800;
-            letter-spacing: .06em;
-            color: #1e40af;
-            text-transform: uppercase;
-        }
-        .score-big-number {
-            font-size: 2.4rem;
-            font-weight: 800;
-            color: #1e3a8a;
-            line-height: 1;
-            letter-spacing: -0.02em;
-        }
-        .badge-grade-preview {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            font-weight: 800;
-            font-size: 1.2rem;
-            padding: 0 12px;
-            transition: all .2s ease;
-        }
-        .badge-eval-preview {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 18px;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: .88rem;
-            transition: all .2s ease;
-        }
-        /* Phối màu chuẩn badge điểm */
-        .grade-green {
-            background: #dcfce7 !important;
-            color: #15803d !important;
-            border: 1px solid #bbf7d0 !important;
-        }
-        .grade-blue {
-            background: #e0e7ff !important;
-            color: #3730a3 !important;
-            border: 1px solid #c7d2fe !important;
-        }
-        .grade-yellow {
-            background: #fef9c3 !important;
-            color: #854d0e !important;
-            border: 1px solid #fef08a !important;
-        }
-        .grade-red {
-            background: #fee2e2 !important;
+        .excel-cell-input.score-invalid {
+            border-color: #ef4444 !important;
+            background: #fef2f2 !important;
             color: #b91c1c !important;
-            border: 1px solid #fecaca !important;
         }
-        .grade-gray {
-            background: #f1f5f9 !important;
-            color: #64748b !important;
-            border: 1px solid #e2e8f0 !important;
+
+        .excel-note-input {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+        .excel-note-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37,99,235,.15);
         }
     </style>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const inpCC = document.getElementById("inpCC"), inpGK = document.getElementById("inpGK");
-            const inpCK = document.getElementById("inpCK"), inpCK2 = document.getElementById("inpCK2");
-            const selectLanThi = document.getElementById("selectLanThi"), divThiLan2 = document.getElementById("divThiLan2");
-            const txtTongKet = document.getElementById("txtTongKet"), txtDiemChu = document.getElementById("txtDiemChu"), txtDanhGia = document.getElementById("txtDanhGia");
-            const selectLhp = document.getElementById("selectLhp"), selectSv = document.getElementById("selectSinhVien");
-            const selectMonHoc = document.getElementById("selectMonHoc"), selectHocKy = document.querySelector("select[name='HocKyId']");
+        document.addEventListener('DOMContentLoaded', function () {
+            // ==========================================
+            // 1. XỬ LÝ CASCADING DROPDOWNS (KHOA -> LỚP -> MÔN HỌC)
+            // ==========================================
+            const selectKhoa = document.getElementById('selectKhoa');
+            const selectLop = document.getElementById('selectLop');
+            const selectMonHoc = document.getElementById('selectMonHoc');
 
-            // Tự động lấy điểm khi chọn Lớp HP hoặc Sinh viên (AJAX không reload trang)
-            async function syncThongTin() {
-                const lhp = selectLhp?.value, sv = selectSv?.value;
-                if (!lhp) return;
-                try {
-                    const res = await fetch(`@Url.Action("GetThongTinDiemJson", "BangDiem")?lopHocPhanId=${lhp}&sinhVienId=${sv || ''}`);
-                    const data = await res.json();
-                    if (!data.success) return;
-                    if (data.monHocId && selectMonHoc) selectMonHoc.value = data.monHocId;
-                    if (data.hocKyId && selectHocKy) selectHocKy.value = data.hocKyId;
-                    if (data.hasData) {
-                        inpCC.value = data.cc ?? '';
-                        inpGK.value = data.gk ?? '';
-                        inpCK.value = data.ck ?? '';
-                        if (data.ck2 && inpCK2) inpCK2.value = data.ck2;
-                        if (data.lanThi && selectLanThi) {
-                            selectLanThi.value = data.lanThi;
-                            if (divThiLan2) divThiLan2.style.display = data.lanThi == 2 ? "block" : "none";
-                        }
-                        calcScore();
+            if (selectKhoa && selectLop && selectMonHoc) {
+                // Khi Khoa thay đổi: nạp danh sách Lớp và Môn học tương ứng
+                selectKhoa.addEventListener('change', function () {
+                    const khoaId = this.value;
+                    if (!khoaId) {
+                        selectLop.innerHTML = '<option value="">-- Chọn Lớp --</option>';
+                        selectMonHoc.innerHTML = '<option value="">-- Chọn Môn học được phân công --</option>';
+                        return;
                     }
-                } catch (e) {}
-            }
 
-            if (selectLhp) selectLhp.addEventListener("change", syncThongTin);
-            if (selectSv) selectSv.addEventListener("change", syncThongTin);
+                    // Tải Lớp theo Khoa
+                    fetch(`/BangDiem/GetLopsByKhoa?khoaId=${khoaId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            let options = '<option value="">-- Chọn Lớp --</option>';
+                            data.forEach(item => {
+                                options += `<option value="${item.id}">${item.tenLop}</option>`;
+                            });
+                            selectLop.innerHTML = options;
+                        })
+                        .catch(err => console.error("Lỗi nạp danh sách lớp:", err));
 
-            if (selectLanThi) {
-                selectLanThi.addEventListener("change", function () {
-                    if (divThiLan2) divThiLan2.style.display = this.value === "2" ? "block" : "none";
-                    calcScore();
+                    // Tải Môn học theo Khoa
+                    fetch(`/BangDiem/GetMonHocsByKhoa?khoaId=${khoaId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            let options = '<option value="">-- Chọn Môn học được phân công --</option>';
+                            data.forEach(item => {
+                                options += `<option value="${item.id}">${item.tenHienThi}</option>`;
+                            });
+                            selectMonHoc.innerHTML = options;
+                        })
+                        .catch(err => console.error("Lỗi nạp danh sách môn:", err));
                 });
             }
 
-            function calcScore() {
-                const cc = parseFloat(inpCC?.value), gk = parseFloat(inpGK?.value);
-                let ck = parseFloat(inpCK?.value);
-                if (selectLanThi?.value === "2" && inpCK2 && !isNaN(parseFloat(inpCK2.value))) {
-                    ck = parseFloat(inpCK2.value);
+            // ==========================================
+            // 2. TÍNH TOÁN ĐIỂM TỔNG KẾT & XẾP LOẠI TỨC THỜI
+            // "nhập điểm đến đâu ghi nhận tới đó, chỉ nhận tổng kết khi đã có đẩy đủ điểm"
+            // ==========================================
+            const scoreInputs = document.querySelectorAll('.excel-cell-input');
+
+            function updateRowScore(tr) {
+                const inpCC = tr.querySelector('.col-cc');
+                const inpGK = tr.querySelector('.col-gk');
+                const inpCK = tr.querySelector('.col-ck');
+                const txtTK = tr.querySelector('.txt-tongket');
+                const txtChu = tr.querySelector('.txt-diemchu');
+                const txtHe4 = tr.querySelector('.txt-he4');
+                const txtDanhGia = tr.querySelector('.txt-danhgia');
+
+                const valCC = inpCC.value.trim();
+                const valGK = inpGK.value.trim();
+                const valCK = inpCK.value.trim();
+
+                // Validate từng ô (0 - 10)
+                [inpCC, inpGK, inpCK].forEach(inp => {
+                    const v = inp.value.trim();
+                    if (v !== '') {
+                        const num = parseFloat(v);
+                        if (isNaN(num) || num < 0 || num > 10) {
+                            inp.classList.add('score-invalid');
+                            inp.classList.remove('score-valid');
+                        } else {
+                            inp.classList.remove('score-invalid');
+                            inp.classList.add('score-valid');
+                        }
+                    } else {
+                        inp.classList.remove('score-invalid', 'score-valid');
+                    }
+                });
+
+                // Kiểm tra xem đã đủ CẢ 3 ĐIỂM THÀNH PHẦN hay chưa
+                const hasCC = valCC !== '' && !isNaN(parseFloat(valCC)) && parseFloat(valCC) >= 0 && parseFloat(valCC) <= 10;
+                const hasGK = valGK !== '' && !isNaN(parseFloat(valGK)) && parseFloat(valGK) >= 0 && parseFloat(valGK) <= 10;
+                const hasCK = valCK !== '' && !isNaN(parseFloat(valCK)) && parseFloat(valCK) >= 0 && parseFloat(valCK) <= 10;
+
+                if (hasCC && hasGK && hasCK) {
+                    const cc = parseFloat(valCC);
+                    const gk = parseFloat(valGK);
+                    const ck = parseFloat(valCK);
+
+                    // Công thức chuẩn tín chỉ: CC*10% + GK*30% + CK*60%
+                    const tk = Math.round((cc * 0.1 + gk * 0.3 + ck * 0.6) * 10) / 10;
+                    txtTK.textContent = tk.toFixed(1);
+
+                    // Xếp loại điểm chữ & điểm hệ 4
+                    let diemChu = "F";
+                    let he4 = 0.0;
+                    let isDat = (tk >= 4.0);
+
+                    if (tk >= 9.0) { diemChu = "A+"; he4 = 4.0; }
+                    else if (tk >= 8.5) { diemChu = "A"; he4 = 4.0; }
+                    else if (tk >= 8.0) { diemChu = "B+"; he4 = 3.5; }
+                    else if (tk >= 7.0) { diemChu = "B"; he4 = 3.0; }
+                    else if (tk >= 6.5) { diemChu = "C+"; he4 = 2.5; }
+                    else if (tk >= 5.5) { diemChu = "C"; he4 = 2.0; }
+                    else if (tk >= 5.0) { diemChu = "D+"; he4 = 1.5; }
+                    else if (tk >= 4.0) { diemChu = "D"; he4 = 1.0; }
+                    else { diemChu = "F"; he4 = 0.0; }
+
+                    const badgeColor = isDat ? 'bg-primary' : 'bg-danger';
+                    txtChu.innerHTML = `<span class="badge ${badgeColor}" style="font-weight: 700; font-size: .8rem; min-width: 32px;">${diemChu}</span>`;
+                    txtHe4.textContent = he4.toFixed(1);
+
+                    if (isDat) {
+                        txtDanhGia.innerHTML = `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-weight: 700; font-size: .75rem;"><i class="bi bi-check-circle me-1"></i>Đạt</span>`;
+                    } else {
+                        txtDanhGia.innerHTML = `<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" style="font-weight: 700; font-size: .75rem;"><i class="bi bi-x-circle me-1"></i>Chưa đạt</span>`;
+                    }
+                } else {
+                    // CHƯA ĐỦ ĐIỂM: Không hiển thị tổng kết!
+                    txtTK.textContent = "—";
+                    txtChu.innerHTML = `<span class="text-muted">—</span>`;
+                    txtHe4.textContent = "—";
+                    txtDanhGia.innerHTML = `<span class="badge bg-light text-muted border px-2 py-1" style="font-size: .72rem; font-weight: 600;">Chưa đủ điểm</span>`;
                 }
 
-                if (!isNaN(cc) && !isNaN(gk) && !isNaN(ck)) {
-                    const tk = Math.round((cc * 0.1 + gk * 0.3 + ck * 0.6) * 100) / 100;
-                    txtTongKet.innerText = tk.toFixed(1);
+                updateSummaryStats();
+            }
 
-                    let chu = "F", cls = "grade-red", danhGia = "Không đạt (Học lại)";
-
-                    if (tk >= 9.0)      { chu = "A+"; cls = "grade-green";  danhGia = "Đạt xuất sắc"; }
-                    else if (tk >= 8.5) { chu = "A";  cls = "grade-green";  danhGia = "Đạt giỏi"; }
-                    else if (tk >= 8.0) { chu = "B+"; cls = "grade-blue";   danhGia = "Đạt khá giỏi"; }
-                    else if (tk >= 7.0) { chu = "B";  cls = "grade-blue";   danhGia = "Đạt khá"; }
-                    else if (tk >= 6.5) { chu = "C+"; cls = "grade-yellow"; danhGia = "Đạt trung bình khá"; }
-                    else if (tk >= 5.5) { chu = "C";  cls = "grade-yellow"; danhGia = "Đạt trung bình"; }
-                    else if (tk >= 5.0) { chu = "D+"; cls = "grade-yellow"; danhGia = "Đạt trung bình yếu"; }
-                    else if (tk >= 4.0) { chu = "D";  cls = "grade-yellow"; danhGia = "Đạt (Cần cải thiện)"; }
-
-                    txtDiemChu.innerText = chu;
-                    txtDiemChu.className = "badge-grade-preview " + cls;
-                    txtDanhGia.innerText = danhGia;
-                    txtDanhGia.className = "badge-eval-preview " + cls;
-                } else {
-                    txtTongKet.innerText = "—";
-                    txtDiemChu.innerText = "Chưa nhập";
-                    txtDiemChu.className = "badge-grade-preview grade-gray";
-                    txtDanhGia.innerText = "Chưa nhập đủ điểm";
-                    txtDanhGia.className = "badge-eval-preview grade-gray";
+            function updateSummaryStats() {
+                const allRows = document.querySelectorAll('.excel-row');
+                let countDuDiem = 0;
+                allRows.forEach(row => {
+                    const tk = row.querySelector('.txt-tongket');
+                    if (tk && tk.textContent.trim() !== "—") {
+                        countDuDiem++;
+                    }
+                });
+                const badgeDaNhapDu = document.getElementById('badgeDaNhapDu');
+                if (badgeDaNhapDu) {
+                    badgeDaNhapDu.textContent = `${countDuDiem} / ${allRows.length}`;
                 }
             }
 
-            [inpCC, inpGK, inpCK, inpCK2].forEach(inp => inp && inp.addEventListener("input", calcScore));
-            calcScore();
+            // Gán sự kiện input cập nhật cho từng ô điểm
+            scoreInputs.forEach(inp => {
+                inp.addEventListener('input', function () {
+                    const tr = this.closest('tr');
+                    updateRowScore(tr);
+                });
+            });
+
+            // ==========================================
+            // 3. THAO TÁC BÀN PHÍM NHƯ EXCEL
+            // "form điểm giống như excel có thể nhập như excel, sau mỗi lần enter thì nhảy xuống dòng nhập người tiếp theo"
+            // ==========================================
+            scoreInputs.forEach(inp => {
+                // Khi focus vào ô: tự động chọn toàn bộ văn bản (để gõ số mới đè ngay mà không cần xóa)
+                inp.addEventListener('focus', function () {
+                    this.select();
+                    const tr = this.closest('tr');
+                    document.querySelectorAll('.excel-row').forEach(r => r.classList.remove('excel-row-active'));
+                    if (tr) tr.classList.add('excel-row-active');
+                });
+
+                inp.addEventListener('blur', function () {
+                    const tr = this.closest('tr');
+                    if (tr) tr.classList.remove('excel-row-active');
+                });
+
+                // Điều hướng bàn phím Enter, Mũi tên lên, xuống, trái, phải
+                inp.addEventListener('keydown', function (e) {
+                    const rowIdx = parseInt(this.getAttribute('data-row'), 10);
+                    const col = this.getAttribute('data-col');
+                    const colIdx = parseInt(this.getAttribute('data-col-idx'), 10);
+                    const totalRows = document.querySelectorAll('.excel-row').length;
+
+                    // Phím ENTER hoặc MŨI TÊN XUỐNG: Nhảy xuống ô tương ứng của sinh viên tiếp theo
+                    if (e.key === 'Enter' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        if (rowIdx + 1 < totalRows) {
+                            const nextCell = document.querySelector(`.excel-cell-input[data-row="${rowIdx + 1}"][data-col="${col}"]`);
+                            if (nextCell) {
+                                nextCell.focus();
+                                nextCell.select();
+                                nextCell.scrollIntoView({ block: 'nearest' });
+                            }
+                        }
+                    }
+                    // Phím MŨI TÊN LÊN: Nhảy lên ô tương ứng của sinh viên phía trên
+                    else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        if (rowIdx - 1 >= 0) {
+                            const prevCell = document.querySelector(`.excel-cell-input[data-row="${rowIdx - 1}"][data-col="${col}"]`);
+                            if (prevCell) {
+                                prevCell.focus();
+                                prevCell.select();
+                                prevCell.scrollIntoView({ block: 'nearest' });
+                            }
+                        }
+                    }
+                    // Phím MŨI TÊN PHẢI (khi con trỏ ở cuối hoặc ô trống): Sang cột điểm tiếp theo trong cùng hàng
+                    else if (e.key === 'ArrowRight' && (this.selectionEnd === this.value.length || this.value === '')) {
+                        const nextColMap = { 'cc': 'gk', 'gk': 'ck', 'ck': 'note' };
+                        const nextCol = nextColMap[col];
+                        if (nextCol) {
+                            const target = document.querySelector(`[data-row="${rowIdx}"][data-col="${nextCol}"]`);
+                            if (target) {
+                                e.preventDefault();
+                                target.focus();
+                                if (target.select) target.select();
+                            }
+                        }
+                    }
+                    // Phím MŨI TÊN TRÁI (khi con trỏ ở đầu hoặc ô trống): Sang cột điểm trước đó trong cùng hàng
+                    else if (e.key === 'ArrowLeft' && (this.selectionStart === 0 || this.value === '')) {
+                        const prevColMap = { 'note': 'ck', 'ck': 'gk', 'gk': 'cc' };
+                        const prevCol = prevColMap[col];
+                        if (prevCol) {
+                            const target = document.querySelector(`[data-row="${rowIdx}"][data-col="${prevCol}"]`);
+                            if (target) {
+                                e.preventDefault();
+                                target.focus();
+                                if (target.select) target.select();
+                            }
+                        }
+                    }
+                });
+            });
+
+            // Ghi nhận ghi chú cũng hỗ trợ Enter/Mũi tên
+            document.querySelectorAll('.excel-note-input').forEach(inp => {
+                inp.addEventListener('focus', function () {
+                    const tr = this.closest('tr');
+                    document.querySelectorAll('.excel-row').forEach(r => r.classList.remove('excel-row-active'));
+                    if (tr) tr.classList.add('excel-row-active');
+                });
+                inp.addEventListener('blur', function () {
+                    const tr = this.closest('tr');
+                    if (tr) tr.classList.remove('excel-row-active');
+                });
+                inp.addEventListener('keydown', function (e) {
+                    const rowIdx = parseInt(this.getAttribute('data-row'), 10);
+                    const totalRows = document.querySelectorAll('.excel-row').length;
+                    if (e.key === 'Enter' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        if (rowIdx + 1 < totalRows) {
+                            const next = document.querySelector(`.excel-note-input[data-row="${rowIdx + 1}"]`);
+                            if (next) { next.focus(); next.select(); }
+                        }
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        if (rowIdx - 1 >= 0) {
+                            const prev = document.querySelector(`.excel-note-input[data-row="${rowIdx - 1}"]`);
+                            if (prev) { prev.focus(); prev.select(); }
+                        }
+                    }
+                });
+            });
         });
     </script>
 }
