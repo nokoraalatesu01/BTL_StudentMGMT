@@ -27,7 +27,16 @@ public class AccountController : Controller
             }
         }
 
-        return View(new LoginViewModel());
+        var model = new LoginViewModel();
+
+        // 1. LÀM VIỆC VỚI COOKIE (Đọc Cookie): Nếu trước đó đã tích chọn RememberMe, tự điền lại UserName
+        if (Request.Cookies.TryGetValue("Remembered_UserName", out var rememberedUser) && !string.IsNullOrWhiteSpace(rememberedUser))
+        {
+            model.UserName = rememberedUser;
+            model.RememberMe = true;
+        }
+
+        return View(model);
     }
 
     [HttpPost]
@@ -50,6 +59,31 @@ public class AccountController : Controller
             var user = await _userManager.FindByNameAsync(model.UserName);
             if (user != null)
             {
+                var roles = await _userManager.GetRolesAsync(user);
+
+                // 2. LÀM VIỆC VỚI COOKIE (Ghi/Xóa Cookie): Quản lý Cookie lưu tên đăng nhập
+                if (model.RememberMe)
+                {
+                    Response.Cookies.Append("Remembered_UserName", model.UserName, new CookieOptions
+                    {
+                        Expires = DateTimeOffset.Now.AddDays(30),
+                        HttpOnly = true,
+                        IsEssential = true,
+                        SameSite = SameSiteMode.Lax
+                    });
+                }
+                else
+                {
+                    Response.Cookies.Delete("Remembered_UserName");
+                }
+
+                // 3. LÀM VIỆC VỚI SESSION (Lưu Session): Lưu thông tin định danh và thời gian đăng nhập vào Session
+                HttpContext.Session.SetString("Session_UserId", user.Id);
+                HttpContext.Session.SetString("Session_UserName", user.UserName ?? "");
+                HttpContext.Session.SetString("Session_FullName", user.HoTen ?? user.UserName ?? "");
+                HttpContext.Session.SetString("Session_Role", roles.FirstOrDefault() ?? "");
+                HttpContext.Session.SetString("Session_LoginTime", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
+
                 return await RedirectByRole(user);
             }
         }
@@ -62,6 +96,9 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
+        // Xóa sạch toàn bộ Session khi người dùng đăng xuất
+        HttpContext.Session.Clear();
+
         await _signInManager.SignOutAsync();
         return RedirectToAction(nameof(Login));
     }

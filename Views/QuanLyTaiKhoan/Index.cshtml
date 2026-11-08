@@ -46,41 +46,57 @@
 
 <!-- ===== BỘ LỌC ===== -->
 <div class="content-card p-3 mb-3">
-    <div class="d-flex flex-wrap gap-2 align-items-center">
-        <!-- Tìm kiếm -->
-        <div class="input-group" style="flex:1; min-width:220px; max-width:380px;">
-            <span class="input-group-text bg-white border-end-0 pe-1 text-muted" style="border-color:#d1d5db;">
-                <i class="bi bi-search" style="font-size:.85rem;"></i>
-            </span>
-            <input id="tkSearch" type="text"
-                   class="form-control border-start-0 ps-1"
-                   style="border-color:#d1d5db; font-size:.875rem;"
-                   placeholder="Tìm theo tên đăng nhập, họ tên hoặc vai trò..." />
+    <div class="row g-2 align-items-center filter-card-form">
+        <!-- 1. Ô tìm kiếm -->
+        <div class="col-12 col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 pe-2 text-muted" style="border-color:#cbd5e1; height:40px; border-radius:10px 0 0 10px;">
+                    <i class="bi bi-search" style="font-size:.85rem; color:#64748b;"></i>
+                </span>
+                <input id="tkSearch" type="text"
+                       class="form-control border-start-0 ps-1"
+                       style="border-color:#cbd5e1; font-size:.875rem; height:40px; border-radius:0 10px 10px 0;"
+                       placeholder="Tìm theo tên đăng nhập, họ tên hoặc vai trò..." />
+            </div>
         </div>
 
-        <!-- Lọc vai trò -->
-        <select id="tkVaiTro" class="form-select"
-                style="width:180px; font-size:.875rem; border-color:#d1d5db;">
-            <option value="">-- Tất cả vai trò --</option>
-            <option value="Admin">Quản trị viên</option>
-            <option value="GiangVien">Giảng viên</option>
-            <option value="SinhVien">Sinh viên</option>
-        </select>
+        <!-- 2. Lọc vai trò -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <select id="tkVaiTro" class="form-select"
+                    style="font-size:.875rem; border-color:#cbd5e1; height:40px; width:100%; border-radius:10px;">
+                <option value="">-- Tất cả vai trò --</option>
+                <option value="Admin">Quản trị viên</option>
+                <option value="GiangVien">Giảng viên</option>
+                <option value="SinhVien">Sinh viên</option>
+            </select>
+        </div>
 
-        <!-- Lọc trạng thái -->
-        <select id="tkTrangThai" class="form-select"
-                style="width:160px; font-size:.875rem; border-color:#d1d5db;">
-            <option value="">-- Trạng thái --</option>
-            <option value="active">Đang hoạt động</option>
-            <option value="locked">Đã khóa</option>
-        </select>
+        <!-- 3. Lọc trạng thái -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <select id="tkTrangThai" class="form-select"
+                    style="font-size:.875rem; border-color:#cbd5e1; height:40px; width:100%; border-radius:10px;">
+                <option value="">-- Trạng thái --</option>
+                <option value="active">Đang hoạt động</option>
+                <option value="locked">Đã khóa</option>
+            </select>
+        </div>
 
-        <!-- Lọc -->
-        <button type="button" onclick="filterTable()"
-                class="btn d-inline-flex align-items-center gap-1"
-                style="border:1px solid #d1d5db; background:#fff; color:#374151; font-size:.875rem; font-weight:600; height:38px; border-radius:8px; padding:0 16px;">
-            Lọc
-        </button>
+        <!-- 4. Nút Thao tác (Lọc + Đặt lại) -->
+        <div class="col-12 col-md-2">
+            <div class="d-flex gap-2 w-100">
+                <button type="button" onclick="filterTable()"
+                        class="btn-filter-submit flex-grow-1"
+                        style="height:40px; border-radius:10px;">
+                    <i class="bi bi-funnel-fill"></i> Lọc
+                </button>
+                <button type="button" onclick="resetFilter()"
+                        class="btn-filter-reset"
+                        title="Đặt lại bộ lọc"
+                        style="height:40px; width:40px; min-width:40px; border-radius:10px;">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -274,9 +290,9 @@
 </style>
 <script>
 function filterTable() {
-    const search   = document.getElementById('tkSearch').value.toLowerCase();
-    const vaiTro   = document.getElementById('tkVaiTro').value;
-    const trangThai = document.getElementById('tkTrangThai').value;
+    const search   = (document.getElementById('tkSearch')?.value || '').toLowerCase();
+    const vaiTro   = document.getElementById('tkVaiTro')?.value || '';
+    const trangThai = document.getElementById('tkTrangThai')?.value || '';
     const rows = document.querySelectorAll('#tkTable tbody tr[data-status]');
     let visible = 0;
     rows.forEach(row => {
@@ -290,9 +306,30 @@ function filterTable() {
         row.style.display = show ? '' : 'none';
         if (show) visible++;
     });
-    document.getElementById('tkPagInfo').innerHTML =
-        `Hiển thị <strong style="color:#1e293b;">1 – ${Math.min(visible, 10)}</strong> trên tổng số <strong style="color:#1e293b;">${visible}</strong> tài khoản`;
+    const info = document.getElementById('tkPagInfo');
+    if (info) {
+        info.innerHTML = `Hiển thị <strong style="color:#1e293b;">1 – ${Math.min(visible, 10)}</strong> trên tổng số <strong style="color:#1e293b;">${visible}</strong> tài khoản`;
+    }
 }
-document.getElementById('tkSearch').addEventListener('input', filterTable);
+
+function resetFilter() {
+    const s = document.getElementById('tkSearch');
+    const v = document.getElementById('tkVaiTro');
+    const t = document.getElementById('tkTrangThai');
+    if (s) s.value = '';
+    if (v) {
+        v.value = '';
+        v.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    if (t) {
+        t.value = '';
+        t.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    filterTable();
+}
+
+document.getElementById('tkSearch')?.addEventListener('input', filterTable);
+document.getElementById('tkVaiTro')?.addEventListener('change', filterTable);
+document.getElementById('tkTrangThai')?.addEventListener('change', filterTable);
 </script>
 }

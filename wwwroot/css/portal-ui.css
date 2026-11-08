@@ -528,9 +528,9 @@ select.form-select option:checked {
 }
 
 .portal-select-wrapper.w-100,
-.d-flex > .portal-select-wrapper,
 [style*="flex: 1"] > .portal-select-wrapper,
-[style*="flex:1"] > .portal-select-wrapper {
+[style*="flex:1"] > .portal-select-wrapper,
+.filter-card-form .portal-select-wrapper {
     width: 100% !important;
     display: block;
     flex: 1 1 auto;
@@ -808,3 +808,53 @@ select.form-select option:checked {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
 }
+
+/* ==========================================================================
+   TÙY BIẾN GIAO DIỆN RICH TEXT EDITOR (CKEDITOR 5)
+   ========================================================================== */
+.ck.ck-editor {
+    width: 100% !important;
+    position: relative;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.ck.ck-toolbar {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+    padding: 6px 8px !important;
+}
+
+.ck.ck-editor__editable_inline {
+    min-height: 150px !important;
+    max-height: 400px;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-top: none !important;
+    border-bottom-left-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
+    padding: 12px 16px !important;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: #1e293b;
+}
+
+.ck.ck-editor__editable_inline:focus,
+.ck.ck-editor__editable_inline.ck-focused {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+    outline: none !important;
+}
+
+.ck.ck-button {
+    border-radius: 6px !important;
+    cursor: pointer !important;
+}
+
+.ck.ck-button:hover {
+    background: #e2e8f0 !important;
+}
+

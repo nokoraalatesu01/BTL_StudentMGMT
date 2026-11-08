@@ -42,26 +42,52 @@
     </div>
 }
 <div class="content-card p-3 mb-4">
-    <form method="get" asp-action="Index" class="d-flex flex-wrap gap-2 align-items-center filter-card-form">
-        <div class="input-group" style="max-width:360px; flex:1;">
-            <span class="input-group-text border-end-0"><i class="bi bi-search"></i></span>
-            <input type="text" name="tuKhoa" value="@tuKhoa" class="form-control border-start-0" placeholder="Tìm theo mã đơn vị, tên đơn vị, email..." />
+    <form method="get" asp-action="Index" class="row g-2 align-items-center filter-card-form">
+        <!-- 1. Ô tìm kiếm -->
+        <div class="col-12 col-md-4">
+            <div class="input-group">
+                <span class="input-group-text border-end-0 bg-white text-muted pe-2" style="border-color:#cbd5e1; height:40px; border-radius:10px 0 0 10px;">
+                    <i class="bi bi-search" style="font-size:.85rem; color:#64748b;"></i>
+                </span>
+                <input type="text" name="tuKhoa" value="@tuKhoa"
+                       class="form-control border-start-0 ps-1"
+                       style="border-color:#cbd5e1; font-size:.875rem; height:40px; border-radius:0 10px 10px 0;"
+                       placeholder="Tìm theo mã đơn vị, tên đơn vị, email..." />
+            </div>
         </div>
-        <select name="loaiDonVi" class="form-select" style="width:200px;">
-            <option value="">-- Tất cả loại đơn vị --</option>
-            <option value="TRUONG" selected="@(loaiDonVi == "TRUONG")">Trường / Ban Giám hiệu</option>
-            <option value="KHOA" selected="@(loaiDonVi == "KHOA")">Khoa / Viện đào tạo</option>
-            <option value="BO_MON" selected="@(loaiDonVi == "BO_MON")">Bộ môn</option>
-            <option value="PHONG" selected="@(loaiDonVi == "PHONG")">Phòng ban chức năng</option>
-            <option value="TRUNG_TAM" selected="@(loaiDonVi == "TRUNG_TAM")">Trung tâm</option>
-        </select>
-        <select name="trangThai" class="form-select" style="width:175px;">
-            <option value="">-- Tất cả trạng thái --</option>
-            <option value="ACTIVE" selected="@(trangThai == "ACTIVE")">Hoạt động</option>
-            <option value="INACTIVE" selected="@(trangThai == "INACTIVE")">Ngưng hoạt động</option>
-        </select>
-        <button type="submit" class="btn-filter"><i class="bi bi-funnel"></i> Lọc</button>
-        <a asp-action="Index" class="btn-reset" title="Đặt lại bộ lọc"><i class="bi bi-arrow-counterclockwise"></i></a>
+
+        <!-- 2. Loại đơn vị -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <select name="loaiDonVi" class="form-select" style="font-size:.875rem; border-color:#cbd5e1; height:40px; width:100%; border-radius:10px;">
+                <option value="">-- Tất cả loại đơn vị --</option>
+                <option value="TRUONG" selected="@(loaiDonVi == "TRUONG")">Trường / Ban Giám hiệu</option>
+                <option value="KHOA" selected="@(loaiDonVi == "KHOA")">Khoa / Viện đào tạo</option>
+                <option value="BO_MON" selected="@(loaiDonVi == "BO_MON")">Bộ môn</option>
+                <option value="PHONG" selected="@(loaiDonVi == "PHONG")">Phòng ban chức năng</option>
+                <option value="TRUNG_TAM" selected="@(loaiDonVi == "TRUNG_TAM")">Trung tâm</option>
+            </select>
+        </div>
+
+        <!-- 3. Trạng thái -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <select name="trangThai" class="form-select" style="font-size:.875rem; border-color:#cbd5e1; height:40px; width:100%; border-radius:10px;">
+                <option value="">-- Tất cả trạng thái --</option>
+                <option value="ACTIVE" selected="@(trangThai == "ACTIVE")">Hoạt động</option>
+                <option value="INACTIVE" selected="@(trangThai == "INACTIVE")">Ngưng hoạt động</option>
+            </select>
+        </div>
+
+        <!-- 4. Thao tác (Lọc + Đặt lại) -->
+        <div class="col-12 col-md-2">
+            <div class="d-flex gap-2 w-100">
+                <button type="submit" class="btn-filter-submit flex-grow-1" style="height:40px; border-radius:10px;">
+                    <i class="bi bi-funnel-fill"></i> Lọc
+                </button>
+                <a asp-action="Index" class="btn-filter-reset" title="Đặt lại bộ lọc" style="height:40px; width:40px; min-width:40px; border-radius:10px;">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </div>
     </form>
 </div>
 

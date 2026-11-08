@@ -382,6 +382,13 @@ public class SinhVienController : Controller
         var userId = _userManager.GetUserId(User);
         if (userId == null) return View("Unlinked");
 
+        // LÀM VIỆC VỚI SESSION: Lưu/phục hồi học kỳ và năm học đang chọn của sinh viên
+        if (hocKyId.HasValue) HttpContext.Session.SetInt32("SV_SelectedHocKyId", hocKyId.Value);
+        if (namHocId.HasValue) HttpContext.Session.SetInt32("SV_SelectedNamHocId", namHocId.Value);
+
+        hocKyId ??= HttpContext.Session.GetInt32("SV_SelectedHocKyId");
+        namHocId ??= HttpContext.Session.GetInt32("SV_SelectedNamHocId");
+
         var student = await _db.SinhViens
             .AsNoTracking()
             .Include(s => s.Lop).ThenInclude(l => l!.Nganh)

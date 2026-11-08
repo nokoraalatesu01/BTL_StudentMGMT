@@ -1,6 +1,7 @@
 using BTL_StudentMGMT.Data;
 using BTL_StudentMGMT.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +11,12 @@ namespace BTL_StudentMGMT.Controllers;
 public class AdminController : Controller
 {
     private readonly ApplicationDbContext _db;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public AdminController(ApplicationDbContext db)
+    public AdminController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
     {
         _db = db;
+        _userManager = userManager;
     }
 
     public async Task<IActionResult> Index()
