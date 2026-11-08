@@ -214,20 +214,36 @@
             function openDropdown() {
                 // Đóng tất cả combobox khác đang mở
                 document.querySelectorAll('.portal-select-wrapper.is-open').forEach(function (other) {
-                    if (other !== wrapper) other.classList.remove('is-open');
+                    if (other !== wrapper) {
+                        other.classList.remove('is-open');
+                        var parentFilter = other.closest('.payment-filter-card, .filter-card, .payment-card, .card, .tkb-control-panel, form');
+                        if (parentFilter) parentFilter.classList.remove('has-open-select');
+                    }
                 });
 
-                // Kiểm tra khoảng cách dưới để quyết định mở lên hay mở xuống
+                // Kiểm tra khoảng cách dưới để quyết định mở lên hay mở xuống và max-height
                 var rect = trigger.getBoundingClientRect();
-                var spaceBelow = window.innerHeight - rect.bottom;
-                if (spaceBelow < 280 && rect.top > spaceBelow) {
+                var spaceBelow = window.innerHeight - rect.bottom - 16;
+                var spaceAbove = rect.top - 16;
+
+                if (spaceBelow < 240 && spaceAbove > spaceBelow) {
                     dropdown.classList.add('open-up');
+                    var maxH = Math.min(260, spaceAbove - 55);
+                    optionsContainer.style.maxHeight = Math.max(130, maxH) + 'px';
                 } else {
                     dropdown.classList.remove('open-up');
+                    var maxH = Math.min(260, spaceBelow - 55);
+                    optionsContainer.style.maxHeight = Math.max(130, maxH) + 'px';
                 }
 
                 wrapper.classList.add('is-open');
                 trigger.setAttribute('aria-expanded', 'true');
+
+                // Nâng z-index của container cha để không bị thẻ phía dưới che
+                var parentContainer = wrapper.closest('.payment-filter-card, .filter-card, .payment-card, .card, .tkb-control-panel, form');
+                if (parentContainer) {
+                    parentContainer.classList.add('has-open-select');
+                }
 
                 if (searchInput) {
                     searchInput.value = '';
@@ -246,6 +262,10 @@
             function closeDropdown() {
                 wrapper.classList.remove('is-open');
                 trigger.setAttribute('aria-expanded', 'false');
+                var parentContainer = wrapper.closest('.payment-filter-card, .filter-card, .payment-card, .card, .tkb-control-panel, form');
+                if (parentContainer) {
+                    parentContainer.classList.remove('has-open-select');
+                }
                 optionsContainer.querySelectorAll('.portal-select-option.is-highlighted').forEach(function (el) {
                     el.classList.remove('is-highlighted');
                 });
@@ -342,6 +362,8 @@
                 w.classList.remove('is-open');
                 var trig = w.querySelector('.portal-select-trigger');
                 if (trig) trig.setAttribute('aria-expanded', 'false');
+                var parentFilter = w.closest('.payment-filter-card, .filter-card, .payment-card, .card, .tkb-control-panel, form');
+                if (parentFilter) parentFilter.classList.remove('has-open-select');
             });
         }
     });

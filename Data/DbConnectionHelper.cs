@@ -34,19 +34,9 @@ public static class DbConnectionHelper
 
         string machineName = Environment.MachineName;
 
-        // Luôn ưu tiên SQL Server trên chính máy tính đang chạy (Environment.MachineName)
-        // Dù người khác có push tên máy của họ lên Git thì máy bạn vẫn tự nhận diện máy bạn trước
-        var candidateServers = new List<string>
-        {
-            $@"{machineName}\SQLEXPRESS",
-            @".\SQLEXPRESS",
-            @"localhost\SQLEXPRESS",
-            ".",
-            "localhost",
-            @"(localdb)\mssqllocaldb"
-        };
+        var candidateServers = new List<string>();
 
-        // Nếu chuỗi cấu hình có server khác và chưa có trong danh sách thì thêm vào cuối để dự phòng
+        // 1. Ưu tiên cao nhất: Server được cấu hình trong appsettings.json
         if (!string.IsNullOrWhiteSpace(baseConnectionString))
         {
             try
@@ -60,9 +50,63 @@ public static class DbConnectionHelper
             catch { }
         }
 
-        foreach (var server in candidateServers)
+        // 2. Thêm các instance SQLEXPRESS phổ biến (từ SQLEXPRESS06 xuống SQLEXPRESS)
+        var commonInstances = new[]
         {
-            var testBuilder = new SqlConnectionStringBuilder
+            "SQLEXPRESS06", "SQLEXPRESS05", "SQLEXPRESS04",
+            "SQLEXPRESS03", "SQLEXPRESS02", "SQLEXPRESS01", "SQLEXPRESS"
+        };
+
+        foreach (var inst in commonInstances)
+        {
+            candidateServers.Add(@$".\{inst}");
+            candidateServers.Add(@$"{machineName}\{inst}");
+            candidateServers.Add(@$"localhost\{inst}");
+        }
+
+        // 3. Thêm SQL Server mặc định (default instance)
+        candidateServers.Add(".");
+        candidateServers.Add("localhost");
+
+        // 4. Cuối cùng mới đến LocalDB (dự phòng)
+        candidateServers.Add(@"(localdb)\mssqllocaldb");
+
+        var uniqueServers = candidateServers
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        string? firstRespondingServer = null;
+
+        foreach (var server in uniqueServers)
+        {
+            // Bước 1: Thử kết nối TRỰC TIẾP vào database đích trước (nếu đã có DB và quyền truy cập tốt)
+            var directBuilder = new SqlConnectionStringBuilder
+            {
+                DataSource = server,
+                InitialCatalog = databaseName,
+                IntegratedSecurity = true,
+                TrustServerCertificate = true,
+                ConnectTimeout = 2
+            };
+
+            try
+            {
+                using var directConn = new SqlConnection(directBuilder.ConnectionString);
+                directConn.Open();
+
+                // Kết nối thẳng vào DB thành công 100%
+                Console.WriteLine($"[Database] Tự động kết nối trực tiếp database '{databaseName}' thành công trên: {server}");
+                _cachedConnectionString = directBuilder.ConnectionString;
+                return _cachedConnectionString;
+            }
+            catch
+            {
+                // Chưa kết nối trực tiếp được vào databaseName trên server này, kiểm tra master
+            }
+
+            // Bước 2: Kiểm tra server có hoạt động thông qua master không
+            var masterBuilder = new SqlConnectionStringBuilder
             {
                 DataSource = server,
                 InitialCatalog = "master",
@@ -73,27 +117,56 @@ public static class DbConnectionHelper
 
             try
             {
-                using var conn = new SqlConnection(testBuilder.ConnectionString);
-                conn.Open();
+                using var masterConn = new SqlConnection(masterBuilder.ConnectionString);
+                masterConn.Open();
 
-                // Đã tìm thấy SQL Server đang phản hồi tốt
-                var resultBuilder = new SqlConnectionStringBuilder
+                // Lưu lại server đầu tiên có master phản hồi để làm fallback
+                firstRespondingServer ??= server;
+
+                // Kiểm tra xem databaseName đã tồn tại trên server này chưa
+                using var cmd = masterConn.CreateCommand();
+                cmd.CommandText = "SELECT DB_ID(@dbName)";
+                cmd.Parameters.Add(new SqlParameter("@dbName", databaseName));
+                var dbId = cmd.ExecuteScalar();
+
+                if (dbId != null && dbId != DBNull.Value)
                 {
-                    DataSource = server,
-                    InitialCatalog = databaseName,
-                    IntegratedSecurity = true,
-                    TrustServerCertificate = true,
-                    ConnectTimeout = 30
-                };
+                    // Server này đã có databaseName sẵn!
+                    var resultBuilder = new SqlConnectionStringBuilder
+                    {
+                        DataSource = server,
+                        InitialCatalog = databaseName,
+                        IntegratedSecurity = true,
+                        TrustServerCertificate = true,
+                        ConnectTimeout = 30
+                    };
 
-                Console.WriteLine($"[Database] Tự động kết nối SQL Server thành công: {server}");
-                _cachedConnectionString = resultBuilder.ConnectionString;
-                return _cachedConnectionString;
+                    Console.WriteLine($"[Database] Tìm thấy database '{databaseName}' tồn tại trên SQL Server: {server}");
+                    _cachedConnectionString = resultBuilder.ConnectionString;
+                    return _cachedConnectionString;
+                }
             }
             catch
             {
                 // Thử ứng viên tiếp theo
             }
+        }
+
+        // Nếu không server nào có sẵn database, chọn server đầu tiên phản hồi master để EF Core tạo DB
+        if (!string.IsNullOrEmpty(firstRespondingServer))
+        {
+            var fallbackBuilder = new SqlConnectionStringBuilder
+            {
+                DataSource = firstRespondingServer,
+                InitialCatalog = databaseName,
+                IntegratedSecurity = true,
+                TrustServerCertificate = true,
+                ConnectTimeout = 30
+            };
+
+            Console.WriteLine($"[Database] Chọn SQL Server khả dụng ({firstRespondingServer}) để chuẩn bị khởi tạo database '{databaseName}'.");
+            _cachedConnectionString = fallbackBuilder.ConnectionString;
+            return _cachedConnectionString;
         }
 
         _cachedConnectionString = baseConnectionString ?? $@"Server=.\SQLEXPRESS;Database={databaseName};Trusted_Connection=True;TrustServerCertificate=True";

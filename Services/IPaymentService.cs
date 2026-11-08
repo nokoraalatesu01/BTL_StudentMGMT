@@ -30,6 +30,8 @@ public interface IPaymentService
     // Quản lý giao dịch
     Task<AdminGiaoDichListViewModel> GetGiaoDichListAsync(int page, int pageSize, string? search, string? status, string? bankId, string? tuNgay, string? denNgay);
     Task<AdminChiTietGiaoDichViewModel?> GetChiTietGiaoDichAsync(long id);
+    Task<(bool Success, string Message)> XacNhanGiaoDichThuCongAsync(long paymentId, string lyDo, string? maGiaoDichNganHang, string nguoiThucHien);
+    Task<(bool Success, string Message)> TuChoiGiaoDichAsync(long paymentId, string lyDo, string nguoiThucHien);
 
     // Quản lý công nợ
     Task<AdminCongNoListViewModel> GetCongNoListAsync(int page, int pageSize, string? search, int? lopId, int? nganhId, int? hocKyId, bool chiSinhVienNo);

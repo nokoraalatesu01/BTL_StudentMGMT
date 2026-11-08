@@ -14,6 +14,7 @@ public class QuanLyHocPhiController : Controller
 {
     private const string Pending = "PENDING";
     private const string Completed = "COMPLETED";
+    private static bool _tablesEnsured;
     private readonly ApplicationDbContext _db;
     private readonly IFileUploadService _fileUploadService;
 
@@ -25,6 +26,12 @@ public class QuanLyHocPhiController : Controller
 
     public async Task<IActionResult> Index(string? tuKhoa, int? hocKyId, string? trangThai)
     {
+        if (!_tablesEnsured)
+        {
+            await DbSeeder.EnsurePaymentTablesAsync(_db);
+            _tablesEnsured = true;
+        }
+
         var query = _db.HoaDonHocPhis.AsNoTracking()
             .Include(invoice => invoice.SinhVien)
             .Include(invoice => invoice.HocKy)
@@ -120,7 +127,7 @@ public class QuanLyHocPhiController : Controller
         _db.HoaDonHocPhis.Add(invoice);
         await _db.SaveChangesAsync();
         TempData["Msg"] = "Đã tạo hóa đơn học phí.";
-        return RedirectToAction(nameof(ChiTiet), new { id = invoice.HoaDonId });
+        return RedirectToAction(nameof(ChiTiet), new { id = invoice.Id });
     }
 
     [HttpGet]
@@ -129,7 +136,7 @@ public class QuanLyHocPhiController : Controller
         var invoice = await _db.HoaDonHocPhis
             .Include(item => item.ChiTietHoaDonHocPhis)
             .Include(item => item.ThanhToans)
-            .FirstOrDefaultAsync(item => item.HoaDonId == id);
+            .FirstOrDefaultAsync(item => item.Id == id);
         if (invoice == null) return NotFound();
         if (invoice.TrangThai == "CANCELLED" || invoice.ThanhToans.Any(payment => payment.TrangThai is Pending or Completed))
         {
@@ -175,7 +182,7 @@ public class QuanLyHocPhiController : Controller
         var invoice = await _db.HoaDonHocPhis
             .Include(item => item.ChiTietHoaDonHocPhis)
             .Include(item => item.ThanhToans)
-            .FirstOrDefaultAsync(item => item.HoaDonId == id);
+            .FirstOrDefaultAsync(item => item.Id == id);
         if (invoice == null) return NotFound();
         if (invoice.TrangThai == "CANCELLED" || invoice.ThanhToans.Any(payment => payment.TrangThai is Pending or Completed))
         {
@@ -193,7 +200,7 @@ public class QuanLyHocPhiController : Controller
             ModelState.AddModelError(nameof(model.SoTinChi), "Tổng học phí vượt giới hạn lưu trữ.");
         }
 
-        if (await _db.HoaDonHocPhis.AnyAsync(item => item.HoaDonId != id && item.SinhVienId == model.SinhVienId && item.HocKyId == model.HocKyId))
+        if (await _db.HoaDonHocPhis.AnyAsync(item => item.Id != id && item.SinhVienId == model.SinhVienId && item.HocKyId == model.HocKyId))
         {
             ModelState.AddModelError(nameof(model.HocKyId), "Sinh viên đã có hóa đơn trong học kỳ này.");
         }
@@ -233,7 +240,7 @@ public class QuanLyHocPhiController : Controller
             .Include(item => item.HocKy).ThenInclude(semester => semester.NamHoc)
             .Include(item => item.ChiTietHoaDonHocPhis)
             .Include(item => item.ThanhToans.OrderByDescending(payment => payment.ThoiGianThanhToan))
-            .FirstOrDefaultAsync(item => item.HoaDonId == id);
+            .FirstOrDefaultAsync(item => item.Id == id);
         if (invoice == null) return NotFound();
         return View(new HocPhiChiTietViewModel
         {
@@ -286,7 +293,7 @@ public class QuanLyHocPhiController : Controller
     {
         await using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
         var invoice = await _db.HoaDonHocPhis.Include(item => item.ThanhToans)
-            .FirstOrDefaultAsync(item => item.HoaDonId == id);
+            .FirstOrDefaultAsync(item => item.Id == id);
         if (invoice == null) return NotFound();
         if (invoice.TrangThai == "PAID" || invoice.ThanhToans.Any(payment => payment.TrangThai == Completed))
         {
@@ -456,9 +463,15 @@ public class QuanLyHocPhiController : Controller
         DaThanhToan = GetCompletedPayments(invoice)
     };
 
-    private static decimal GetInvoiceTotal(HoaDonHocPhi invoice) =>
-        invoice.ChiTietHoaDonHocPhis.Sum(item => Math.Max(0, item.SoLuong * item.DonGia - item.SoTienGiam));
+    private static decimal GetInvoiceTotal(HoaDonHocPhi invoice)
+    {
+        var detailSum = invoice.ChiTietHoaDonHocPhis.Sum(item => Math.Max(0, item.SoLuong * item.DonGia - item.SoTienGiam));
+        return detailSum > 0 ? detailSum : invoice.SoTien;
+    }
 
-    private static decimal GetCompletedPayments(HoaDonHocPhi invoice) =>
-        invoice.ThanhToans.Where(payment => payment.TrangThai == Completed).Sum(payment => payment.SoTien);
+    private static decimal GetCompletedPayments(HoaDonHocPhi invoice)
+    {
+        var paymentSum = invoice.ThanhToans.Where(payment => payment.TrangThai == Completed).Sum(payment => payment.SoTien);
+        return paymentSum > 0 ? paymentSum : invoice.DaThanhToan;
+    }
 }

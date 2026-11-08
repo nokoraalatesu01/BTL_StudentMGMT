@@ -104,8 +104,9 @@
             <select name="trangThai" id="selectStatus" class="form-select form-select-sm" style="border-radius:10px; min-width:180px;" onchange="this.form.submit()">
                 <option value="">-- Tất cả trạng thái --</option>
                 <option value="CHUA_THANH_TOAN" selected="@(Model.SelectedTrangThai == "CHUA_THANH_TOAN" ? "selected" : null)">Chưa thanh toán</option>
+                <option value="DANG_XU_LY" selected="@(Model.SelectedTrangThai == "DANG_XU_LY" ? "selected" : null)">Đang xử lý (Chờ quét QR)</option>
                 <option value="THANH_TOAN_MOT_PHAN" selected="@(Model.SelectedTrangThai == "THANH_TOAN_MOT_PHAN" ? "selected" : null)">Thanh toán một phần</option>
-                <option value="DA_THANH_TOAN" selected="@(Model.SelectedTrangThai == "DA_THANH_TOAN" ? "selected" : null)">Đã hoàn thành</option>
+                <option value="DA_THANH_TOAN" selected="@(Model.SelectedTrangThai == "DA_THANH_TOAN" ? "selected" : null)">Đã thanh toán</option>
             </select>
         </div>
 
@@ -189,13 +190,21 @@
                                 {
                                     <span class="student-chip green"><i class="bi bi-check-lg"></i> Đã thanh toán</span>
                                 }
+                                else if (item.DangXuLy)
+                                {
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning px-2 py-1 shadow-sm" style="border-radius:8px;">
+                                        <i class="bi bi-hourglass-split me-1"></i> Đang xử lý
+                                    </span>
+                                }
                                 else if (item.TrangThai == "THANH_TOAN_MOT_PHAN")
                                 {
-                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning px-2 py-1">Còn nợ 1 phần</span>
+                                    <span class="badge bg-info-subtle text-info-emphasis border border-info px-2 py-1" style="border-radius:8px;">
+                                        Còn nợ 1 phần
+                                    </span>
                                 }
                                 else
                                 {
-                                    <span class="student-chip red"><i class="bi bi-exclamation-circle"></i> Chưa đóng</span>
+                                    <span class="student-chip red"><i class="bi bi-exclamation-circle"></i> Chưa thanh toán</span>
                                 }
                             </td>
                             <td class="text-center">
@@ -209,7 +218,7 @@
                                             data-ten="@item.TenKhoanThu"
                                             data-amount="@item.ConPhaiDong.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)"
                                             onclick="moModalThanhToan(this)">
-                                        <i class="bi bi-qr-code-scan"></i> Thanh toán ngay
+                                        <i class="bi bi-qr-code-scan"></i> @(item.DangXuLy ? "Tiếp tục thanh toán" : "Thanh toán ngay")
                                     </button>
                                 }
                                 else

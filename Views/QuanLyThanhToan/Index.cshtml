@@ -38,7 +38,7 @@
     <!-- ===== BỘ LỌC TỔNG HỢP ===== -->
     <div class="payment-filter-card">
         <form method="get" asp-action="Index" class="row g-2 align-items-end">
-            <div class="col-6 col-md-2">
+            <div class="col-6 col-md-3 col-xl">
                 <label class="form-label small fw-semibold text-muted mb-1">Năm học</label>
                 <select name="namHocId" class="form-select form-select-sm filter-select">
                     <option value="">-- Tất cả năm --</option>
@@ -48,7 +48,7 @@
                     }
                 </select>
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-6 col-md-3 col-xl">
                 <label class="form-label small fw-semibold text-muted mb-1">Học kỳ</label>
                 <select name="hocKyId" class="form-select form-select-sm filter-select">
                     <option value="">-- Tất cả kỳ --</option>
@@ -58,7 +58,17 @@
                     }
                 </select>
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-6 col-md-3 col-xl">
+                <label class="form-label small fw-semibold text-muted mb-1">Ngành học</label>
+                <select name="nganhId" class="form-select form-select-sm filter-select">
+                    <option value="">-- Tất cả ngành --</option>
+                    @foreach (var ng in Model.DanhSachNganh)
+                    {
+                        <option value="@ng.Id" selected="@(Model.SelectedNganhId == ng.Id)">@ng.TenNganh</option>
+                    }
+                </select>
+            </div>
+            <div class="col-6 col-md-3 col-xl">
                 <label class="form-label small fw-semibold text-muted mb-1">Lớp</label>
                 <select name="lopId" class="form-select form-select-sm filter-select">
                     <option value="">-- Tất cả lớp --</option>
@@ -68,27 +78,21 @@
                     }
                 </select>
             </div>
-            <div class="col-6 col-md-2">
-                <label class="form-label small fw-semibold text-muted mb-1">Ngành</label>
-                <select name="nganhId" class="form-select form-select-sm filter-select">
-                    <option value="">-- Tất cả ngành --</option>
-                    @foreach (var ng in Model.DanhSachNganh)
-                    {
-                        <option value="@ng.Id" selected="@(Model.SelectedNganhId == ng.Id)">@ng.TenNganh</option>
-                    }
-                </select>
-            </div>
-            <div class="col-6 col-md-2">
+            <div class="col-6 col-md-3 col-xl">
                 <label class="form-label small fw-semibold text-muted mb-1">Từ ngày</label>
-                <input type="date" name="tuNgay" value="@Model.SelectedTuNgay" class="form-control form-control-sm filter-select" />
+                <input type="date" name="tuNgay" value="@Model.SelectedTuNgay" lang="vi-VN" class="form-control form-control-sm filter-select" placeholder="dd/MM/yyyy" title="Từ ngày (dd/MM/yyyy)" />
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-6 col-md-3 col-xl">
+                <label class="form-label small fw-semibold text-muted mb-1">Đến ngày</label>
+                <input type="date" name="denNgay" value="@Model.SelectedDenNgay" lang="vi-VN" class="form-control form-control-sm filter-select" placeholder="dd/MM/yyyy" title="Đến ngày (dd/MM/yyyy)" />
+            </div>
+            <div class="col-12 col-md-6 col-xl-auto">
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn-filter-submit flex-grow-1">
+                    <button type="submit" class="btn btn-primary btn-sm px-3 d-inline-flex align-items-center justify-content-center gap-1 shadow-sm" style="height: 38px; border-radius: 9px; font-weight: 600; background: #008744; border-color: #008744;">
                         <i class="bi bi-funnel-fill"></i> Lọc
                     </button>
-                    <a asp-action="Index" class="btn-filter-reset" title="Xóa lọc">
-                        <i class="bi bi-arrow-counterclockwise"></i>
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm px-3 d-inline-flex align-items-center justify-content-center" style="height: 38px; border-radius: 9px;" title="Xóa bộ lọc / Tải lại">
+                        <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
                     </a>
                 </div>
             </div>
@@ -96,127 +100,115 @@
     </div>
 
     <!-- ===== 6 THẺ THỐNG KÊ (STATISTIC CARDS WITH PASTEL THEME & ANIMATED COUNT-UP) ===== -->
-    <div class="row g-3 mb-4">
+    <div class="payment-stats-grid">
         <!-- 1. Tổng học phí phải thu -->
-        <div class="col-sm-6 col-xl-2">
-            <div class="payment-stat-card card-blue">
-                <div class="stat-header">
-                    <span class="stat-label">TỔNG PHẢI THU</span>
-                    <div class="stat-badge-icon">
-                        <i class="bi bi-receipt"></i>
-                    </div>
+        <div class="payment-stat-card card-blue">
+            <div class="stat-header">
+                <span class="stat-label">TỔNG PHẢI THU</span>
+                <div class="stat-badge-icon">
+                    <i class="bi bi-receipt"></i>
                 </div>
-                <div>
-                    <div class="stat-value text-primary" data-counter-target="@Model.TongHocPhiPhaiThu" data-is-currency="true">
-                        @Model.TongHocPhiPhaiThu.ToString("N0") ₫
-                    </div>
-                    <div class="stat-hint">
-                        <span>Định mức học phần</span>
-                    </div>
+            </div>
+            <div>
+                <div class="stat-value text-primary" data-counter-target="@Model.TongHocPhiPhaiThu" data-is-currency="true">
+                    @Model.TongHocPhiPhaiThu.ToString("N0")<span class="stat-currency">₫</span>
+                </div>
+                <div class="stat-hint">
+                    <span>Định mức học phần</span>
                 </div>
             </div>
         </div>
 
         <!-- 2. Tổng tiền đã thu -->
-        <div class="col-sm-6 col-xl-2">
-            <div class="payment-stat-card card-emerald">
-                <div class="stat-header">
-                    <span class="stat-label text-success">TIỀN ĐÃ THU</span>
-                    <div class="stat-badge-icon">
-                        <i class="bi bi-check2-circle"></i>
-                    </div>
+        <div class="payment-stat-card card-emerald">
+            <div class="stat-header">
+                <span class="stat-label text-success">TIỀN ĐÃ THU</span>
+                <div class="stat-badge-icon">
+                    <i class="bi bi-check2-circle"></i>
                 </div>
-                <div>
-                    <div class="stat-value text-success" data-counter-target="@Model.TongTienDaThu" data-is-currency="true">
-                        @Model.TongTienDaThu.ToString("N0") ₫
-                    </div>
-                    <div class="stat-hint text-success">
-                        <i class="bi bi-graph-up-arrow"></i>
-                        <span>Đạt @(Model.TongHocPhiPhaiThu > 0 ? (Model.TongTienDaThu / Model.TongHocPhiPhaiThu * 100).ToString("N1") : "0")% kế hoạch</span>
-                    </div>
+            </div>
+            <div>
+                <div class="stat-value text-success" data-counter-target="@Model.TongTienDaThu" data-is-currency="true">
+                    @Model.TongTienDaThu.ToString("N0")<span class="stat-currency">₫</span>
+                </div>
+                <div class="stat-hint text-success">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Đạt @(Model.TongHocPhiPhaiThu > 0 ? (Model.TongTienDaThu / Model.TongHocPhiPhaiThu * 100).ToString("N1") : "0")% kế hoạch</span>
                 </div>
             </div>
         </div>
 
         <!-- 3. Tổng tiền chưa thu -->
-        <div class="col-sm-6 col-xl-2">
-            <div class="payment-stat-card card-rose">
-                <div class="stat-header">
-                    <span class="stat-label text-danger">CÒN PHẢI THU</span>
-                    <div class="stat-badge-icon">
-                        <i class="bi bi-exclamation-circle"></i>
-                    </div>
+        <div class="payment-stat-card card-rose">
+            <div class="stat-header">
+                <span class="stat-label text-danger">CÒN PHẢI THU</span>
+                <div class="stat-badge-icon">
+                    <i class="bi bi-exclamation-circle"></i>
                 </div>
-                <div>
-                    <div class="stat-value text-danger" data-counter-target="@Model.TongTienChuaThu" data-is-currency="true">
-                        @Model.TongTienChuaThu.ToString("N0") ₫
-                    </div>
-                    <div class="stat-hint text-danger">
-                        <span>Công nợ chưa nộp</span>
-                    </div>
+            </div>
+            <div>
+                <div class="stat-value text-danger" data-counter-target="@Model.TongTienChuaThu" data-is-currency="true">
+                    @Model.TongTienChuaThu.ToString("N0")<span class="stat-currency">₫</span>
+                </div>
+                <div class="stat-hint text-danger">
+                    <span>Công nợ chưa nộp</span>
                 </div>
             </div>
         </div>
 
         <!-- 4. Giao dịch thành công -->
-        <div class="col-sm-6 col-xl-2">
-            <div class="payment-stat-card card-cyan">
-                <div class="stat-header">
-                    <span class="stat-label text-info">GD THÀNH CÔNG</span>
-                    <div class="stat-badge-icon">
-                        <i class="bi bi-shield-fill-check"></i>
-                    </div>
+        <div class="payment-stat-card card-cyan">
+            <div class="stat-header">
+                <span class="stat-label text-info">GD THÀNH CÔNG</span>
+                <div class="stat-badge-icon">
+                    <i class="bi bi-shield-fill-check"></i>
                 </div>
-                <div>
-                    <div class="stat-value text-dark" data-counter-target="@Model.SoGiaoDichThanhCong" data-is-currency="false">
-                        @Model.SoGiaoDichThanhCong
-                    </div>
-                    <div class="stat-hint text-success">
-                        <i class="bi bi-patch-check-fill"></i>
-                        <span>Đã khớp tiền</span>
-                    </div>
+            </div>
+            <div>
+                <div class="stat-value text-dark" data-counter-target="@Model.SoGiaoDichThanhCong" data-is-currency="false">
+                    @Model.SoGiaoDichThanhCong
+                </div>
+                <div class="stat-hint text-success">
+                    <i class="bi bi-patch-check-fill"></i>
+                    <span>Đã khớp tiền</span>
                 </div>
             </div>
         </div>
 
         <!-- 5. Giao dịch đang chờ -->
-        <div class="col-sm-6 col-xl-2">
-            <div class="payment-stat-card card-amber">
-                <div class="stat-header">
-                    <span class="stat-label text-warning-emphasis">GD ĐANG CHỜ</span>
-                    <div class="stat-badge-icon">
-                        <i class="bi bi-hourglass-split"></i>
-                    </div>
+        <div class="payment-stat-card card-amber">
+            <div class="stat-header">
+                <span class="stat-label text-warning-emphasis">GD ĐANG CHỜ</span>
+                <div class="stat-badge-icon">
+                    <i class="bi bi-hourglass-split"></i>
                 </div>
-                <div>
-                    <div class="stat-value text-dark" data-counter-target="@Model.SoGiaoDichDangCho" data-is-currency="false">
-                        @Model.SoGiaoDichDangCho
-                    </div>
-                    <div class="stat-hint text-warning-emphasis">
-                        <i class="bi bi-qr-code"></i>
-                        <span>Chờ quét VietQR</span>
-                    </div>
+            </div>
+            <div>
+                <div class="stat-value text-dark" data-counter-target="@Model.SoGiaoDichDangCho" data-is-currency="false">
+                    @Model.SoGiaoDichDangCho
+                </div>
+                <div class="stat-hint text-warning-emphasis">
+                    <i class="bi bi-qr-code"></i>
+                    <span>Chờ quét VietQR</span>
                 </div>
             </div>
         </div>
 
         <!-- 6. Giao dịch thất bại -->
-        <div class="col-sm-6 col-xl-2">
-            <div class="payment-stat-card card-purple">
-                <div class="stat-header">
-                    <span class="stat-label">GD THẤT BẠI</span>
-                    <div class="stat-badge-icon">
-                        <i class="bi bi-x-octagon"></i>
-                    </div>
+        <div class="payment-stat-card card-purple">
+            <div class="stat-header">
+                <span class="stat-label">GD THẤT BẠI</span>
+                <div class="stat-badge-icon">
+                    <i class="bi bi-x-octagon"></i>
                 </div>
-                <div>
-                    <div class="stat-value text-dark" data-counter-target="@Model.SoGiaoDichThatBai" data-is-currency="false">
-                        @Model.SoGiaoDichThatBai
-                    </div>
-                    <div class="stat-hint text-muted">
-                        <i class="bi bi-clock"></i>
-                        <span>Hết hạn / Đã hủy</span>
-                    </div>
+            </div>
+            <div>
+                <div class="stat-value text-dark" data-counter-target="@Model.SoGiaoDichThatBai" data-is-currency="false">
+                    @Model.SoGiaoDichThatBai
+                </div>
+                <div class="stat-hint text-muted">
+                    <i class="bi bi-clock"></i>
+                    <span>Hết hạn / Đã hủy</span>
                 </div>
             </div>
         </div>
@@ -300,17 +292,17 @@
                 Xem tất cả giao dịch &rarr;
             </a>
         </div>
-        <div class="table-responsive">
-            <table class="payment-table">
+        <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table class="payment-table align-middle mb-0" style="min-width: 950px; width: 100%;">
                 <thead>
                     <tr>
-                        <th>MÃ GIAO DỊCH</th>
-                        <th>SINH VIÊN</th>
-                        <th>KHOẢN THU</th>
-                        <th>SỐ TIỀN</th>
-                        <th>THỜI GIAN TẠO</th>
-                        <th>TRẠNG THÁI</th>
-                        <th class="text-end">THAO TÁC</th>
+                        <th style="width: 170px;">MÃ GIAO DỊCH</th>
+                        <th style="width: 180px;">SINH VIÊN</th>
+                        <th style="min-width: 180px;">KHOẢN THU</th>
+                        <th style="width: 130px; text-align: right;">SỐ TIỀN</th>
+                        <th style="width: 140px; text-align: center;">THỜI GIAN TẠO</th>
+                        <th style="width: 140px; text-align: center;">TRẠNG THÁI</th>
+                        <th style="width: 80px; text-align: center;">THAO TÁC</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -326,35 +318,53 @@
                     @foreach (var p in Model.RecentPayments)
                     {
                         <tr>
-                            <td class="font-monospace fw-bold text-dark">
+                            <td class="font-monospace fw-bold text-dark" style="white-space: nowrap;">
                                 @p.TransactionCode
                             </td>
-                            <td>
+                            <td style="white-space: nowrap;">
                                 <div class="fw-bold text-dark">@(p.SinhVien?.HoTen ?? "N/A")</div>
                                 <div class="text-muted font-monospace small">@(p.SinhVien?.MaSinhVien) &bull; @(p.SinhVien?.Lop?.TenLop)</div>
                             </td>
-                            <td class="text-secondary">@(p.HoaDonHocPhi?.TenKhoanThu ?? "Học phí học phần")</td>
-                            <td class="fw-bold font-monospace text-success fs-6">
-                                @p.Amount.ToString("N0") ₫
+                            <td>
+                                <div class="text-secondary" style="max-width: 250px; line-height: 1.35;">@(p.HoaDonHocPhi?.TenKhoanThu ?? "Học phí học phần")</div>
                             </td>
-                            <td class="small text-muted">
+                            <td class="fw-bold font-monospace text-success fs-6 text-end" style="white-space: nowrap;">
+                                @p.Amount.ToString("N0")&nbsp;₫
+                            </td>
+                            <td class="small text-muted text-center" style="white-space: nowrap;">
                                 @p.CreatedAt.ToString("dd/MM/yyyy HH:mm")
                             </td>
-                            <td>
-                                @if (p.Status == "PAID")
+                            <td class="text-center" style="white-space: nowrap;">
+                                @if (p.Status == "PAID" || p.Status == "SUCCESS")
                                 {
-                                    <span class="payment-pill pill-paid">Đã thanh toán</span>
+                                    <span class="payment-pill pill-paid"><i class="bi bi-check-circle-fill me-1"></i>Đã thanh toán</span>
                                 }
                                 else if (p.Status == "PENDING")
                                 {
-                                    <span class="payment-pill pill-pending">Chờ quét QR</span>
+                                    <span class="payment-pill pill-pending"><i class="bi bi-hourglass-split me-1"></i>Chờ thanh toán</span>
+                                }
+                                else if (p.Status == "PROCESSING")
+                                {
+                                    <span class="payment-pill pill-cyan"><i class="bi bi-arrow-repeat me-1"></i>Đang xử lý</span>
+                                }
+                                else if (p.Status == "EXPIRED")
+                                {
+                                    <span class="payment-pill pill-neutral"><i class="bi bi-clock-history me-1"></i>Đã hết hạn</span>
+                                }
+                                else if (p.Status == "CANCELLED")
+                                {
+                                    <span class="payment-pill pill-neutral"><i class="bi bi-slash-circle me-1"></i>Đã hủy</span>
+                                }
+                                else if (p.Status == "AMOUNT_MISMATCH")
+                                {
+                                    <span class="payment-pill pill-failed"><i class="bi bi-exclamation-triangle-fill me-1"></i>Sai số tiền</span>
                                 }
                                 else
                                 {
-                                    <span class="payment-pill pill-failed">@p.Status</span>
+                                    <span class="payment-pill pill-failed"><i class="bi bi-x-circle-fill me-1"></i>@p.Status</span>
                                 }
                             </td>
-                            <td class="text-end">
+                            <td class="text-center" style="white-space: nowrap;">
                                 <a asp-action="ChiTietGiaoDich" asp-route-id="@p.Id" class="action-icon-btn btn-vcb" title="Chi tiết giao dịch">
                                     <i class="bi bi-eye"></i>
                                 </a>
@@ -410,9 +420,20 @@
                         },
                         scales: {
                             y: {
+                                beginAtZero: true,
                                 grid: { color: '#f1f5f9' },
                                 ticks: {
-                                    callback: function(val) { return (val / 1000000).toFixed(0) + ' Tr'; }
+                                    precision: 0,
+                                    callback: function(val) {
+                                        if (val >= 1000000) {
+                                            const tr = val / 1000000;
+                                            return (val % 1000000 === 0 ? tr : tr.toFixed(1)) + ' Tr';
+                                        }
+                                        if (val > 0) {
+                                            return (val / 1000).toLocaleString('vi-VN') + ' k';
+                                        }
+                                        return '0 ₫';
+                                    }
                                 }
                             },
                             x: {
@@ -432,7 +453,7 @@
                         labels: ['Thành công', 'Đang chờ', 'Thất bại/Hết hạn'],
                         datasets: [{
                             data: [@Model.ChartTyLePaid, @Model.ChartTyLePending, @Model.ChartTyLeFailed],
-                            backgroundColor: ['#10b981', '#0ea5e9', '#ef4444'],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
                             borderWidth: 3,
                             borderColor: '#ffffff',
                             hoverOffset: 6
@@ -446,6 +467,16 @@
                             legend: {
                                 position: 'bottom',
                                 labels: { boxWidth: 12, padding: 16 }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const val = context.raw || 0;
+                                        const total = @(Model.TongSoGiaoDich > 0 ? Model.TongSoGiaoDich : 1);
+                                        const pct = ((val / total) * 100).toFixed(1);
+                                        return `${context.label}: ${val} GD (${pct}%)`;
+                                    }
+                                }
                             }
                         }
                     }
@@ -481,9 +512,20 @@
                         },
                         scales: {
                             y: {
+                                beginAtZero: true,
                                 grid: { color: '#f1f5f9' },
                                 ticks: {
-                                    callback: function(val) { return (val / 1000000).toFixed(0) + ' Tr'; }
+                                    precision: 0,
+                                    callback: function(val) {
+                                        if (val >= 1000000) {
+                                            const tr = val / 1000000;
+                                            return (val % 1000000 === 0 ? tr : tr.toFixed(1)) + ' Tr';
+                                        }
+                                        if (val > 0) {
+                                            return (val / 1000).toLocaleString('vi-VN') + ' k';
+                                        }
+                                        return '0 ₫';
+                                    }
                                 }
                             },
                             x: {
