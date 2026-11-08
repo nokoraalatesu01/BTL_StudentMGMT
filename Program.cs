@@ -35,16 +35,6 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddControllersWithViews();
 
-// Cấu hình Quốc tế hóa & Đa ngôn ngữ (Localization / i18n)
-builder.Services.AddLocalization();
-builder.Services.Configure<RequestLocalizationOptions>(options =>
-{
-    var supportedCultures = new[] { "vi-VN", "en-US" };
-    options.SetDefaultCulture("vi-VN")
-        .AddSupportedCultures(supportedCultures)
-        .AddSupportedUICultures(supportedCultures);
-});
-
 // Cấu hình Distributed Memory Cache & Session (Phục vụ lưu trữ dữ liệu phiên làm việc)
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
@@ -96,9 +86,6 @@ app.Use(async (context, next) =>
 });
 
 app.UseRouting();
-
-// Kích hoạt Middleware đa ngôn ngữ (Localization)
-app.UseRequestLocalization();
 
 // Kích hoạt Session Middleware (đặt sau UseRouting và trước UseAuthentication/UseAuthorization)
 app.UseSession();

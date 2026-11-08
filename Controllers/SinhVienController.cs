@@ -383,11 +383,33 @@ public class SinhVienController : Controller
         if (userId == null) return View("Unlinked");
 
         // LÀM VIỆC VỚI SESSION: Lưu/phục hồi học kỳ và năm học đang chọn của sinh viên
-        if (hocKyId.HasValue) HttpContext.Session.SetInt32("SV_SelectedHocKyId", hocKyId.Value);
-        if (namHocId.HasValue) HttpContext.Session.SetInt32("SV_SelectedNamHocId", namHocId.Value);
+        if (hocKyId == 0)
+        {
+            HttpContext.Session.Remove("SV_SelectedHocKyId");
+            hocKyId = null;
+        }
+        else if (hocKyId.HasValue)
+        {
+            HttpContext.Session.SetInt32("SV_SelectedHocKyId", hocKyId.Value);
+        }
+        else
+        {
+            hocKyId = HttpContext.Session.GetInt32("SV_SelectedHocKyId");
+        }
 
-        hocKyId ??= HttpContext.Session.GetInt32("SV_SelectedHocKyId");
-        namHocId ??= HttpContext.Session.GetInt32("SV_SelectedNamHocId");
+        if (namHocId == 0)
+        {
+            HttpContext.Session.Remove("SV_SelectedNamHocId");
+            namHocId = null;
+        }
+        else if (namHocId.HasValue)
+        {
+            HttpContext.Session.SetInt32("SV_SelectedNamHocId", namHocId.Value);
+        }
+        else
+        {
+            namHocId = HttpContext.Session.GetInt32("SV_SelectedNamHocId");
+        }
 
         var student = await _db.SinhViens
             .AsNoTracking()

@@ -279,6 +279,71 @@ public class QuanLyTaiKhoanController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> QuickReset(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        const string defaultPassword = "User@123";
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var result = await _userManager.ResetPasswordAsync(user, token, defaultPassword);
+        if (!result.Succeeded)
+        {
+            TempData["Error"] = $"Không thể đặt lại mật khẩu: {string.Join("; ", result.Errors.Select(e => e.Description))}";
+            return RedirectToAction(nameof(Index));
+        }
+
+        TempData["Msg"] = $"Đã đặt lại mật khẩu của tài khoản {user.UserName} về mặc định '{defaultPassword}'.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        if (user.Id == _userManager.GetUserId(User))
+        {
+            TempData["Error"] = "Không thể xóa chính tài khoản Admin đang đăng nhập.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Hủy liên kết với SinhVien hoặc GiangVien trước khi xóa tài khoản
+        var student = await _db.SinhViens.FirstOrDefaultAsync(s => s.UserId == user.Id);
+        if (student != null)
+        {
+            student.UserId = null;
+        }
+
+        var teacher = await _db.GiangViens.FirstOrDefaultAsync(g => g.UserId == user.Id);
+        if (teacher != null)
+        {
+            teacher.UserId = null;
+        }
+
+        await _db.SaveChangesAsync();
+
+        var result = await _userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+        {
+            TempData["Error"] = $"Không thể xóa tài khoản: {string.Join("; ", result.Errors.Select(e => e.Description))}";
+            return RedirectToAction(nameof(Index));
+        }
+
+        TempData["Msg"] = $"Đã xóa tài khoản {user.UserName} thành công.";
+        return RedirectToAction(nameof(Index));
+    }
+
     private async Task LoadProfileOptionsAsync(TaoTaiKhoanViewModel model)
     {
         model.LoaiHoSoOptions =

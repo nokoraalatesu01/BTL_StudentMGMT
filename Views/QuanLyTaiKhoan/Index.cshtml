@@ -106,11 +106,12 @@
         <table class="custom-table" id="tkTable">
             <thead>
                 <tr>
-                    <th style="width:180px;">TÊN ĐĂNG NHẬP</th>
+                    <th style="width:160px;">TÊN ĐĂNG NHẬP</th>
                     <th>HỌ TÊN</th>
-                    <th style="width:130px;">VAI TRÒ</th>
+                    <th style="width:120px;">VAI TRÒ</th>
                     <th>HỒ SƠ LIÊN KẾT</th>
-                    <th style="width:160px;">TRẠNG THÁI</th>
+                    <th style="width:140px;" class="text-center">TRẠNG THÁI</th>
+                    <th style="width:260px;" class="text-end pe-3">THAO TÁC</th>
                 </tr>
             </thead>
             <tbody>
@@ -129,8 +130,8 @@
                                      : account.VaiTro == "GiangVien"  ? "#0284c7"
                                      : "#7c3aed";
                     string roleLabel = account.VaiTro == "Admin"      ? "Quản trị viên"
-                                     : account.VaiTro == "GiangVien"  ? "GiangVien"
-                                     : account.VaiTro == "SinhVien"   ? "SinhVien"
+                                     : account.VaiTro == "GiangVien"  ? "Giảng viên"
+                                     : account.VaiTro == "SinhVien"   ? "Sinh viên"
                                      : account.VaiTro;
 
                     string dataStatus = account.IsLocked ? "locked" : "active";
@@ -141,11 +142,11 @@
 
                         <!-- TÊN ĐĂNG NHẬP -->
                         <td>
-                            <div style="font-weight:700; color:#1e293b; font-size:.9rem;">
+                            <div style="font-weight:700; color:#1e293b; font-size:.9rem; font-family:monospace;">
                                 @account.UserName
                                 @if (account.IsCurrentUser)
                                 {
-                                    <span style="font-size:.72rem; font-weight:600; color:#94a3b8; margin-left:4px;">(bạn)</span>
+                                    <span style="font-size:.72rem; font-weight:600; color:#2563eb; font-family:sans-serif; margin-left:4px;">(bạn)</span>
                                 }
                             </div>
                         </td>
@@ -184,35 +185,86 @@
                             }
                         </td>
 
-                        <!-- TRẠNG THÁI + THAO TÁC gộp -->
-                        <td>
-                            <div class="d-flex align-items-center justify-content-between gap-2">
+                        <!-- TRẠNG THÁI -->
+                        <td class="text-center">
+                            @if (account.IsLocked)
+                            {
+                                <span class="badge-status-dinhchi">
+                                    <span class="sv-status-dot"></span> Đã khóa
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge-status-danghoc">
+                                    <span class="sv-status-dot"></span> Đang hoạt động
+                                </span>
+                            }
+                        </td>
+
+                        <!-- THAO TÁC -->
+                        <td class="text-end text-nowrap pe-3">
+                            <!-- Đổi mật khẩu tùy chỉnh -->
+                            <a asp-action="ResetPassword" asp-route-id="@account.UserId"
+                               class="btn btn-sm d-inline-flex align-items-center gap-1"
+                               style="border:1px solid #fde68a; background:#fef3c7; color:#b45309; font-size:.76rem; font-weight:600; border-radius:6px; padding:3px 8px; margin-right:2px;"
+                               title="Nhập mật khẩu mới cho tài khoản">
+                                <i class="bi bi-key-fill"></i> Đổi MK
+                            </a>
+
+                            <!-- Reset nhanh về User@123 -->
+                            <form asp-action="QuickReset" asp-route-id="@account.UserId" method="post" class="d-inline"
+                                  onsubmit="return confirm('Đặt lại mật khẩu tài khoản @account.UserName về mặc định (User@123)?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        class="btn btn-sm d-inline-flex align-items-center gap-1"
+                                        style="border:1px solid #e2e8f0; background:#f8fafc; color:#475569; font-size:.76rem; font-weight:600; border-radius:6px; padding:3px 8px; margin-right:2px;"
+                                        title="Reset nhanh mật khẩu về User@123">
+                                    <i class="bi bi-arrow-repeat"></i> Reset 123
+                                </button>
+                            </form>
+
+                            @if (!account.IsCurrentUser)
+                            {
                                 @if (account.IsLocked)
                                 {
-                                    <span style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:6px; font-size:.78rem; font-weight:700; background:#fee2e2; color:#b91c1c;">
-                                        <span style="width:7px; height:7px; border-radius:50%; background:#ef4444; flex-shrink:0;"></span>
-                                        Đã khóa
-                                    </span>
-                                    @if (!account.IsCurrentUser)
-                                    {
-                                        <form asp-action="Unlock" asp-route-id="@account.UserId" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit"
-                                                    class="btn btn-sm"
-                                                    style="border:1px solid #bbf7d0; background:#f0fdf4; color:#16a34a; font-size:.75rem; font-weight:600; border-radius:5px; padding:3px 10px;">
-                                                Mở khóa
-                                            </button>
-                                        </form>
-                                    }
+                                    <!-- Mở khóa -->
+                                    <form asp-action="Unlock" asp-route-id="@account.UserId" method="post" class="d-inline"
+                                          onsubmit="return confirm('Mở khóa cho tài khoản @account.UserName?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit"
+                                                class="btn btn-sm d-inline-flex align-items-center gap-1"
+                                                style="border:1px solid #bbf7d0; background:#f0fdf4; color:#16a34a; font-size:.76rem; font-weight:600; border-radius:6px; padding:3px 8px; margin-right:2px;"
+                                                title="Mở khóa tài khoản">
+                                            <i class="bi bi-unlock-fill"></i> Mở
+                                        </button>
+                                    </form>
                                 }
                                 else
                                 {
-                                    <span style="display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:6px; font-size:.78rem; font-weight:700; background:#dcfce7; color:#16a34a;">
-                                        <span style="width:7px; height:7px; border-radius:50%; background:#22c55e; flex-shrink:0;"></span>
-                                        Đang hoạt động
-                                    </span>
+                                    <!-- Khóa tài khoản -->
+                                    <form asp-action="Lock" asp-route-id="@account.UserId" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn KHÓA tài khoản @account.UserName?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit"
+                                                class="btn btn-sm d-inline-flex align-items-center gap-1"
+                                                style="border:1px solid #fed7aa; background:#fff7ed; color:#ea580c; font-size:.76rem; font-weight:600; border-radius:6px; padding:3px 8px; margin-right:2px;"
+                                                title="Khóa tài khoản này">
+                                            <i class="bi bi-lock-fill"></i> Khóa
+                                        </button>
+                                    </form>
                                 }
-                            </div>
+
+                                <!-- Xóa tài khoản -->
+                                <form asp-action="Delete" asp-route-id="@account.UserId" method="post" class="d-inline"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn XÓA tài khoản @account.UserName? Hồ sơ sinh viên/giảng viên (nếu có) sẽ được hủy liên kết.');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="icon-action-btn delete"
+                                            title="Xóa tài khoản">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            }
                         </td>
                     </tr>
                 }
@@ -220,7 +272,7 @@
                 @if (Model.TaiKhoans.Count == 0)
                 {
                     <tr>
-                        <td colspan="5" class="text-center py-5" style="color:#94a3b8;">
+                        <td colspan="6" class="text-center py-5" style="color:#94a3b8;">
                             <i class="bi bi-inbox fs-2 d-block mb-2" style="color:#cbd5e1;"></i>
                             Chưa có tài khoản nào.
                         </td>
