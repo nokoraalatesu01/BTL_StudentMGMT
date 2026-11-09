@@ -151,12 +151,6 @@ namespace BTL_StudentMGMT.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "UQ_HoaDon_SV_HocKy",
-                table: "HoaDonHocPhi",
-                columns: new[] { "SinhVienId", "HocKyId" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ThanhToan_HD_TrangThai",
                 table: "ThanhToan",
                 columns: new[] { "HoaDonId", "TrangThai" });

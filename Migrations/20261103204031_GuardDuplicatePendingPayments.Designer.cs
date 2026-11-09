@@ -568,9 +568,6 @@ namespace BTL_StudentMGMT.Migrations
 
                     b.HasIndex("HocKyId");
 
-                    b.HasIndex(new[] { "SinhVienId", "HocKyId" }, "UQ_HoaDon_SV_HocKy")
-                        .IsUnique();
-
                     b.HasIndex(new[] { "SoHoaDon" }, "UQ_HoaDon_So")
                         .IsUnique();
 
