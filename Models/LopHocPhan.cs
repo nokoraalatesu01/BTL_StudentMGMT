@@ -1,8 +1,10 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BTL_StudentMGMT.Models;
 
-public class LopHocPhan
+public class LopHocPhan : IValidatableObject
 {
     public int Id { get; set; }
 
@@ -48,13 +50,28 @@ public class LopHocPhan
     [Display(Name = "Thứ trong tuần")]
     public string Thu { get; set; } = "Thứ 2"; // Thứ 2, Thứ 3, ...
 
-    [Range(1, 12, ErrorMessage = "Tiết bắt đầu từ 1 đến 12")]
+    [Range(1, 10, ErrorMessage = "Tiết bắt đầu từ 1 đến 10")]
     [Display(Name = "Tiết bắt đầu")]
     public int TietBatDau { get; set; } = 1;
 
-    [Range(1, 6, ErrorMessage = "Số tiết từ 1 đến 6")]
+    [Range(2, 2, ErrorMessage = "Số tiết phải bằng 2 (mỗi lớp học phần đúng 1 ca)")]
     [Display(Name = "Số tiết")]
-    public int SoTiet { get; set; } = 3;
+    public int SoTiet { get; set; } = 2;
+
+    [NotMapped]
+    [Required(ErrorMessage = "Vui lòng chọn ca học")]
+    [Range(1, 5, ErrorMessage = "Ca học phải từ Ca 1 đến Ca 5")]
+    [Display(Name = "Ca học")]
+    public int Ca
+    {
+        get => CaHocHelper.GetCaTuTiet(TietBatDau);
+        set
+        {
+            var (start, count) = CaHocHelper.GetTietTuCa(value);
+            TietBatDau = start;
+            SoTiet = count;
+        }
+    }
 
     [StringLength(50)]
     [Display(Name = "Phòng học")]
@@ -68,4 +85,14 @@ public class LopHocPhan
     public virtual ICollection<DangKyHocPhan> DangKyHocPhans { get; set; } = new List<DangKyHocPhan>();
     public virtual ICollection<DiemDanh> DiemDanhs { get; set; } = new List<DiemDanh>();
     public virtual ICollection<Diem> Diems { get; set; } = new List<Diem>();
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!CaHocHelper.IsSingleCa(TietBatDau, SoTiet))
+        {
+            yield return new ValidationResult(
+                "Lớp học phần phải học đúng 1 ca chuẩn (2 tiết, tiết bắt đầu thuộc {1, 3, 5, 7, 9}).",
+                new[] { nameof(TietBatDau), nameof(SoTiet) });
+        }
+    }
 }

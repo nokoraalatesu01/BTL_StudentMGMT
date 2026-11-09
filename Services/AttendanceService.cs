@@ -171,7 +171,7 @@ public class AttendanceService : IAttendanceService
             MonHocId = lhp.MonHocId,
             Thu = lhp.Thu,
             PhongHoc = lhp.PhongHoc,
-            KhungGio = $"Tiết {lhp.TietBatDau} - {lhp.TietBatDau + lhp.SoTiet - 1}",
+            KhungGio = $"{CaHocHelper.GetTenCa(CaHocHelper.GetCaTuTiet(lhp.TietBatDau))} ({CaHocHelper.GetKhungGio(lhp.TietBatDau, lhp.SoTiet)}, Tiết {lhp.TietBatDau}–{lhp.TietBatDau + lhp.SoTiet - 1})",
             NgayDiemDanh = targetDate,
             CanEdit = validation.IsValid,
             EditRestrictionReason = validation.ErrorMessage,

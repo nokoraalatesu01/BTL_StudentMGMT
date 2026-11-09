@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     color-scheme: light;
     --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     font-family: var(--font-family-base);
@@ -251,19 +251,11 @@ a {
     transition: transform 0.2s ease, color 0.2s ease;
 }
 
-.student-nav a:hover,
-.student-nav a.active {
-    border-color: rgba(255, 255, 255, .07);
+.student-nav a:hover {
+    border-color: rgba(255, 255, 255, .12);
     color: #fff;
-    background: rgba(255, 255, 255, .12);
-}
-
-.nav-symbol {
-    display: grid;
-    width: 22px;
-    place-items: center;
-    color: #a9c8e7;
-    font-size: 1.18rem;
+    background: rgba(255, 255, 255, .10);
+    transform: translateX(4px);
 }
 
 .student-sidebar-bottom {
@@ -634,17 +626,10 @@ img.student-avatar {
     border-radius: 16px;
     background: #ffffff;
     box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.24s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
-    overflow: hidden;
     opacity: 1 !important;
     visibility: visible !important;
-}
-
-.student-stat-card:hover {
-    transform: translateY(-3px);
-    border-color: #cbd5e1;
-    box-shadow: 0 10px 20px -3px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
 }
 
 /* Thẻ Mã sinh viên - Nhấn mạnh nhận diện */
@@ -652,11 +637,6 @@ img.student-avatar {
     background: #ffffff;
     border-color: #bfdbfe;
     box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
-}
-
-.stat-card-masv:hover {
-    border-color: #93c5fd;
-    box-shadow: 0 10px 22px -3px rgba(37, 99, 235, 0.14);
 }
 
 .stat-value-masv {
@@ -671,11 +651,6 @@ img.student-avatar {
     background: #ffffff;
     border-color: #fed7aa;
     box-shadow: 0 4px 14px rgba(234, 88, 12, 0.08);
-}
-
-.stat-card-gpa:hover {
-    border-color: #fdba74;
-    box-shadow: 0 10px 22px -3px rgba(234, 88, 12, 0.14);
 }
 
 .stat-value-gpa {
@@ -795,12 +770,7 @@ img.student-avatar {
     background: #ffffff;
     box-shadow: 0 4px 20px rgba(12, 35, 64, 0.035);
     padding: 24px 28px;
-    transition: box-shadow 0.25s ease, border-color 0.25s ease;
-}
-
-.student-panel:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 10px 28px rgba(12, 35, 64, 0.06);
+    transition: box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .student-panel-heading {

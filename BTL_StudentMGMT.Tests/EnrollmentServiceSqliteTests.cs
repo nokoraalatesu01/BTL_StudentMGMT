@@ -138,7 +138,7 @@ public class EnrollmentServiceSqliteTests : IDisposable
             TrangThai = "OPEN",
             Thu = "Thứ 2",
             TietBatDau = 1,
-            SoTiet = 3
+            SoTiet = 2
         };
         db.LopHocPhans.Add(lhp1);
 
@@ -153,7 +153,7 @@ public class EnrollmentServiceSqliteTests : IDisposable
             TrangThai = "OPEN",
             Thu = "Thứ 4",
             TietBatDau = 1,
-            SoTiet = 3
+            SoTiet = 2
         };
         db.LopHocPhans.Add(lhp2);
 
