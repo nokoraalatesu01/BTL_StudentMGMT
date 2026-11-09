@@ -493,3 +493,85 @@ input[type="password"]::-ms-clear {
     border-color: #6c757d !important;
     box-shadow: 0 2px 6px rgba(108, 117, 125, 0.28) !important;
 }
+
+
+/* ==========================================================================
+   UI/UX PRO MAX DESIGN SYSTEM UPGRADE FOR SITE.CSS
+   ========================================================================== */
+.main-navbar {
+  background: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05) !important;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+.brand-badge-icon {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.navbar-brand:hover .brand-badge-icon {
+  transform: rotate(-6deg) scale(1.08);
+}
+
+.nav-link {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.nav-link:hover {
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
+  transform: translateY(-1px);
+}
+
+.nav-link.active {
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
+  font-weight: 700;
+}
+
+.user-profile-pill {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 5px 12px 5px 6px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.user-profile-pill:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.avatar-circle-sm {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* Footer Modernization */
+footer {
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+  font-size: 0.85rem;
+  letter-spacing: 0.01em;
+}

@@ -109,59 +109,112 @@
         if (window.gsap) {
             var mm = gsap.matchMedia();
 
+            // Selector tập hợp các phần tử tham gia intro animation
+            var animTargets = '.student-topbar, .student-welcome, .student-page-heading, .student-stat-card, .stat-card, .student-panel, .content-card, .chart-card, .student-table tbody tr, .custom-table tbody tr';
+
+            function clearAnimatedProps() {
+                try {
+                    gsap.set(animTargets, { clearProps: "transform,opacity,visibility" });
+                } catch (e) { }
+            }
+
+            mm.add("(prefers-reduced-motion: reduce)", function () {
+                clearAnimatedProps();
+            });
+
             mm.add("(prefers-reduced-motion: no-preference)", function () {
-                // Timeline mở màn trang Dashboard
-                var tl = gsap.timeline({
-                    defaults: { duration: 0.55, ease: "power3.out" }
-                });
+                var tl = null;
+                var statCards = gsap.utils.toArray('.student-stat-card, .stat-card');
 
-                // Topbar & Welcome
-                if (document.querySelector('.student-topbar')) {
-                    tl.from('.student-topbar', { y: -15, autoAlpha: 0, duration: 0.45 }, 0);
+                try {
+                    // Timeline mở màn trang Dashboard
+                    tl = gsap.timeline({
+                        defaults: { duration: 0.55, ease: "power3.out" },
+                        onComplete: function () {
+                            clearAnimatedProps();
+                        }
+                    });
+
+                    // Topbar & Welcome
+                    if (document.querySelector('.student-topbar')) {
+                        tl.from('.student-topbar', { y: -15, autoAlpha: 0, duration: 0.45, clearProps: "transform,opacity,visibility" }, 0);
+                    }
+
+                    if (document.querySelector('.student-welcome')) {
+                        tl.from('.student-welcome', { y: -20, autoAlpha: 0, duration: 0.6, clearProps: "transform,opacity,visibility" }, 0.1);
+                    }
+
+                    if (document.querySelector('.student-page-heading')) {
+                        tl.from('.student-page-heading', { y: -20, autoAlpha: 0, duration: 0.55, clearProps: "transform,opacity,visibility" }, 0.1);
+                    }
+
+                    // Staggered Stat Cards
+                    if (statCards.length > 0) {
+                        tl.from(statCards, {
+                            y: 16,
+                            duration: 0.45,
+                            stagger: 0.06,
+                            ease: "power2.out",
+                            clearProps: "transform,opacity,visibility"
+                        }, 0.2);
+                    }
+
+                    // Staggered Panels
+                    var panels = gsap.utils.toArray('.student-panel, .content-card, .chart-card');
+                    if (panels.length > 0) {
+                        tl.from(panels, {
+                            y: 20,
+                            duration: 0.5,
+                            stagger: 0.1,
+                            ease: "power2.out",
+                            clearProps: "transform,opacity,visibility"
+                        }, 0.35);
+                    }
+
+                    // Table rows stagger
+                    var rows = gsap.utils.toArray('.student-table tbody tr, .custom-table tbody tr');
+                    if (rows.length > 0) {
+                        tl.from(rows, {
+                            y: 15,
+                            autoAlpha: 0,
+                            duration: 0.35,
+                            stagger: 0.03,
+                            ease: "power1.out",
+                            clearProps: "transform,opacity,visibility"
+                        }, 0.45);
+                    }
+                } catch (err) {
+                    clearAnimatedProps();
                 }
 
-                if (document.querySelector('.student-welcome')) {
-                    tl.from('.student-welcome', { y: -20, autoAlpha: 0, duration: 0.6 }, 0.1);
-                }
+                // Cơ chế chống kẹt:
+                // (i) lắng nghe visibilitychange: khi trang hiển thị lại mà timeline chưa xong thì tl.progress(1) và xóa props
+                var onVisibilityChange = function () {
+                    if (!document.hidden && tl && tl.progress() < 1) {
+                        tl.progress(1);
+                        clearAnimatedProps();
+                    }
+                };
+                document.addEventListener('visibilitychange', onVisibilityChange);
 
-                if (document.querySelector('.student-page-heading')) {
-                    tl.from('.student-page-heading', { y: -20, autoAlpha: 0, duration: 0.55 }, 0.1);
-                }
+                // (ii) lắng nghe pageshow với event.persisted để đưa các phần tử về trạng thái cuối
+                var onPageShow = function (event) {
+                    if (event.persisted) {
+                        if (tl && tl.progress() < 1) {
+                            tl.progress(1);
+                        }
+                        clearAnimatedProps();
+                    }
+                };
+                window.addEventListener('pageshow', onPageShow);
 
-                // Staggered Stat Cards - Đảm bảo thẻ luôn rõ nét 100%, không bị kẹt độ mờ
-                var statCards = gsap.utils.toArray('.student-stat-card');
-                if (statCards.length > 0) {
-                    gsap.set(statCards, { clearProps: "opacity,visibility" });
-                    tl.from(statCards, {
-                        y: 16,
-                        duration: 0.45,
-                        stagger: 0.06,
-                        ease: "power2.out"
-                    }, 0.2);
-                }
-
-                // Staggered Panels
-                var panels = gsap.utils.toArray('.student-panel');
-                if (panels.length > 0) {
-                    tl.from(panels, {
-                        y: 20,
-                        duration: 0.5,
-                        stagger: 0.1,
-                        ease: "power2.out"
-                    }, 0.35);
-                }
-
-                // Table rows stagger
-                var rows = gsap.utils.toArray('.student-table tbody tr');
-                if (rows.length > 0) {
-                    tl.from(rows, {
-                        y: 15,
-                        autoAlpha: 0,
-                        duration: 0.35,
-                        stagger: 0.03,
-                        ease: "power1.out"
-                    }, 0.45);
-                }
+                // (iii) setTimeout an toàn khoảng 2 giây sau khi khởi tạo để ép tl.progress(1) nếu chưa xong
+                var safeTimer = setTimeout(function () {
+                    if (tl && tl.progress() < 1) {
+                        tl.progress(1);
+                        clearAnimatedProps();
+                    }
+                }, 2000);
 
                 // Animated Number Counter cho GPA (chỉ khi có element riêng và là số thuần túy)
                 statCards.forEach(function (card) {
@@ -224,6 +277,12 @@
                         gsap.to(logoWrap, { rotation: 0, duration: 0.4, ease: "power2.out" });
                     });
                 }
+
+                return function () {
+                    document.removeEventListener('visibilitychange', onVisibilityChange);
+                    window.removeEventListener('pageshow', onPageShow);
+                    clearTimeout(safeTimer);
+                };
             });
         }
     }

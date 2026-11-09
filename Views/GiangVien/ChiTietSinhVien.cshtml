@@ -51,19 +51,19 @@
             </div>
             <div>
                 <dt>Giới tính</dt>
-                <dd>@(Model.GioiTinh ?? "Chưa cập nhật")</dd>
+                <dd>@DisplayOr(Model.GioiTinh)</dd>
             </div>
             <div>
                 <dt>Email</dt>
-                <dd>@(Model.Email ?? "Chưa cập nhật")</dd>
+                <dd>@DisplayOr(Model.Email)</dd>
             </div>
             <div>
                 <dt>Số điện thoại</dt>
-                <dd>@(Model.SoDienThoai ?? "Chưa cập nhật")</dd>
+                <dd>@DisplayOr(Model.SoDienThoai)</dd>
             </div>
             <div>
                 <dt>Địa chỉ</dt>
-                <dd>@(Model.DiaChi ?? "Chưa cập nhật")</dd>
+                <dd>@DisplayOr(Model.DiaChi)</dd>
             </div>
         </dl>
     </div>
@@ -77,23 +77,23 @@
             </div>
             <div>
                 <dt>Ngành</dt>
-                <dd>@(Model.Lop?.Nganh?.TenNganh ?? "Chưa xác định")</dd>
+                <dd>@DisplayOr(Model.Lop?.Nganh?.TenNganh)</dd>
             </div>
             <div>
                 <dt>Mã ngành</dt>
-                <dd>@(Model.Lop?.Nganh?.MaNganh ?? "Chưa xác định")</dd>
+                <dd>@DisplayOr(Model.Lop?.Nganh?.MaNganh)</dd>
             </div>
             <div>
                 <dt>Khoa</dt>
-                <dd>@(Model.Lop?.Nganh?.TenKhoa ?? "Chưa xác định")</dd>
+                <dd>@DisplayOr(Model.Lop?.Nganh?.TenKhoa)</dd>
             </div>
             <div>
                 <dt>Khóa / Năm nhập học</dt>
-                <dd>@(Model.NienKhoa ?? "Chưa cập nhật")</dd>
+                <dd>@DisplayOr(Model.NienKhoa)</dd>
             </div>
             <div>
                 <dt>Trạng thái học tập</dt>
-                <dd>@(Model.TrangThai ?? "Chưa cập nhật")</dd>
+                <dd>@DisplayOr(Model.TrangThai)</dd>
             </div>
             <div>
                 <dt>GPA (Hệ 10)</dt>
