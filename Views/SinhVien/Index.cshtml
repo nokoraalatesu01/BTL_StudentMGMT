@@ -41,7 +41,7 @@
         <span class="student-stat-icon student-icon-violet" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
         <div>
             <p>NGÀNH ĐÀO TẠO</p>
-            <strong>@(Model.TenNganh ?? "Chưa xác định")</strong>
+            <strong>@DisplayOr(Model.TenNganh, "Chưa cập nhật")</strong>
         </div>
     </article>
     <article class="student-stat-card stat-card-gpa">
@@ -74,11 +74,11 @@
             </div>
             <div>
                 <dt>Email</dt>
-                <dd>@(Model.Email ?? "Chưa cập nhật")</dd>
+                <dd>@DisplayOr(Model.Email)</dd>
             </div>
             <div>
                 <dt>Số điện thoại</dt>
-                <dd>@(Model.SoDienThoai ?? "Chưa cập nhật")</dd>
+                <dd>@DisplayOr(Model.SoDienThoai)</dd>
             </div>
             <div>
                 <dt>Xếp loại</dt>
@@ -116,15 +116,15 @@
                 </div>
                 <div>
                     <dt>Ngành</dt>
-                    <dd>@(Model.TenNganh ?? "Chưa cập nhật")</dd>
+                    <dd>@DisplayOr(Model.TenNganh)</dd>
                 </div>
                 <div>
                     <dt>Mã ngành</dt>
-                    <dd>@(Model.MaNganh ?? "Chưa cập nhật")</dd>
+                    <dd>@DisplayOr(Model.MaNganh)</dd>
                 </div>
                 <div>
                     <dt>Khoa</dt>
-                    <dd>@(Model.TenKhoa ?? "Chưa cập nhật")</dd>
+                    <dd>@DisplayOr(Model.TenKhoa)</dd>
                 </div>
                 <div>
                     <dt>Sĩ số lớp</dt>

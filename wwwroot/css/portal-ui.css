@@ -858,3 +858,237 @@ select.form-select option:checked {
     background: #e2e8f0 !important;
 }
 
+
+
+/* ==========================================================================
+   UI/UX PRO MAX DESIGN SYSTEM ENHANCEMENTS (SWISS MODERNISM 2.0 & ACCESSIBILITY)
+   ========================================================================== */
+
+:root {
+    --pu-blue:          #2563eb;
+    --pu-blue-hover:    #1d4ed8;
+    --pu-navy:          #0f172a;
+    --pu-navy-accent:   #1e3a8a;
+    --pu-blue-light:    #eff6ff;
+    --pu-blue-subtle:   rgba(37, 99, 235, 0.08);
+
+    --pu-bg-app:        #f8fafc;
+    --pu-bg-card:       #ffffff;
+    --pu-bg-card-hover: #fcfdfe;
+    
+    --pu-border:        #e2e8f0;
+    --pu-border-mid:    #cbd5e1;
+    --pu-border-dark:   #94a3b8;
+
+    --pu-shadow-xs:     0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --pu-shadow-sm:     0 2px 8px -1px rgba(15, 23, 42, 0.06);
+    --pu-shadow-md:     0 10px 25px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+    --pu-shadow-lg:     0 20px 30px -10px rgba(15, 23, 42, 0.12);
+    --pu-shadow-glow:   0 0 0 3px rgba(37, 99, 235, 0.2);
+
+    --pu-radius-xs:     6px;
+    --pu-radius-sm:     8px;
+    --pu-radius-md:     12px;
+    --pu-radius-lg:     16px;
+    --pu-radius-full:   9999px;
+
+    --pu-ease:          cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Global Focus Ring for Keyboard Accessibility (WCAG AA) */
+*:focus-visible {
+    outline: 2px solid var(--pu-blue) !important;
+    outline-offset: 2px !important;
+}
+
+/* Glass Acrylic Header Effect */
+.glass-header,
+.main-navbar,
+.student-topbar {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+/* Elevated Content Cards */
+.content-card,
+.card-module,
+.student-panel {
+    background: var(--pu-bg-card);
+    border: 1px solid var(--pu-border) !important;
+    border-radius: var(--pu-radius-lg) !important;
+    box-shadow: var(--pu-shadow-sm);
+    transition: box-shadow 0.25s var(--pu-ease), border-color 0.25s var(--pu-ease), transform 0.25s var(--pu-ease);
+}
+
+.content-card:hover,
+.card-module:hover,
+.student-panel:hover {
+    border-color: var(--pu-border-mid) !important;
+}
+
+/* Stat Cards: Swiss Modernism with Top Accent & Smooth Hover */
+.stat-card,
+.student-stat-card {
+    background: var(--pu-bg-card) !important;
+    border: 1px solid var(--pu-border) !important;
+    border-radius: var(--pu-radius-md) !important;
+    box-shadow: var(--pu-shadow-sm) !important;
+    transition: transform 0.24s var(--pu-ease), box-shadow 0.24s var(--pu-ease), border-color 0.24s var(--pu-ease) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after,
+.student-stat-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--pu-blue), #38bdf8);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+}
+
+.stat-card:hover,
+.student-stat-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: var(--pu-shadow-md) !important;
+    border-color: var(--pu-border-mid) !important;
+}
+
+.stat-card:hover::after,
+.student-stat-card:hover::after {
+    opacity: 1;
+}
+
+.stat-ico,
+.student-stat-icon {
+    border-radius: var(--pu-radius-md) !important;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.stat-card:hover .stat-ico,
+.student-stat-card:hover .student-stat-icon {
+    transform: scale(1.1);
+}
+
+/* Refined Academic Data Tables */
+.custom-table-container,
+.student-table-wrap {
+    border: 1px solid var(--pu-border) !important;
+    border-radius: var(--pu-radius-lg) !important;
+    box-shadow: var(--pu-shadow-sm) !important;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.custom-table thead th,
+.student-table thead th {
+    background: #f8fafc !important;
+    color: var(--pu-text-muted) !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    border-bottom: 1px solid var(--pu-border) !important;
+    padding: 0.85rem 1.15rem !important;
+    white-space: nowrap;
+}
+
+.custom-table tbody tr,
+.student-table tbody tr {
+    transition: background-color 0.16s ease !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.custom-table tbody tr:hover,
+.student-table tbody tr:hover {
+    background-color: var(--pu-blue-subtle) !important;
+}
+
+.custom-table tbody td,
+.student-table tbody td {
+    padding: 0.9rem 1.15rem !important;
+    font-size: 0.875rem !important;
+    color: var(--pu-text-body) !important;
+    vertical-align: middle;
+}
+
+/* Polished Form Inputs & Controls */
+.form-control,
+.form-select {
+    border: 1px solid var(--pu-border-mid) !important;
+    border-radius: var(--pu-radius-sm) !important;
+    color: var(--pu-text-body) !important;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--pu-blue) !important;
+    box-shadow: var(--pu-shadow-glow) !important;
+    outline: none !important;
+}
+
+/* Button Micro-interactions (Instant feedback without layout shift) */
+.btn {
+    transition: transform 0.15s var(--pu-ease), box-shadow 0.15s var(--pu-ease), background-color 0.15s ease !important;
+}
+
+.btn:active {
+    transform: scale(0.97) !important;
+}
+
+.btn-primary-blue,
+.btn-primary {
+    background: var(--pu-blue) !important;
+    border-color: var(--pu-blue) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary-blue:hover,
+.btn-primary:hover {
+    background: var(--pu-blue-hover) !important;
+    border-color: var(--pu-blue-hover) !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+/* Action Icon Buttons */
+.icon-action-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--pu-radius-sm) !important;
+    transition: all 0.18s var(--pu-ease) !important;
+}
+
+.icon-action-btn:hover {
+    background: #f1f5f9 !important;
+    transform: translateY(-1px);
+}
+
+.icon-action-btn:active {
+    transform: scale(0.92);
+}
+
+/* Modern Soft Badges */
+.badge-soft {
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--pu-radius-full);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.badge-soft-success { background: var(--pu-green-light); color: var(--pu-green); }
+.badge-soft-warning { background: var(--pu-amber-light); color: var(--pu-amber); }
+.badge-soft-danger  { background: var(--pu-red-light);   color: var(--pu-red); }
+.badge-soft-info    { background: var(--pu-cyan-light);  color: var(--pu-cyan); }
+.badge-soft-primary { background: var(--pu-blue-light);  color: var(--pu-blue); }
