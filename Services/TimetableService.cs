@@ -378,8 +378,18 @@ public class TimetableService : ITimetableService
         var tietKetThuc = lhp.TietBatDau + lhp.SoTiet - 1;
         var khungGio = CaHocHelper.GetKhungGio(lhp.TietBatDau, lhp.SoTiet);
         var cacCa = CaHocHelper.GetCacCaGiaoNhau(lhp.TietBatDau, tietKetThuc);
-        var caGoc = cacCa.Count > 0 ? cacCa.Min() : 1;
+        var caGoc = cacCa.Count > 0 ? cacCa.Min() : CaHocHelper.GetCaTuTiet(lhp.TietBatDau);
         var (code, text, badge) = CaHocHelper.GetSessionStatus(ngayHoc, lhp.TietBatDau, lhp.SoTiet, lhp.TrangThai);
+
+        int startCa = CaHocHelper.GetCaTuTiet(lhp.TietBatDau);
+        int endCa = CaHocHelper.GetCaTuTiet(tietKetThuc);
+        int spanCount = Math.Max(1, endCa - startCa + 1);
+        string tenCaHienThi = spanCount > 1
+            ? $"{CaHocHelper.GetTenCa(startCa)} – {CaHocHelper.GetTenCa(endCa)}"
+            : CaHocHelper.GetTenCa(startCa);
+        string? ghiChuGiaiLao = spanCount > 1
+            ? CaHocHelper.DanhSachCa.FirstOrDefault(c => c.Ca == startCa)?.GiaiLaoSauCa
+            : null;
 
         var card = new ThoiKhoaBieuCardViewModel
         {
@@ -401,10 +411,12 @@ public class TimetableService : ITimetableService
             SoTiet = lhp.SoTiet,
             KhungGio = khungGio,
             PhongHoc = lhp.PhongHoc ?? "Chưa xếp phòng",
-            CaHoc = caGoc,
-            TenCaHoc = CaHocHelper.GetTenCa(caGoc),
-            CaHocGoc = caGoc,
-            LaCaKeoDai = false,
+            CaHoc = startCa,
+            TenCaHoc = tenCaHienThi,
+            CaHocGoc = startCa,
+            LaCaKeoDai = spanCount > 1,
+            RowSpan = spanCount,
+            GhiChuGiaiLao = ghiChuGiaiLao,
             StatusCode = code,
             StatusText = text,
             BadgeClass = badge,
@@ -613,13 +625,13 @@ public class TimetableService : ITimetableService
         bool isLecturer,
         int? currentStudentId)
     {
-        // 1. Khởi tạo ma trận rỗng cho 4 ca x 7 thứ
+        // 1. Khởi tạo ma trận rỗng cho các ca x 7 thứ
         var maTranTuan = new Dictionary<string, ThoiKhoaBieuCellViewModel>(StringComparer.OrdinalIgnoreCase);
         var maTranCu = new Dictionary<string, List<ThoiKhoaBieuCardViewModel>>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var c in cacThuConfig)
         {
-            for (int ca = 1; ca <= 4; ca++)
+            for (int ca = 1; ca <= CaHocHelper.DanhSachCa.Count; ca++)
             {
                 var key = $"{c.Thu}_Ca{ca}";
                 maTranTuan[key] = new ThoiKhoaBieuCellViewModel
@@ -655,36 +667,23 @@ public class TimetableService : ITimetableService
             var tietKetThuc = lhp.TietBatDau + lhp.SoTiet - 1;
             var khungGio = CaHocHelper.GetKhungGio(lhp.TietBatDau, lhp.SoTiet);
 
-            // Xác định ca bắt đầu (startCa) và ca kết thúc (endCa) theo chuẩn đào tạo UTC:
-            // Ca 1: Tiết 1-2; Ca 2: Tiết 3-4; Ca 3: Tiết 5-6; Ca 4: Tiết 7-8
-            int startCa;
-            if (lhp.TietBatDau <= 2) startCa = 1;
-            else if (lhp.TietBatDau <= 4) startCa = 2;
-            else if (lhp.TietBatDau <= 6) startCa = 3;
-            else startCa = 4;
+            // Xác định ca bắt đầu (startCa) và ca kết thúc (endCa) theo chuẩn đào tạo UTC
+            int startCa = CaHocHelper.GetCaTuTiet(lhp.TietBatDau);
+            int endCa = CaHocHelper.GetCaTuTiet(tietKetThuc);
 
-            int endCa;
-            if (tietKetThuc <= 2) endCa = 1;
-            else if (tietKetThuc <= 4) endCa = 2;
-            else if (tietKetThuc <= 6) endCa = 3;
-            else endCa = 4;
-
-            // Xử lý các buổi học kéo dài qua nhiều ca (ví dụ Tiết 1-4 là Ca 12 & Ca 34, Tiết 5-8 là Ca 56 & Ca 78)
-            int spanCount = 1;
+            // Xử lý các buổi học kéo dài qua nhiều ca
+            int spanCount = Math.Max(1, endCa - startCa + 1);
             string? ghiChuGiaiLao = null;
-            string tenCaHienThi = CaHocHelper.GetTenCa(startCa);
+            string tenCaHienThi;
 
-            if (startCa == 1 && endCa >= 2)
+            if (spanCount > 1)
             {
-                spanCount = 2;
-                tenCaHienThi = "Ca 12 – 34";
-                ghiChuGiaiLao = "Nghỉ giải lao: 09:30 – 09:35";
+                tenCaHienThi = $"{CaHocHelper.GetTenCa(startCa)} – {CaHocHelper.GetTenCa(endCa)}";
+                ghiChuGiaiLao = CaHocHelper.DanhSachCa.FirstOrDefault(c => c.Ca == startCa)?.GiaiLaoSauCa;
             }
-            else if (startCa == 3 && endCa >= 4)
+            else
             {
-                spanCount = 2;
-                tenCaHienThi = "Ca 56 – 78";
-                ghiChuGiaiLao = "Nghỉ giải lao: 15:10 – 15:35";
+                tenCaHienThi = CaHocHelper.GetTenCa(startCa);
             }
 
             var isConflict = trungLichIds.Contains(lhp.Id);
@@ -792,7 +791,7 @@ public class TimetableService : ITimetableService
         foreach (var ngayObj in cacThuConfig)
         {
             var totalCount = 0;
-            for (int ca = 1; ca <= 4; ca++)
+            for (int ca = 1; ca <= CaHocHelper.DanhSachCa.Count; ca++)
             {
                 var key = $"{ngayObj.Thu}_Ca{ca}";
                 if (maTranTuan.ContainsKey(key) && !maTranTuan[key].IsCoveredByRowSpan)
@@ -924,8 +923,12 @@ public class TimetableService : ITimetableService
             {
                 var tietKetThuc = lhp.TietBatDau + lhp.SoTiet - 1;
                 var khungGio = CaHocHelper.GetKhungGio(lhp.TietBatDau, lhp.SoTiet);
-                var cacCa = CaHocHelper.GetCacCaGiaoNhau(lhp.TietBatDau, tietKetThuc);
-                var caGoc = cacCa.Count > 0 ? cacCa.Min() : 1;
+                int startCa = CaHocHelper.GetCaTuTiet(lhp.TietBatDau);
+                int endCa = CaHocHelper.GetCaTuTiet(tietKetThuc);
+                int spanCount = Math.Max(1, endCa - startCa + 1);
+                string tenCaHienThi = spanCount > 1
+                    ? $"{CaHocHelper.GetTenCa(startCa)} – {CaHocHelper.GetTenCa(endCa)}"
+                    : CaHocHelper.GetTenCa(startCa);
                 var (statusCode, statusText, badgeClass) = CaHocHelper.GetSessionStatus(d, lhp.TietBatDau, lhp.SoTiet, lhp.TrangThai);
 
                 dayObj.DanhSachBuoiHoc.Add(new ThoiKhoaBieuCardViewModel
@@ -946,8 +949,11 @@ public class TimetableService : ITimetableService
                     SoTiet = lhp.SoTiet,
                     KhungGio = khungGio,
                     PhongHoc = lhp.PhongHoc ?? "Chưa xếp phòng",
-                    CaHoc = caGoc,
-                    TenCaHoc = CaHocHelper.GetTenCa(caGoc),
+                    CaHoc = startCa,
+                    TenCaHoc = tenCaHienThi,
+                    CaHocGoc = startCa,
+                    LaCaKeoDai = spanCount > 1,
+                    RowSpan = spanCount,
                     StatusCode = statusCode,
                     StatusText = statusText,
                     BadgeClass = badgeClass,

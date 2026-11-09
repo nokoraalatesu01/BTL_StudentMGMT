@@ -94,12 +94,13 @@ public class EnrollmentService : IEnrollmentService
             .Select(dk => dk.LopHocPhan)
             .ToListAsync(cancellationToken);
 
-        var tietKetThuc = lhp.TietBatDau + lhp.SoTiet - 1;
         var trungLich = currentEnrollments.FirstOrDefault(other => ScheduleConflict.Overlaps(lhp, other));
         if (trungLich != null)
         {
+            var caTen = CaHocHelper.GetTenCa(CaHocHelper.GetCaTuTiet(lhp.TietBatDau));
+            var khungGio = CaHocHelper.GetKhungGio(lhp.TietBatDau, lhp.SoTiet);
             return EnrollResult.Fail(EnrollmentErrorCode.ScheduleConflict,
-                $"Trùng lịch học: Lớp này học vào {lhp.Thu} (tiết {lhp.TietBatDau}-{tietKetThuc}), trùng với môn '{trungLich.TenLopHocPhan}'.");
+                $"Trùng lịch học: Lớp này học vào {lhp.Thu}, {caTen} ({khungGio}), trùng với môn '{trungLich.TenLopHocPhan}'.");
         }
 
         // 4. Mở Transaction và Khóa dòng LopHocPhan (L9)

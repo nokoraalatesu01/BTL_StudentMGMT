@@ -130,6 +130,18 @@
                         </h6>
                     </div>
 
+                    @if (isEdit && (Model.Ca == null || !CaHocHelper.IsSingleCa(Model.TietBatDau, Model.SoTiet)))
+                    {
+                        <div class="col-12">
+                            <div class="alert alert-warning py-2 px-3 mb-2 d-flex align-items-center gap-2 rounded-3 border-warning">
+                                <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+                                <div>
+                                    <strong>Lịch cũ không theo ca:</strong> Lớp học này đang lưu <em>@Model.Thu, Tiết @Model.TietBatDau – @(Model.TietBatDau + Model.SoTiet - 1) (@Model.SoTiet tiết)</em>. Lịch cũ không theo ca, vui lòng chọn lại ca.
+                                </div>
+                            </div>
+                        </div>
+                    }
+
                     <div class="col-md-3">
                         <label asp-for="Thu" class="form-label small fw-semibold text-secondary">Thứ trong tuần *</label>
                         <div class="input-group">
@@ -145,31 +157,27 @@
                                 <option value="Thứ 7">Thứ 7</option>
                             </select>
                         </div>
+                        <span asp-validation-for="Thu" class="text-danger small"></span>
                     </div>
 
-                    <div class="col-md-3">
-                        <label asp-for="TietBatDau" class="form-label small fw-semibold text-secondary">Tiết bắt đầu (1-12) *</label>
+                    <div class="col-md-5">
+                        <label asp-for="Ca" class="form-label small fw-semibold text-secondary">Ca học (Quy chuẩn 1 ca/lớp) *</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0 text-muted">
                                 <i class="bi bi-clock"></i>
                             </span>
-                            <input asp-for="TietBatDau" type="number" class="form-control border-start-0 ps-0" min="1" max="12" />
+                            <select asp-for="Ca" class="form-select border-start-0 ps-0">
+                                <option value="">-- Chọn ca học --</option>
+                                @foreach (var ca in CaHocHelper.DanhSachCa)
+                                {
+                                    <option value="@ca.Ca">@ca.TenCa (@ca.KhungGio, @ca.MoTaTiet)</option>
+                                }
+                            </select>
                         </div>
-                        <span asp-validation-for="TietBatDau" class="text-danger small"></span>
+                        <span asp-validation-for="Ca" class="text-danger small"></span>
                     </div>
 
-                    <div class="col-md-3">
-                        <label asp-for="SoTiet" class="form-label small fw-semibold text-secondary">Số tiết học *</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0 text-muted">
-                                <i class="bi bi-hourglass-split"></i>
-                            </span>
-                            <input asp-for="SoTiet" type="number" class="form-control border-start-0 ps-0" min="1" max="6" />
-                        </div>
-                        <span asp-validation-for="SoTiet" class="text-danger small"></span>
-                    </div>
-
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label asp-for="PhongHoc" class="form-label small fw-semibold text-secondary">Phòng học *</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0 text-muted">

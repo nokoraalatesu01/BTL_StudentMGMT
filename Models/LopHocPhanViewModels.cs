@@ -43,13 +43,18 @@ public class LopHocPhanFormViewModel
     [Display(Name = "Thứ")]
     public string Thu { get; set; } = "Thứ 2";
 
-    [Range(1, 12, ErrorMessage = "Tiết bắt đầu từ 1 đến 12")]
+    [Required(ErrorMessage = "Vui lòng chọn ca học")]
+    [Range(1, 5, ErrorMessage = "Ca học phải từ Ca 1 đến Ca 5")]
+    [Display(Name = "Ca học")]
+    public int? Ca { get; set; } = 1;
+
+    [Range(1, 10, ErrorMessage = "Tiết bắt đầu từ 1 đến 10")]
     [Display(Name = "Tiết bắt đầu")]
     public int TietBatDau { get; set; } = 1;
 
-    [Range(1, 6, ErrorMessage = "Số tiết từ 1 đến 6")]
+    [Range(2, 2, ErrorMessage = "Số tiết phải bằng 2 (mỗi lớp học phần đúng 1 ca)")]
     [Display(Name = "Số tiết")]
-    public int SoTiet { get; set; } = 3;
+    public int SoTiet { get; set; } = 2;
 
     [StringLength(50)]
     [Display(Name = "Phòng học")]

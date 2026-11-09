@@ -363,7 +363,7 @@ END CATCH;
                         LopId = lop1.Id,
                         Thu = "Thứ 2",
                         TietBatDau = 1,
-                        SoTiet = 3,
+                        SoTiet = 2,
                         PhongHoc = "P.302-A1",
                         GhiChu = "Lý thuyết & Thảo luận",
                         HocKy = "Học kỳ 1 (2026 - 2027)"
@@ -375,7 +375,7 @@ END CATCH;
                         LopId = lop2 != null ? lop2.Id : lop1.Id,
                         Thu = "Thứ 3",
                         TietBatDau = 7,
-                        SoTiet = 4,
+                        SoTiet = 2,
                         PhongHoc = "Lab 4-B2",
                         GhiChu = "Thực hành trên máy tính",
                         HocKy = "Học kỳ 1 (2026 - 2027)"
@@ -386,8 +386,8 @@ END CATCH;
                         MonHocId = mSql != null ? mSql.Id : mWeb.Id,
                         LopId = lop1.Id,
                         Thu = "Thứ 5",
-                        TietBatDau = 2,
-                        SoTiet = 3,
+                        TietBatDau = 3,
+                        SoTiet = 2,
                         PhongHoc = "P.205-A2",
                         GhiChu = "Bài giảng môn chuyên ngành",
                         HocKy = "Học kỳ 1 (2026 - 2027)"
@@ -398,8 +398,8 @@ END CATCH;
                         MonHocId = mWeb.Id,
                         LopId = lop2 != null ? lop2.Id : lop1.Id,
                         Thu = "Thứ 6",
-                        TietBatDau = 6,
-                        SoTiet = 3,
+                        TietBatDau = 5,
+                        SoTiet = 2,
                         PhongHoc = "P.401-A1",
                         GhiChu = "Kiểm tra định kỳ & Báo cáo BTL",
                         HocKy = "Học kỳ 1 (2026 - 2027)"
@@ -490,7 +490,7 @@ END CATCH;
                 TrangThai = "OPEN",
                 Thu = "Thứ 4",
                 TietBatDau = 1,
-                SoTiet = 3,
+                SoTiet = 2,
                 PhongHoc = "P.302-A2"
             });
         }
@@ -509,7 +509,7 @@ END CATCH;
                 TrangThai = "OPEN",
                 Thu = "Thứ 2",
                 TietBatDau = 1,
-                SoTiet = 4,
+                SoTiet = 2,
                 PhongHoc = "P.205-A2"
             });
         }
@@ -528,7 +528,7 @@ END CATCH;
                 TrangThai = "OPEN",
                 Thu = "Thứ 3",
                 TietBatDau = 7,
-                SoTiet = 3,
+                SoTiet = 2,
                 PhongHoc = "P.401-A1"
             });
         }
@@ -547,7 +547,7 @@ END CATCH;
                 TrangThai = "OPEN",
                 Thu = "Thứ 3",
                 TietBatDau = 1,
-                SoTiet = 3,
+                SoTiet = 2,
                 PhongHoc = "P.102-A1"
             });
         }
@@ -566,7 +566,7 @@ END CATCH;
                 TrangThai = "OPEN",
                 Thu = "Thứ 6",
                 TietBatDau = 7,
-                SoTiet = 3,
+                SoTiet = 2,
                 PhongHoc = "P.201-A1"
             });
         }

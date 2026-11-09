@@ -6,9 +6,9 @@ namespace BTL_StudentMGMT.Models;
 
 public class CaHocInfo
 {
-    public int Ca { get; set; } // 1, 2, 3, 4
-    public string MaCa { get; set; } = string.Empty; // "CA12", "CA34", "CA56", "CA78"
-    public string TenCa { get; set; } = string.Empty; // "Ca 12", "Ca 34", "Ca 56", "Ca 78"
+    public int Ca { get; set; } // 1, 2, 3, 4, 5
+    public string MaCa { get; set; } = string.Empty; // "CA1", "CA2", "CA3", "CA4", "CA5"
+    public string TenCa { get; set; } = string.Empty; // "Ca 1", "Ca 2", "Ca 3", "Ca 4", "Ca 5"
     public int TietBatDau { get; set; }
     public int TietKetThuc { get; set; }
     public string GioBatDau { get; set; } = string.Empty;
@@ -20,14 +20,14 @@ public class CaHocInfo
 
 public static class CaHocHelper
 {
-    // 4 ca học cố định chuẩn theo quy ước đào tạo UTC
+    // 5 ca học cố định chuẩn theo quy ước đào tạo UTC
     public static readonly List<CaHocInfo> DanhSachCa = new()
     {
         new CaHocInfo
         {
             Ca = 1,
-            MaCa = "CA12",
-            TenCa = "Ca 12",
+            MaCa = "CA1",
+            TenCa = "Ca 1",
             TietBatDau = 1,
             TietKetThuc = 2,
             GioBatDau = "07:00",
@@ -37,8 +37,8 @@ public static class CaHocHelper
         new CaHocInfo
         {
             Ca = 2,
-            MaCa = "CA34",
-            TenCa = "Ca 34",
+            MaCa = "CA2",
+            TenCa = "Ca 2",
             TietBatDau = 3,
             TietKetThuc = 4,
             GioBatDau = "09:35",
@@ -48,43 +48,55 @@ public static class CaHocHelper
         new CaHocInfo
         {
             Ca = 3,
-            MaCa = "CA56",
-            TenCa = "Ca 56",
+            MaCa = "CA3",
+            TenCa = "Ca 3",
             TietBatDau = 5,
             TietKetThuc = 6,
             GioBatDau = "13:00",
-            GioKetThuc = "15:10",
-            GiaiLaoSauCa = "Nghỉ giải lao: 15:10 – 15:35 (25 phút)"
+            GioKetThuc = "15:30",
+            GiaiLaoSauCa = "Nghỉ giải lao: 15:30 – 15:35 (5 phút)"
         },
         new CaHocInfo
         {
             Ca = 4,
-            MaCa = "CA78",
-            TenCa = "Ca 78",
+            MaCa = "CA4",
+            TenCa = "Ca 4",
             TietBatDau = 7,
             TietKetThuc = 8,
             GioBatDau = "15:35",
             GioKetThuc = "18:00",
+            GiaiLaoSauCa = "Nghỉ giải lao: 18:00 – 18:15 (15 phút)"
+        },
+        new CaHocInfo
+        {
+            Ca = 5,
+            MaCa = "CA5",
+            TenCa = "Ca 5",
+            TietBatDau = 9,
+            TietKetThuc = 10,
+            GioBatDau = "18:15",
+            GioKetThuc = "20:45",
             GiaiLaoSauCa = null
         }
     };
 
-    // Bảng thời gian chi tiết từng tiết học chuẩn UTC
-    private static readonly Dictionary<int, (string Start, string End)> GioCacTiet = new()
+    // Bảng thời gian chi tiết từng tiết học chuẩn UTC (Tiết 1 - 10)
+    public static readonly Dictionary<int, (string Start, string End)> GioCacTiet = new()
     {
         { 1, ("07:00", "08:10") },
         { 2, ("08:20", "09:30") },
         { 3, ("09:35", "10:45") },
         { 4, ("10:50", "12:00") },
-        { 5, ("13:00", "14:00") },
-        { 6, ("14:10", "15:10") },
+        { 5, ("13:00", "14:10") },
+        { 6, ("14:20", "15:30") },
         { 7, ("15:35", "16:45") },
         { 8, ("16:50", "18:00") },
-        { 9, ("18:15", "19:15") },
-        { 10, ("19:20", "20:20") },
-        { 11, ("20:25", "21:15") },
-        { 12, ("21:20", "22:10") }
+        { 9, ("18:15", "19:25") },
+        { 10, ("19:35", "20:45") }
     };
+
+    public static string GioBatDauDauTien => GioCacTiet.ContainsKey(1) ? GioCacTiet[1].Start : "07:00";
+    public static string GioKetThucCuoiCung => GioCacTiet.ContainsKey(10) ? GioCacTiet[10].End : "20:45";
 
     // Bảng màu CSS Tint
     public static readonly string[] CourseColorClasses = new[]
@@ -124,11 +136,57 @@ public static class CaHocHelper
         return UtcThemeColors[index];
     }
 
+    public static int GetCaTuTiet(int tiet)
+    {
+        var ca = DanhSachCa.FirstOrDefault(c => tiet >= c.TietBatDau && tiet <= c.TietKetThuc);
+        if (ca != null) return ca.Ca;
+        if (tiet <= 2) return 1;
+        if (tiet > 8) return DanhSachCa.Count;
+        return Math.Clamp((tiet + 1) / 2, 1, DanhSachCa.Count);
+    }
+
+    /// <summary>
+    /// Ánh xạ ca học (1..5) sang tiết bắt đầu và số tiết chuẩn (luôn là 2 tiết).
+    /// Ca 1=(1,2), Ca 2=(3,2), Ca 3=(5,2), Ca 4=(7,2), Ca 5=(9,2).
+    /// </summary>
+    public static (int TietBatDau, int SoTiet) GetTietTuCa(int ca)
+    {
+        var caInfo = DanhSachCa.FirstOrDefault(c => c.Ca == ca);
+        if (caInfo != null)
+        {
+            return (caInfo.TietBatDau, caInfo.TietKetThuc - caInfo.TietBatDau + 1);
+        }
+        return (1, 2);
+    }
+
+    /// <summary>
+    /// Kiểm tra ca có hợp lệ trong danh mục (1..5)
+    /// </summary>
+    public static bool IsValidCa(int ca) => DanhSachCa.Any(c => c.Ca == ca);
+
+    /// <summary>
+    /// Kiểm tra một khung giờ có khớp đúng 1 ca chuẩn duy nhất (SoTiet == 2 và TietBatDau là đầu ca).
+    /// </summary>
+    public static bool IsSingleCa(int tietBatDau, int soTiet)
+    {
+        return soTiet == 2 && DanhSachCa.Any(c => c.TietBatDau == tietBatDau && c.TietKetThuc == tietBatDau + soTiet - 1);
+    }
+
+    /// <summary>
+    /// Lấy số Ca chuẩn (1..5) nếu thỏa mãn đúng 1 ca, ngược lại trả về null.
+    /// </summary>
+    public static int? GetCaChuan(int tietBatDau, int soTiet)
+    {
+        if (soTiet != 2) return null;
+        var ca = DanhSachCa.FirstOrDefault(c => c.TietBatDau == tietBatDau && c.TietKetThuc == tietBatDau + soTiet - 1);
+        return ca?.Ca;
+    }
+
     public static (int TopPx, int HeightPx, string StartStr, string EndStr) CalculateTimelinePosition(int tietBatDau, int soTiet)
     {
         int tietKetThuc = Math.Max(tietBatDau, tietBatDau + soTiet - 1);
-        string startStr = GioCacTiet.ContainsKey(tietBatDau) ? GioCacTiet[tietBatDau].Start : "07:00";
-        string endStr = GioCacTiet.ContainsKey(tietKetThuc) ? GioCacTiet[tietKetThuc].End : "18:00";
+        string startStr = GioCacTiet.ContainsKey(tietBatDau) ? GioCacTiet[tietBatDau].Start : GioBatDauDauTien;
+        string endStr = GioCacTiet.ContainsKey(tietKetThuc) ? GioCacTiet[tietKetThuc].End : GioKetThucCuoiCung;
 
         int startMinutes = ToMinutesFrom7AM(startStr);
         int endMinutes = ToMinutesFrom7AM(endStr);
@@ -158,8 +216,8 @@ public static class CaHocHelper
     public static string GetKhungGio(int tietBatDau, int soTiet)
     {
         var tietKetThuc = Math.Max(tietBatDau, tietBatDau + soTiet - 1);
-        var start = GioCacTiet.ContainsKey(tietBatDau) ? GioCacTiet[tietBatDau].Start : "07:00";
-        var end = GioCacTiet.ContainsKey(tietKetThuc) ? GioCacTiet[tietKetThuc].End : "18:00";
+        var start = GioCacTiet.ContainsKey(tietBatDau) ? GioCacTiet[tietBatDau].Start : GioBatDauDauTien;
+        var end = GioCacTiet.ContainsKey(tietKetThuc) ? GioCacTiet[tietKetThuc].End : GioKetThucCuoiCung;
         return $"{start} – {end}";
     }
 
@@ -175,20 +233,18 @@ public static class CaHocHelper
         }
         if (result.Count == 0)
         {
-            if (tietBatDau <= 2) result.Add(1);
-            else if (tietBatDau <= 4) result.Add(2);
-            else if (tietBatDau <= 6) result.Add(3);
-            else result.Add(4);
+            result.Add(GetCaTuTiet(tietBatDau));
         }
         return result;
     }
 
     public static string GetTenCa(int ca) => ca switch
     {
-        1 => "Ca 12",
-        2 => "Ca 34",
-        3 => "Ca 56",
-        4 => "Ca 78",
+        1 => "Ca 1",
+        2 => "Ca 2",
+        3 => "Ca 3",
+        4 => "Ca 4",
+        5 => "Ca 5",
         _ => $"Ca {ca}"
     };
 
@@ -231,8 +287,8 @@ public static class CaHocHelper
 
         // Cùng ngày hôm nay -> kiểm tra giờ thực tế
         var tietKetThuc = tietBatDau + soTiet - 1;
-        var startStr = GioCacTiet.ContainsKey(tietBatDau) ? GioCacTiet[tietBatDau].Start : "07:00";
-        var endStr = GioCacTiet.ContainsKey(tietKetThuc) ? GioCacTiet[tietKetThuc].End : "18:00";
+        var startStr = GioCacTiet.ContainsKey(tietBatDau) ? GioCacTiet[tietBatDau].Start : GioBatDauDauTien;
+        var endStr = GioCacTiet.ContainsKey(tietKetThuc) ? GioCacTiet[tietKetThuc].End : GioKetThucCuoiCung;
 
         if (TimeSpan.TryParse(startStr, out var startTime) && TimeSpan.TryParse(endStr, out var endTime))
         {
@@ -268,7 +324,7 @@ public static class CaHocHelper
 public class ThoiKhoaBieuCellViewModel
 {
     public string Thu { get; set; } = string.Empty;
-    public int Ca { get; set; } // 1: Ca 12, 2: Ca 34, 3: Ca 56, 4: Ca 78
+    public int Ca { get; set; } // 1, 2, 3, 4, 5: Ca 1 .. Ca 5
     public int RowSpan { get; set; } = 1;
     public bool IsCoveredByRowSpan { get; set; } = false; // Nếu true: ô này đã bị ô ở Ca trước chiếm chỗ bởi rowspan, không render <td>
     public List<ThoiKhoaBieuCardViewModel> DanhSachLop { get; set; } = new();
@@ -326,8 +382,8 @@ public class ThoiKhoaBieuCardViewModel
     public int TietKetThuc => Math.Max(TietBatDau, TietBatDau + SoTiet - 1);
     public string KhungGio { get; set; } = string.Empty;
     public string PhongHoc { get; set; } = string.Empty;
-    public int CaHoc { get; set; } // 1, 2, 3, 4
-    public string TenCaHoc { get; set; } = string.Empty; // "Ca 12", "Ca 34",...
+    public int CaHoc { get; set; } // 1, 2, 3, 4, 5
+    public string TenCaHoc { get; set; } = string.Empty; // "Ca 1", "Ca 2",...
     public int CaHocGoc { get; set; }
     public bool LaCaKeoDai { get; set; }
     public int RowSpan { get; set; } = 1;

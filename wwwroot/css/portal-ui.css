@@ -50,11 +50,7 @@
     border: 1px solid var(--pu-border);
     border-radius: var(--pu-radius-lg);
     box-shadow: var(--pu-shadow-sm);
-    transition: box-shadow .22s ease, border-color .22s ease;
-}
-.content-card.hover-effect:hover {
-    box-shadow: var(--pu-shadow-md);
-    border-color: #cbd5e1;
+    transition: box-shadow .24s cubic-bezier(0.16, 1, 0.3, 1), border-color .24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ---------- Dashboard stat cards (Admin/Index) ---------- */
@@ -67,12 +63,8 @@
     align-items: center;
     gap: 16px;
     box-shadow: var(--pu-shadow-sm);
-    transition: box-shadow .22s ease, transform .22s ease;
+    transition: transform .24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .24s cubic-bezier(0.16, 1, 0.3, 1), border-color .24s cubic-bezier(0.16, 1, 0.3, 1);
     height: 100%;
-}
-.stat-card:hover {
-    box-shadow: var(--pu-shadow-md);
-    transform: translateY(-3px);
 }
 
 /* Icon badge inside stat-card */
@@ -893,6 +885,29 @@ select.form-select option:checked {
     --pu-radius-full:   9999px;
 
     --pu-ease:          cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Unified Hover System Tokens */
+    --pu-hover-lift:       -3px;
+    --pu-hover-shadow:     var(--pu-shadow-md);
+    --pu-hover-border:     var(--pu-border-mid);
+    --pu-hover-ring:       0 0 0 1px rgba(37, 99, 235, 0.18);
+    --pu-hover-transition: 0.24s var(--pu-ease);
+
+    /* Shared Semantic Color Tokens */
+    --pu-green:         #16a34a;
+    --pu-green-light:   #dcfce7;
+    --pu-amber:         #d97706;
+    --pu-amber-light:   #fef3c7;
+    --pu-purple:        #7c3aed;
+    --pu-purple-light:  #ede9fe;
+    --pu-red:           #dc2626;
+    --pu-red-light:     #fee2e2;
+    --pu-teal:          #0d9488;
+    --pu-teal-light:    #ccfbf1;
+    --pu-cyan:          #0284c7;
+    --pu-cyan-light:    #e0f2fe;
+    --pu-rose:          #e11d48;
+    --pu-rose-light:    #ffe4e6;
 }
 
 /* Global Focus Ring for Keyboard Accessibility (WCAG AA) */
@@ -911,74 +926,88 @@ select.form-select option:checked {
     border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
 }
 
-/* Elevated Content Cards */
+/* Elevated Content Cards & Panels (Large containers: border + shadow change, NO translateY to avoid layout shifts) */
 .content-card,
 .card-module,
-.student-panel {
+.student-panel,
+.chart-card {
     background: var(--pu-bg-card);
-    border: 1px solid var(--pu-border) !important;
-    border-radius: var(--pu-radius-lg) !important;
+    border: 1px solid var(--pu-border);
+    border-radius: var(--pu-radius-lg);
     box-shadow: var(--pu-shadow-sm);
-    transition: box-shadow 0.25s var(--pu-ease), border-color 0.25s var(--pu-ease), transform 0.25s var(--pu-ease);
+    transition: box-shadow var(--pu-hover-transition), border-color var(--pu-hover-transition);
 }
 
 .content-card:hover,
 .card-module:hover,
-.student-panel:hover {
-    border-color: var(--pu-border-mid) !important;
+.student-panel:hover,
+.chart-card:hover {
+    border-color: var(--pu-hover-border);
+    box-shadow: var(--pu-hover-shadow), var(--pu-hover-ring);
 }
 
-/* Stat Cards: Swiss Modernism with Top Accent & Smooth Hover */
+/* Stat Cards & Action Rows (Liftable cards: translateY + border + shadow) */
 .stat-card,
 .student-stat-card {
-    background: var(--pu-bg-card) !important;
-    border: 1px solid var(--pu-border) !important;
-    border-radius: var(--pu-radius-md) !important;
-    box-shadow: var(--pu-shadow-sm) !important;
-    transition: transform 0.24s var(--pu-ease), box-shadow 0.24s var(--pu-ease), border-color 0.24s var(--pu-ease) !important;
+    background: var(--pu-bg-card);
+    border: 1px solid var(--pu-border);
+    border-radius: var(--pu-radius-md);
+    box-shadow: var(--pu-shadow-sm);
+    transition: transform var(--pu-hover-transition), box-shadow var(--pu-hover-transition), border-color var(--pu-hover-transition);
     position: relative;
-    overflow: hidden;
 }
 
-.stat-card::after,
-.student-stat-card::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--pu-blue), #38bdf8);
-    opacity: 0;
-    transition: opacity 0.22s ease;
+.gv-action-row {
+    transition: transform var(--pu-hover-transition), box-shadow var(--pu-hover-transition), border-color var(--pu-hover-transition), background-color var(--pu-hover-transition);
 }
 
 .stat-card:hover,
-.student-stat-card:hover {
-    transform: translateY(-3px) !important;
-    box-shadow: var(--pu-shadow-md) !important;
-    border-color: var(--pu-border-mid) !important;
+.student-stat-card:hover,
+.gv-action-row:hover {
+    transform: translateY(var(--pu-hover-lift));
+    border-color: var(--pu-hover-border);
+    box-shadow: var(--pu-hover-shadow), var(--pu-hover-ring);
 }
 
-.stat-card:hover::after,
-.student-stat-card:hover::after {
-    opacity: 1;
+.gv-action-row:hover {
+    background-color: #f8fbfe;
 }
 
+/* Specialized Stat Card Variants (Sinh viên: MSSV viền xanh, GPA viền cam) */
+.stat-card.stat-card-masv,
+.student-stat-card.stat-card-masv {
+    border-color: #bfdbfe;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
+}
+
+.stat-card.stat-card-masv:hover,
+.student-stat-card.stat-card-masv:hover {
+    border-color: #93c5fd;
+    box-shadow: 0 10px 22px -3px rgba(37, 99, 235, 0.14), 0 0 0 1px rgba(37, 99, 235, 0.22);
+}
+
+.stat-card.stat-card-gpa,
+.student-stat-card.stat-card-gpa {
+    border-color: #fed7aa;
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.08);
+}
+
+.stat-card.stat-card-gpa:hover,
+.student-stat-card.stat-card-gpa:hover {
+    border-color: #fdba74;
+    box-shadow: 0 10px 22px -3px rgba(234, 88, 12, 0.14), 0 0 0 1px rgba(249, 115, 22, 0.22);
+}
+
+/* Stat Icons: Border radius styled, transform hover handled exclusively by GSAP in portal.js */
 .stat-ico,
 .student-stat-icon {
-    border-radius: var(--pu-radius-md) !important;
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    border-radius: var(--pu-radius-md);
 }
 
-.stat-card:hover .stat-ico,
-.student-stat-card:hover .student-stat-icon {
-    transform: scale(1.1);
-}
-
-/* Refined Academic Data Tables */
+/* Refined Academic Data Tables (Shared across SinhVien, GiangVien, Admin) */
 .custom-table-container,
-.student-table-wrap {
+.student-table-wrap,
+.gv-table-responsive {
     border: 1px solid var(--pu-border) !important;
     border-radius: var(--pu-radius-lg) !important;
     box-shadow: var(--pu-shadow-sm) !important;
@@ -987,7 +1016,9 @@ select.form-select option:checked {
 }
 
 .custom-table thead th,
-.student-table thead th {
+.student-table thead th,
+.gv-table th,
+.admin-content .table thead th {
     background: #f8fafc !important;
     color: var(--pu-text-muted) !important;
     font-size: 0.75rem !important;
@@ -1000,19 +1031,25 @@ select.form-select option:checked {
 }
 
 .custom-table tbody tr,
-.student-table tbody tr {
+.student-table tbody tr,
+.gv-table tbody tr,
+.admin-content .table tbody tr {
     transition: background-color 0.16s ease !important;
     border-bottom: 1px solid #f1f5f9 !important;
 }
 
 .custom-table tbody tr:hover,
-.student-table tbody tr:hover {
+.student-table tbody tr:hover,
+.gv-table tbody tr:hover,
+.admin-content .table tbody tr:hover {
     background-color: var(--pu-blue-subtle) !important;
 }
 
 .custom-table tbody td,
-.student-table tbody td {
-    padding: 0.9rem 1.15rem !important;
+.student-table tbody td,
+.gv-table td,
+.admin-content .table tbody td {
+    padding: 0.85rem 1.15rem !important;
     font-size: 0.875rem !important;
     color: var(--pu-text-body) !important;
     vertical-align: middle;
@@ -1020,31 +1057,48 @@ select.form-select option:checked {
 
 /* Polished Form Inputs & Controls */
 .form-control,
-.form-select {
+.form-select,
+.gv-form-control,
+.gv-form-select,
+.gv-filter-input,
+.gv-filter-select,
+.admin-content .form-control,
+.admin-content .form-select {
     border: 1px solid var(--pu-border-mid) !important;
     border-radius: var(--pu-radius-sm) !important;
     color: var(--pu-text-body) !important;
+    background-color: #ffffff !important;
     transition: border-color 0.18s ease, box-shadow 0.18s ease !important;
 }
 
 .form-control:focus,
-.form-select:focus {
+.form-select:focus,
+.gv-form-control:focus,
+.gv-form-select:focus,
+.gv-filter-input:focus,
+.gv-filter-select:focus,
+.admin-content .form-control:focus,
+.admin-content .form-select:focus {
     border-color: var(--pu-blue) !important;
     box-shadow: var(--pu-shadow-glow) !important;
     outline: none !important;
 }
 
 /* Button Micro-interactions (Instant feedback without layout shift) */
-.btn {
+.btn,
+.gv-btn {
     transition: transform 0.15s var(--pu-ease), box-shadow 0.15s var(--pu-ease), background-color 0.15s ease !important;
 }
 
-.btn:active {
+.btn:active,
+.gv-btn:active {
     transform: scale(0.97) !important;
 }
 
 .btn-primary-blue,
-.btn-primary {
+.btn-primary,
+.gv-btn-primary,
+.admin-content .btn-primary {
     background: var(--pu-blue) !important;
     border-color: var(--pu-blue) !important;
     color: #ffffff !important;
@@ -1053,10 +1107,48 @@ select.form-select option:checked {
 }
 
 .btn-primary-blue:hover,
-.btn-primary:hover {
+.btn-primary:hover,
+.gv-btn-primary:hover,
+.admin-content .btn-primary:hover {
     background: var(--pu-blue-hover) !important;
     border-color: var(--pu-blue-hover) !important;
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.btn-outline-primary,
+.admin-content .btn-outline-primary {
+    border-color: var(--pu-blue) !important;
+    color: var(--pu-blue) !important;
+}
+
+.btn-outline-primary:hover,
+.admin-content .btn-outline-primary:hover {
+    background: var(--pu-blue) !important;
+    border-color: var(--pu-blue) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+/* Pagination Unified */
+.pagination .page-item.active .page-link,
+.admin-content .page-item.active .page-link {
+    background-color: var(--pu-blue) !important;
+    border-color: var(--pu-blue) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+}
+
+.pagination .page-link,
+.admin-content .page-link {
+    color: var(--pu-blue) !important;
+    border-radius: var(--pu-radius-xs) !important;
+    transition: all 0.15s ease !important;
+}
+
+.pagination .page-link:hover,
+.admin-content .page-link:hover {
+    background-color: var(--pu-blue-light) !important;
+    border-color: var(--pu-blue) !important;
 }
 
 /* Action Icon Buttons */
@@ -1076,8 +1168,9 @@ select.form-select option:checked {
     transform: scale(0.92);
 }
 
-/* Modern Soft Badges */
-.badge-soft {
+/* Modern Soft Badges (Shared across SinhVien, GiangVien, Admin) */
+.badge-soft,
+.gv-badge {
     font-weight: 700;
     font-size: 0.75rem;
     padding: 0.35rem 0.75rem;
@@ -1085,10 +1178,40 @@ select.form-select option:checked {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
+    letter-spacing: 0.02em;
 }
 
-.badge-soft-success { background: var(--pu-green-light); color: var(--pu-green); }
-.badge-soft-warning { background: var(--pu-amber-light); color: var(--pu-amber); }
-.badge-soft-danger  { background: var(--pu-red-light);   color: var(--pu-red); }
-.badge-soft-info    { background: var(--pu-cyan-light);  color: var(--pu-cyan); }
-.badge-soft-primary { background: var(--pu-blue-light);  color: var(--pu-blue); }
+.badge-soft-success, .gv-badge-green  { background: var(--pu-green-light) !important; color: var(--pu-green) !important; }
+.badge-soft-warning, .gv-badge-amber  { background: var(--pu-amber-light) !important; color: var(--pu-amber) !important; }
+.badge-soft-danger,  .gv-badge-red    { background: var(--pu-red-light) !important;   color: var(--pu-red) !important; }
+.badge-soft-info,    .gv-badge-blue   { background: var(--pu-blue-light) !important;  color: var(--pu-blue) !important; }
+.badge-soft-primary                   { background: var(--pu-blue-light) !important;  color: var(--pu-blue) !important; }
+.gv-badge-violet                      { background: var(--pu-purple-light) !important; color: var(--pu-purple) !important; }
+.gv-badge-gray                        { background: #f1f5f9 !important;               color: var(--pu-text-muted) !important; }
+
+/* Admin Metric Number styling */
+.admin-content .stat-card .num {
+    color: var(--pu-blue) !important;
+    font-weight: 800;
+}
+
+/* Admin Horizontal Progress Chart Bars */
+.admin-content .bar-row .bar {
+    height: 18px;
+    min-width: 6px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--pu-blue), #38bdf8) !important;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+/* Accessibility: Prefers Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --pu-hover-lift: 0px;
+    }
+    .stat-card:hover,
+    .student-stat-card:hover,
+    .gv-action-row:hover {
+        transform: none !important;
+    }
+}

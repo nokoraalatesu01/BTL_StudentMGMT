@@ -67,7 +67,7 @@
                 <i class="bi bi-person-badge text-primary me-1"></i>@(lhp.GiangVien?.HoTen ?? "Chưa phân công")
             </div>
             <div class="text-muted" style="font-size:.78rem;">
-                <i class="bi bi-calendar3 me-1"></i>@lhp.Thu, Tiết @lhp.TietBatDau-@(lhp.TietBatDau + lhp.SoTiet - 1) (@lhp.PhongHoc)
+                <i class="bi bi-calendar3 me-1"></i>@lhp.Thu, @CaHocHelper.GetTenCa(CaHocHelper.GetCaTuTiet(lhp.TietBatDau)) (@CaHocHelper.GetKhungGio(lhp.TietBatDau, lhp.SoTiet)) (@lhp.PhongHoc)
             </div>
         </div>
         <div class="col-md-3 text-md-end">
