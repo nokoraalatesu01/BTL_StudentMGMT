@@ -1,0 +1,141 @@
+﻿@model BTL_StudentMGMT.Models.DiemDanhFormViewModel
+@using BTL_StudentMGMT.Models
+@{
+    ViewData["Title"] = "Chỉnh sửa buổi điểm danh (Admin/PGV)";
+}
+
+<div class="mb-4">
+    <p class="mb-1" style="font-size:.8rem; color:#64748b;">
+        <a asp-action="Index" style="color:#64748b; text-decoration:none;">QUẢN LÝ ĐIỂM DANH</a>
+        <span style="color:#cbd5e1; margin:0 6px;">/</span>
+        <a asp-action="ChiTiet" asp-route-lopHocPhanId="@Model.LopHocPhanId" style="color:#64748b; text-decoration:none;">@Model.MaLopHocPhan</a>
+        <span style="color:#cbd5e1; margin:0 6px;">/</span>
+        <span style="color:#2563eb; font-weight:700; text-transform:uppercase; font-size:.72rem; letter-spacing:.07em;">SỬA BUỔI ĐIỂM DANH</span>
+    </p>
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+        <div>
+            <h3 class="fw-bold mb-1" style="color:#0f172a; font-size:1.55rem; letter-spacing:-.02em;">
+                Chỉnh sửa điểm danh ngày @Model.NgayDiemDanh.ToString("dd/MM/yyyy")
+            </h3>
+            <p class="mb-0 text-muted" style="font-size:.875rem;">
+                Lớp học phần: <strong class="text-primary font-monospace">@Model.MaLopHocPhan</strong> - @Model.TenLopHocPhan &bull; Lịch: @Model.Thu, @Model.KhungGio (Phòng: @(Model.PhongHoc ?? "Chưa xếp phòng"))
+            </p>
+        </div>
+        <div>
+            <a asp-action="ChiTiet" asp-route-lopHocPhanId="@Model.LopHocPhanId" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại ma trận
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i><div>@TempData["Error"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="alert alert-primary border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center gap-2">
+    <i class="bi bi-shield-check fs-5 text-primary"></i>
+    <div class="small">
+        <strong>Đặc quyền quản trị (Admin / PGV):</strong> Bạn có quyền chỉnh sửa và bổ sung bản ghi điểm danh cho bất kỳ buổi học nào trong kỳ mà không bị giới hạn cửa sổ ngày.
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" style="background:#fff;">
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2 bg-light">
+        <strong class="text-dark small">Danh sách sinh viên (@Model.DanhSachSinhVien.Count SV)</strong>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-success" onclick="setAllAdmin('@AttendanceStatus.Present')">
+                <i class="bi bi-check-all me-1"></i> Tất cả Có mặt
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="setAllAdmin('@AttendanceStatus.Absent')">
+                <i class="bi bi-x-circle me-1"></i> Tất cả Vắng
+            </button>
+        </div>
+    </div>
+
+    <form method="post" asp-action="SuaBuoi">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="LopHocPhanId" />
+        <input type="hidden" asp-for="NgayDiemDanh" />
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="font-size: .88rem;">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 45px;">STT</th>
+                        <th style="width: 120px;">Mã SV</th>
+                        <th style="min-width: 180px;">Họ và tên</th>
+                        <th style="width: 120px;">Lớp HC</th>
+                        <th class="text-center" style="min-width: 380px;">Trạng thái điểm danh (Bắt buộc chọn)</th>
+                        <th style="min-width: 160px;">Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.DanhSachSinhVien.Count; i++)
+                    {
+                        var sv = Model.DanhSachSinhVien[i];
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td class="font-monospace fw-semibold text-primary">
+                                @sv.MaSinhVien
+                                <input type="hidden" name="DanhSachSinhVien[@i].SinhVienId" value="@sv.SinhVienId" />
+                                <input type="hidden" name="DanhSachSinhVien[@i].MaSinhVien" value="@sv.MaSinhVien" />
+                                <input type="hidden" name="DanhSachSinhVien[@i].HoTen" value="@sv.HoTen" />
+                            </td>
+                            <td class="fw-semibold">@sv.HoTen</td>
+                            <td class="text-muted small">@sv.TenLopHanhChinh</td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-3">
+                                    <label class="form-check-label d-flex align-items-center gap-1 text-success fw-semibold">
+                                        <input class="form-check-input status-radio-@i" type="radio" name="DanhSachSinhVien[@i].TrangThai" value="@AttendanceStatus.Present" @(sv.TrangThai == AttendanceStatus.Present ? "checked" : "") />
+                                        <span>Có mặt</span>
+                                    </label>
+                                    <label class="form-check-label d-flex align-items-center gap-1 text-info fw-semibold">
+                                        <input class="form-check-input status-radio-@i" type="radio" name="DanhSachSinhVien[@i].TrangThai" value="@AttendanceStatus.Late" @(sv.TrangThai == AttendanceStatus.Late ? "checked" : "") />
+                                        <span>Đi muộn</span>
+                                    </label>
+                                    <label class="form-check-label d-flex align-items-center gap-1 text-warning fw-semibold">
+                                        <input class="form-check-input status-radio-@i" type="radio" name="DanhSachSinhVien[@i].TrangThai" value="@AttendanceStatus.Excused" @(sv.TrangThai == AttendanceStatus.Excused ? "checked" : "") />
+                                        <span>Có phép</span>
+                                    </label>
+                                    <label class="form-check-label d-flex align-items-center gap-1 text-danger fw-semibold">
+                                        <input class="form-check-input status-radio-@i" type="radio" name="DanhSachSinhVien[@i].TrangThai" value="@AttendanceStatus.Absent" @(sv.TrangThai == AttendanceStatus.Absent ? "checked" : "") />
+                                        <span>Vắng</span>
+                                    </label>
+                                </div>
+                            </td>
+                            <td>
+                                <input type="text" name="DanhSachSinhVien[@i].GhiChu" value="@sv.GhiChu" class="form-control form-control-sm" placeholder="Lý do / Ghi chú..." />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="p-3 border-top bg-light d-flex justify-content-between align-items-center">
+            <a asp-action="ChiTiet" asp-route-lopHocPhanId="@Model.LopHocPhanId" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-x-circle me-1"></i> Hủy thao tác
+            </a>
+            <button type="submit" class="btn btn-primary px-4 fw-bold">
+                <i class="bi bi-save me-1"></i> Lưu kết quả điểm danh buổi học
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function setAllAdmin(status) {
+        const rowCount = @Model.DanhSachSinhVien.Count;
+        for (let i = 0; i < rowCount; i++) {
+            const radios = document.querySelectorAll('.status-radio-' + i);
+            radios.forEach(r => {
+                if (r.value === status) r.checked = true;
+            });
+        }
+    }
+</script>

@@ -22,7 +22,7 @@ public class DangKyHocPhan
     [Required]
     [StringLength(30)]
     [Display(Name = "Trạng thái")]
-    public string TrangThai { get; set; } = "ENROLLED"; // ENROLLED (Đã đăng ký), DROPPED (Đã hủy)
+    public string TrangThai { get; set; } = EnrollmentStatus.Enrolled; // ENROLLED (Đã đăng ký), DROPPED (Đã hủy)
 
     [Range(1, 10)]
     [Display(Name = "Lần học")]

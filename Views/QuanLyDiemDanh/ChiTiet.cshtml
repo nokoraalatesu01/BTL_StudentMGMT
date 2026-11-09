@@ -1,0 +1,255 @@
+﻿@model BTL_StudentMGMT.Models.ClassAttendanceMatrixViewModel
+@using BTL_StudentMGMT.Models
+@{
+    ViewData["Title"] = "Chi tiết điểm danh - " + Model.TenLopHocPhan;
+}
+
+<div class="mb-4">
+    <p class="mb-1" style="font-size:.8rem; color:#64748b;">
+        <a asp-action="Index" style="color:#64748b; text-decoration:none;">QUẢN LÝ ĐIỂM DANH</a>
+        <span style="color:#cbd5e1; margin:0 6px;">/</span>
+        <span style="color:#2563eb; font-weight:700; text-transform:uppercase; font-size:.72rem; letter-spacing:.07em;">MA TRẬN CHUYÊN CẦN</span>
+    </p>
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+        <div>
+            <h3 class="fw-bold mb-1" style="color:#0f172a; font-size:1.55rem; letter-spacing:-.02em;">
+                @Model.TenLopHocPhan
+            </h3>
+            <p class="mb-0 text-muted" style="font-size:.875rem;">
+                Mã lớp HP: <strong class="text-primary font-monospace">@Model.MaLopHocPhan</strong> &bull; Môn: <strong>@Model.TenMon</strong> (@Model.SoTinChi TC) &bull; GV: <strong>@Model.TenGiangVien</strong> &bull; Sĩ số: <strong>@Model.SiSo</strong> SV
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+            </a>
+            <a asp-action="ExportExcel" asp-route-lopHocPhanId="@Model.LopHocPhanId" asp-route-tuNgay="@(Model.TuNgay?.ToString("yyyy-MM-dd"))" asp-route-denNgay="@(Model.DenNgay?.ToString("yyyy-MM-dd"))" class="btn btn-success btn-sm fw-bold">
+                <i class="bi bi-file-earmark-excel me-1"></i> Xuất file Excel
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Msg"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i><div>@TempData["Msg"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i><div>@TempData["Error"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- G11: Banner cảnh báo sinh viên nguy cơ cấm thi -->
+@if (Model.NguyCoStudents.Count > 0)
+{
+    <div class="alert alert-danger border-0 shadow-sm rounded-4 mb-4 p-3">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-exclamation-octagon-fill fs-5 text-danger"></i>
+            <strong class="fs-6">CẢNH BÁO: Phát hiện @Model.NguyCoStudents.Count sinh viên có nguy cơ cấm thi (tỷ lệ vắng &ge; 20%):</strong>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var sv in Model.NguyCoStudents)
+            {
+                <span class="badge bg-danger text-white p-2">
+                    @sv.MaSinhVien - @sv.HoTen (@sv.PhanTramVang% vắng)
+                </span>
+            }
+        </div>
+    </div>
+}
+
+@if (Model.CanhBaoStudents.Count > 0)
+{
+    <div class="alert alert-warning border-0 shadow-sm rounded-4 mb-4 p-3">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-exclamation-triangle-fill fs-5 text-warning"></i>
+            <strong>Có @Model.CanhBaoStudents.Count sinh viên trong diện cảnh báo vắng (14% &le; vắng &lt; 20%):</strong>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var sv in Model.CanhBaoStudents)
+            {
+                <span class="badge bg-warning text-dark p-2">
+                    @sv.MaSinhVien - @sv.HoTen (@sv.PhanTramVang% vắng)
+                </span>
+            }
+        </div>
+    </div>
+}
+
+<!-- Bộ lọc & Thao tác sửa buổi -->
+<div class="card border-0 shadow-sm rounded-4 mb-4" style="background:#fff;">
+    <div class="card-body p-3 p-md-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-7 col-md-12">
+                <form method="get" asp-action="ChiTiet" class="row g-2 align-items-end">
+                    <input type="hidden" name="lopHocPhanId" value="@Model.LopHocPhanId" />
+                    <div class="col-sm-5">
+                        <label class="form-label small fw-semibold text-muted mb-1">TỪ NGÀY</label>
+                        <input type="date" name="tuNgay" value="@(Model.TuNgay?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-sm-5">
+                        <label class="form-label small fw-semibold text-muted mb-1">ĐẾN NGÀY</label>
+                        <input type="date" name="denNgay" value="@(Model.DenNgay?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-sm-2 d-flex gap-1">
+                        <button type="submit" class="btn btn-primary btn-sm w-100">Lọc</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-5 col-md-12 border-start-lg pt-2 pt-lg-0">
+                <form method="get" asp-action="SuaBuoi" class="d-flex gap-2 align-items-end">
+                    <input type="hidden" name="lopHocPhanId" value="@Model.LopHocPhanId" />
+                    <div class="flex-grow-1">
+                        <label class="form-label small fw-semibold text-muted mb-1">SỬA BUỔI ĐIỂM DANH (ADMIN/PGV)</label>
+                        <select name="ngay" class="form-select form-select-sm" required>
+                            <option value="">-- Chọn buổi để sửa --</option>
+                            @foreach (var d in Model.Dates)
+                            {
+                                <option value="@d.ToString("yyyy-MM-dd")">Buổi ngày @d.ToString("dd/MM/yyyy")</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-sm text-dark fw-bold text-nowrap">
+                        <i class="bi bi-pencil-square me-1"></i> Sửa buổi
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ma trận điểm danh -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" style="background:#fff;">
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2 bg-light">
+        <strong class="text-dark small">
+            <i class="bi bi-grid-3x3 text-primary me-2"></i>Ma trận chuyên cần: @Model.Students.Count sinh viên &bull; @Model.TongBuoiCuaLop buổi đã điểm danh
+        </strong>
+        <div class="d-flex align-items-center gap-3 small text-muted">
+            <span><span class="badge bg-success">CM</span> Có mặt</span>
+            <span><span class="badge bg-info text-dark">DM</span> Đi muộn</span>
+            <span><span class="badge bg-warning text-dark">CP</span> Có phép</span>
+            <span><span class="badge bg-danger">V</span> Vắng</span>
+        </div>
+    </div>
+
+    @if (Model.Students.Count == 0)
+    {
+        <div class="p-5 text-center text-muted">Lớp học phần chưa có sinh viên đăng ký.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle mb-0 text-center" style="font-size: .86rem;">
+                <thead class="table-light align-middle">
+                    <tr>
+                        <th rowspan="2" style="width: 45px;">STT</th>
+                        <th rowspan="2" style="min-width: 95px;">Mã SV</th>
+                        <th rowspan="2" class="text-start" style="min-width: 150px;">Họ và tên</th>
+                        <th rowspan="2" style="min-width: 85px;">Lớp HC</th>
+                        @if (Model.Dates.Count > 0)
+                        {
+                            <th colspan="@Model.Dates.Count" class="text-center bg-white">Các buổi học (Bấm ngày để sửa)</th>
+                        }
+                        <th colspan="4" class="text-center bg-white">Tổng hợp số buổi</th>
+                        <th rowspan="2" style="min-width: 75px;">% Vắng</th>
+                        <th rowspan="2" style="min-width: 105px;">Cảnh báo</th>
+                        <th rowspan="2" style="min-width: 85px;">Gợi ý ĐCC</th>
+                    </tr>
+                    <tr>
+                        @foreach (var d in Model.Dates)
+                        {
+                            <th class="p-1 text-nowrap" style="min-width: 50px; font-size: .75rem;">
+                                <a asp-action="SuaBuoi" asp-route-lopHocPhanId="@Model.LopHocPhanId" asp-route-ngay="@d.ToString("yyyy-MM-dd")" class="text-primary text-decoration-none fw-bold" title="Bấm để chỉnh sửa buổi học này">
+                                    @d.ToString("dd/MM") <i class="bi bi-pencil" style="font-size:.65rem;"></i>
+                                </a>
+                            </th>
+                        }
+                        <th style="width: 45px;" class="text-success" title="Có mặt">CM</th>
+                        <th style="width: 45px;" class="text-info" title="Đi muộn">DM</th>
+                        <th style="width: 45px;" class="text-warning" title="Có phép">CP</th>
+                        <th style="width: 45px;" class="text-danger" title="Vắng mặt">V</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Students.Count; i++)
+                    {
+                        var st = Model.Students[i];
+                        string rowClass = st.MucCanhBao == AttendanceWarningLevel.NguyCo
+                            ? "table-danger"
+                            : (st.MucCanhBao == AttendanceWarningLevel.CanhBao ? "table-warning" : "");
+
+                        <tr class="@rowClass">
+                            <td>@(i + 1)</td>
+                            <td class="font-monospace fw-semibold">@st.MaSinhVien</td>
+                            <td class="text-start fw-semibold text-nowrap">@st.HoTen</td>
+                            <td class="text-muted small">@st.TenLopHanhChinh</td>
+
+                            @foreach (var d in Model.Dates)
+                            {
+                                st.AttendanceByDate.TryGetValue(d.Date, out var status);
+                                <td class="p-1">
+                                    @if (status == AttendanceStatus.Present)
+                                    {
+                                        <span class="badge bg-success" title="Có mặt">CM</span>
+                                    }
+                                    else if (status == AttendanceStatus.Late)
+                                    {
+                                        <span class="badge bg-info text-dark" title="Đi muộn">DM</span>
+                                    }
+                                    else if (status == AttendanceStatus.Excused)
+                                    {
+                                        <span class="badge bg-warning text-dark" title="Có phép">CP</span>
+                                    }
+                                    else if (status == AttendanceStatus.Absent)
+                                    {
+                                        <span class="badge bg-danger text-white fw-bold" title="Vắng">V</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                            }
+
+                            <td class="text-success fw-bold">@st.Present</td>
+                            <td class="text-info fw-bold">@st.Late</td>
+                            <td class="text-warning fw-bold">@st.Excused</td>
+                            <td class="text-danger fw-bold">@st.Absent</td>
+                            <td class="fw-bold">@st.PhanTramVang%</td>
+                            <td>
+                                @if (st.MucCanhBao == AttendanceWarningLevel.NguyCo)
+                                {
+                                    <span class="badge bg-danger text-white">Nguy cơ</span>
+                                }
+                                else if (st.MucCanhBao == AttendanceWarningLevel.CanhBao)
+                                {
+                                    <span class="badge bg-warning text-dark">Cảnh báo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success text-white">Bình thường</span>
+                                }
+                            </td>
+                            <td>
+                                @if (st.DiemGoiY.HasValue)
+                                {
+                                    <strong class="text-primary" title="@st.DienGiaiGoiY">@st.DiemGoiY.Value.ToString("0.0")</strong>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

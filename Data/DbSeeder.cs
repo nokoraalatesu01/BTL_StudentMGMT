@@ -604,7 +604,7 @@ END CATCH;
                     SinhVienId = sv.Id,
                     LopHocPhanId = lhp.Id,
                     NgayDangKy = DateTime.UtcNow,
-                    TrangThai = "ENROLLED",
+                    TrangThai = EnrollmentStatus.Enrolled,
                     LanHoc = 1
                 });
             }

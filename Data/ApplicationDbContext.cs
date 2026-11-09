@@ -383,7 +383,7 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.GhiChu).HasMaxLength(300);
             entity.Property(e => e.LanHoc).HasDefaultValue(1);
             entity.Property(e => e.LoaiDangKy).HasMaxLength(30).HasDefaultValue("HOC_LAN_DAU");
-            entity.Property(e => e.TrangThai).HasMaxLength(30).HasDefaultValue("ENROLLED");
+            entity.Property(e => e.TrangThai).HasMaxLength(30).HasDefaultValue(EnrollmentStatus.Enrolled);
             entity.HasOne(d => d.LopHocPhan).WithMany(p => p.DangKyHocPhans).HasForeignKey(d => d.LopHocPhanId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(d => d.SinhVien).WithMany(p => p.DangKyHocPhans).HasForeignKey(d => d.SinhVienId).OnDelete(DeleteBehavior.Cascade);
         });

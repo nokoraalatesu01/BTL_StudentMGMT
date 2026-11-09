@@ -55,7 +55,7 @@ public class GiangVienSecurityService : IGiangVienSecurityService
 
         // Kiểm tra sinh viên có thực sự đăng ký lớp học phần đó không
         return await _db.DangKyHocPhans
-            .AnyAsync(dk => dk.LopHocPhanId == lopHocPhanId && dk.SinhVienId == sinhVienId && dk.TrangThai == "ENROLLED");
+            .AnyAsync(dk => dk.LopHocPhanId == lopHocPhanId && dk.SinhVienId == sinhVienId && dk.TrangThai == EnrollmentStatus.Enrolled);
     }
 
     public async Task<bool> CanModifyDiemAsync(ClaimsPrincipal user, int diemId)

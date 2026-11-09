@@ -94,7 +94,7 @@ public class DangKyHocPhanItemViewModel
     public string? TenNganh { get; set; }
     public DateTime NgayDangKy { get; set; }
     public int LanHoc { get; set; } = 1;
-    public string TrangThai { get; set; } = "ENROLLED";
+    public string TrangThai { get; set; } = EnrollmentStatus.Enrolled;
     public double? DiemTongKet { get; set; }
     public string? DiemChu { get; set; }
 }

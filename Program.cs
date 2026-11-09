@@ -33,23 +33,24 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/AccessDenied";
 });
 
-builder.Services.AddControllersWithViews();
+builder.Services.Configure<AttendanceOptions>(builder.Configuration.GetSection(AttendanceOptions.SectionName));
+builder.Services.AddSingleton(TimeProvider.System);
 
-// Cấu hình Distributed Memory Cache & Session (Phục vụ lưu trữ dữ liệu phiên làm việc)
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.Name = ".UTC.StudentPortal.Session";
 });
 
+builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IGiangVienSecurityService, GiangVienSecurityService>();
 builder.Services.AddScoped<IVietQrService, VietQrService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ITimetableService, TimetableService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 
 var app = builder.Build();
 
@@ -74,22 +75,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
-// Thiết lập các HTTP Security Headers chuẩn OWASP (Bảo vệ chống Clickjacking, MIME sniffing, XSS)
-app.Use(async (context, next) =>
-{
-    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-    context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
-    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
-    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
-    await next();
-});
-
 app.UseRouting();
-
-// Kích hoạt Session Middleware (đặt sau UseRouting và trước UseAuthentication/UseAuthorization)
 app.UseSession();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -98,4 +85,3 @@ app.MapControllerRoute(
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();
-// hot reload touch

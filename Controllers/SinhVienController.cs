@@ -1,4 +1,4 @@
-using BTL_StudentMGMT.Data;
+﻿using BTL_StudentMGMT.Data;
 using BTL_StudentMGMT.Models;
 using BTL_StudentMGMT.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -18,19 +18,22 @@ public class SinhVienController : Controller
     private readonly IFileUploadService _fileUploadService;
     private readonly IPaymentService _paymentService;
     private readonly ITimetableService _timetableService;
+    private readonly IEnrollmentService _enrollmentService;
 
     public SinhVienController(
         ApplicationDbContext db, 
         UserManager<ApplicationUser> userManager, 
         IFileUploadService fileUploadService,
         IPaymentService paymentService,
-        ITimetableService timetableService)
+        ITimetableService timetableService,
+        IEnrollmentService enrollmentService)
     {
         _db = db;
         _userManager = userManager;
         _fileUploadService = fileUploadService;
         _paymentService = paymentService;
         _timetableService = timetableService;
+        _enrollmentService = enrollmentService;
     }
 
     public async Task<IActionResult> Index()
@@ -147,7 +150,7 @@ public class SinhVienController : Controller
                 .ThenInclude(l => l.MonHoc)
             .Include(dk => dk.LopHocPhan)
                 .ThenInclude(l => l.GiangVien)
-            .Where(dk => dk.SinhVienId == student.Id && dk.TrangThai == "ENROLLED")
+            .Where(dk => dk.SinhVienId == student.Id && dk.TrangThai == EnrollmentStatus.Enrolled)
             .ToListAsync();
 
         var registeredLhpIds = registeredList.Select(dk => dk.LopHocPhanId).ToHashSet();
@@ -166,7 +169,7 @@ public class SinhVienController : Controller
                 TenGiangVien = l.GiangVien?.HoTen,
                 LichHoc = $"{l.Thu}, Tiết {l.TietBatDau} - {l.TietBatDau + l.SoTiet - 1}",
                 PhongHoc = l.PhongHoc,
-                SiSoHienTai = l.DangKyHocPhans.Count(dk => dk.TrangThai == "ENROLLED"),
+                SiSoHienTai = l.DangKyHocPhans.Count(dk => dk.TrangThai == EnrollmentStatus.Enrolled),
                 SiSoToiDa = l.SiSoToiDa,
                 DaDangKy = registeredLhpIds.Contains(l.Id)
             }).ToList(),
@@ -202,147 +205,19 @@ public class SinhVienController : Controller
         var student = await _db.SinhViens.FirstOrDefaultAsync(s => s.UserId == userId);
         if (student == null) return RedirectToAction(nameof(DangKyHocPhan));
 
-        var lhp = await _db.LopHocPhans
-            .Include(l => l.MonHoc)
-            .Include(l => l.DangKyHocPhans)
-            .FirstOrDefaultAsync(l => l.Id == lopHocPhanId);
-
-        if (lhp == null)
+        var result = await _enrollmentService.EnrollAsync(student.Id, lopHocPhanId, EnrollmentActor.Student);
+        if (result.Success)
         {
-            TempData["Error"] = "Lớp học phần không tồn tại.";
-            return RedirectToAction(nameof(DangKyHocPhan));
-        }
-
-        if (lhp.TrangThai != "OPEN")
-        {
-            TempData["Error"] = "Lớp học phần đã đóng đăng ký hoặc kết thúc.";
-            return RedirectToAction(nameof(DangKyHocPhan));
-        }
-
-        // Kiểm tra đã đăng ký lớp học phần này chưa
-        var daDangKy = await _db.DangKyHocPhans.AnyAsync(dk =>
-            dk.SinhVienId == student.Id &&
-            dk.LopHocPhanId == lopHocPhanId &&
-            dk.TrangThai == "ENROLLED");
-
-        if (daDangKy)
-        {
-            TempData["Error"] = "Bạn đã đăng ký lớp học phần này rồi.";
-            return RedirectToAction(nameof(DangKyHocPhan));
-        }
-
-        // Kiểm tra sĩ số tối đa
-        var count = lhp.DangKyHocPhans.Count(dk => dk.TrangThai == "ENROLLED");
-        if (count >= lhp.SiSoToiDa)
-        {
-            TempData["Error"] = "Lớp học phần đã đầy sĩ số (hết chỗ). Vui lòng chọn nhóm lớp khác.";
-            return RedirectToAction(nameof(DangKyHocPhan));
-        }
-
-        // Kiểm tra đã đăng ký nhóm khác của cùng môn học trong cùng học kỳ chưa
-        var daDangKyCungMon = await _db.DangKyHocPhans
-            .Include(dk => dk.LopHocPhan)
-            .AnyAsync(dk =>
-                dk.SinhVienId == student.Id &&
-                dk.LopHocPhan.MonHocId == lhp.MonHocId &&
-                dk.LopHocPhan.HocKyId == lhp.HocKyId &&
-                dk.TrangThai == "ENROLLED");
-
-        if (daDangKyCungMon)
-        {
-            TempData["Error"] = $"Bạn đã đăng ký một nhóm khác của môn '{lhp.MonHoc?.TenMon}' trong học kỳ này.";
-            return RedirectToAction(nameof(DangKyHocPhan));
-        }
-
-        // Kiểm tra trùng lịch học với các môn đã đăng ký
-        var currentEnrollments = await _db.DangKyHocPhans
-            .Include(dk => dk.LopHocPhan)
-            .Where(dk => dk.SinhVienId == student.Id && dk.TrangThai == "ENROLLED")
-            .Select(dk => dk.LopHocPhan)
-            .ToListAsync();
-
-        var tietKetThuc = lhp.TietBatDau + lhp.SoTiet - 1;
-        var trungLich = currentEnrollments.FirstOrDefault(other =>
-            other.Thu == lhp.Thu &&
-            ((lhp.TietBatDau >= other.TietBatDau && lhp.TietBatDau < other.TietBatDau + other.SoTiet) ||
-             (tietKetThuc > other.TietBatDau && tietKetThuc <= other.TietBatDau + other.SoTiet)));
-
-        if (trungLich != null)
-        {
-            TempData["Error"] = $"Trùng lịch học: Lớp này học vào {lhp.Thu} (tiết {lhp.TietBatDau}-{tietKetThuc}), trùng với môn '{trungLich.TenLopHocPhan}'.";
-            return RedirectToAction(nameof(DangKyHocPhan));
-        }
-
-        // Phân tích lịch sử học môn này để tự động xác định loại đăng ký và số lần học
-        var previousAttempts = await _db.Diems
-            .Where(d => d.SinhVienId == student.Id && d.MonHocId == lhp.MonHocId)
-            .OrderByDescending(d => d.LanHoc)
-            .ToListAsync();
-
-        string loaiDangKy = "HOC_LAN_DAU";
-        int lanHoc = 1;
-        string? ghiChuDk = null;
-
-        if (previousAttempts.Count > 0)
-        {
-            var lastAttempt = previousAttempts.First();
-            lanHoc = previousAttempts.Max(d => d.LanHoc) + 1;
-            if (lastAttempt.DiemTongKet < 4.0)
-            {
-                loaiDangKy = "HOC_LAI";
-                ghiChuDk = $"Đăng ký học lại do lần {lastAttempt.LanHoc} không đạt ({lastAttempt.DiemTongKet} điểm)";
-            }
-            else
-            {
-                loaiDangKy = "HOC_CAI_THIEN";
-                ghiChuDk = $"Đăng ký học cải thiện điểm (lần {lastAttempt.LanHoc} đã đạt {lastAttempt.DiemTongKet} điểm)";
-            }
+            TempData["Success"] = result.Message;
         }
         else
         {
-            var prevDk = await _db.DangKyHocPhans
-                .Include(dk => dk.LopHocPhan)
-                .Where(dk => dk.SinhVienId == student.Id && dk.LopHocPhan.MonHocId == lhp.MonHocId && dk.LopHocPhanId != lopHocPhanId)
-                .CountAsync();
-            if (prevDk > 0)
-            {
-                lanHoc = prevDk + 1;
-                loaiDangKy = "HOC_LAI";
-            }
+            TempData["Error"] = result.Message;
         }
-
-        // Thực hiện ghi danh
-        var existingRecord = await _db.DangKyHocPhans.FirstOrDefaultAsync(dk =>
-            dk.SinhVienId == student.Id && dk.LopHocPhanId == lopHocPhanId);
-
-        if (existingRecord != null)
-        {
-            existingRecord.TrangThai = "ENROLLED";
-            existingRecord.LoaiDangKy = loaiDangKy;
-            existingRecord.LanHoc = lanHoc;
-            existingRecord.GhiChu = ghiChuDk;
-            existingRecord.NgayDangKy = DateTime.UtcNow;
-        }
-        else
-        {
-            _db.DangKyHocPhans.Add(new DangKyHocPhan
-            {
-                SinhVienId = student.Id,
-                LopHocPhanId = lopHocPhanId,
-                LoaiDangKy = loaiDangKy,
-                LanHoc = lanHoc,
-                GhiChu = ghiChuDk,
-                NgayDangKy = DateTime.UtcNow,
-                TrangThai = "ENROLLED"
-            });
-        }
-
-        await _db.SaveChangesAsync();
-        TempData["Success"] = $"Đăng ký thành công lớp học phần '{lhp.TenLopHocPhan}'!";
         return RedirectToAction(nameof(DangKyHocPhan));
     }
 
-    // 6. Hủy đăng ký lớp học phần (POST)
+    // 6. Há»§y Ä‘Äƒng kÃ½ lá»›p há»c pháº§n (POST)
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> HuyDangKy(int lopHocPhanId)
@@ -353,28 +228,19 @@ public class SinhVienController : Controller
         var student = await _db.SinhViens.FirstOrDefaultAsync(s => s.UserId == userId);
         if (student == null) return RedirectToAction(nameof(DangKyHocPhan));
 
-        var dk = await _db.DangKyHocPhans
-            .Include(d => d.LopHocPhan)
-            .FirstOrDefaultAsync(d => d.SinhVienId == student.Id && d.LopHocPhanId == lopHocPhanId && d.TrangThai == "ENROLLED");
-
-        if (dk == null)
+        var result = await _enrollmentService.DropAsync(student.Id, lopHocPhanId, EnrollmentActor.Student);
+        if (result.Success)
         {
-            TempData["Error"] = "Bản ghi đăng ký không tồn tại.";
-            return RedirectToAction(nameof(DangKyHocPhan));
+            TempData["Success"] = result.Message;
+        }
+        else
+        {
+            TempData["Error"] = result.Message;
         }
 
-        if (dk.LopHocPhan.TrangThai != "OPEN")
-        {
-            TempData["Error"] = "Lớp học phần đã khóa đăng ký, không thể hủy.";
-            return RedirectToAction(nameof(DangKyHocPhan));
-        }
-
-        _db.DangKyHocPhans.Remove(dk);
-        await _db.SaveChangesAsync();
-
-        TempData["Success"] = $"Đã hủy đăng ký lớp học phần '{dk.LopHocPhan.TenLopHocPhan}'.";
         return RedirectToAction(nameof(DangKyHocPhan));
     }
+
 
     // 7. Thời khóa biểu cá nhân của sinh viên
     public async Task<IActionResult> ThoiKhoaBieu(int? hocKyId, int? namHocId, int? monHocId, string? ngay, string? viewMode)

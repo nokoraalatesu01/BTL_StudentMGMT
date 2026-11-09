@@ -1,4 +1,4 @@
-namespace BTL_StudentMGMT.Models;
+﻿namespace BTL_StudentMGMT.Models;
 
 public class DiemDanh
 {
@@ -18,6 +18,6 @@ public class DiemDanh
     public MonHoc? MonHoc { get; set; }
 
     public DateTime NgayDiemDanh { get; set; } = DateTime.Today;
-    public string TrangThai { get; set; } = "Có mặt"; // "Có mặt", "Vắng", "Có phép"
+    public string TrangThai { get; set; } = AttendanceStatus.Present;
     public string? GhiChu { get; set; }
 }

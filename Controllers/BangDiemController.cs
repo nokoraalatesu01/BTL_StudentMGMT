@@ -686,7 +686,7 @@ public class BangDiemController : Controller
             var svTrongLhp = await _db.DangKyHocPhans
                 .Include(dk => dk.SinhVien)
                     .ThenInclude(s => s.Lop)
-                .Where(dk => dk.LopHocPhanId == selectedLhp.Value && dk.TrangThai == "ENROLLED")
+                .Where(dk => dk.LopHocPhanId == selectedLhp.Value && dk.TrangThai == EnrollmentStatus.Enrolled)
                 .OrderBy(dk => dk.SinhVien.HoTen)
                 .Select(dk => new
                 {
@@ -703,7 +703,7 @@ public class BangDiemController : Controller
             var svCuaGv = await _db.DangKyHocPhans
                 .Include(dk => dk.SinhVien)
                     .ThenInclude(s => s.Lop)
-                .Where(dk => dk.LopHocPhan.GiangVienId == giangVienId.Value && dk.TrangThai == "ENROLLED")
+                .Where(dk => dk.LopHocPhan.GiangVienId == giangVienId.Value && dk.TrangThai == EnrollmentStatus.Enrolled)
                 .Select(dk => dk.SinhVien)
                 .Distinct()
                 .OrderBy(s => s.HoTen)
