@@ -1,4 +1,5 @@
-@model BTL_StudentMGMT.Models.DiemDanhFormViewModel
+﻿@model BTL_StudentMGMT.Models.DiemDanhFormViewModel
+@using BTL_StudentMGMT.Models
 @{
     ViewData["Title"] = "Điểm danh lớp học phần";
     Layout = "_GiangVienLayout";
@@ -26,19 +27,40 @@
         <strong>Lỗi:</strong> @TempData["Error"]
     </div>
 }
+@if (!Model.CanEdit)
+{
+    <div class="student-notice mb-3" style="background: #fff8e1; border-color: #ffe082; color: #856404;">
+        <i class="bi bi-lock-fill me-1"></i>
+        <strong>Chế độ chỉ xem:</strong> @(Model.EditRestrictionReason ?? "Buổi học này đã khóa sửa hoặc không thể điểm danh.")
+    </div>
+}
 
-<!-- Bộ chọn Lớp học phần và Ngày học -->
+<!-- Bộ chọn Lớp học phần và Buổi học / Ngày học -->
 <div class="student-panel mb-4 p-3">
     <form method="get" asp-action="DiemDanh" class="row g-3 align-items-center">
-        <div class="col-lg-8 col-md-8">
+        <div class="col-lg-5 col-md-5">
             <label class="form-label small fw-semibold text-muted mb-1">LỚP HỌC PHẦN PHỤ TRÁCH</label>
             <select name="lopHocPhanId" asp-items="ViewBag.DanhSachLopHocPhan" class="gv-form-select" onchange="this.form.submit()">
             </select>
         </div>
 
         <div class="col-lg-4 col-md-4">
+            <label class="form-label small fw-semibold text-muted mb-1">DANH SÁCH BUỔI HỌC CỦA LỚP</label>
+            <select class="gv-form-select" onchange="if(this.value){ document.getElementById('inputNgayDiemDanh').value = this.value; this.form.submit(); }">
+                <option value="">-- Chọn buổi học --</option>
+                @foreach (var b in Model.DanhSachBuoiHoc)
+                {
+                    var isSel = b.NgayHoc.ToString("yyyy-MM-dd") == ViewBag.NgayChon;
+                    <option value="@b.NgayHoc.ToString("yyyy-MM-dd")" selected="@(isSel ? "selected" : null)">
+                        @b.Text
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-lg-3 col-md-3">
             <label class="form-label small fw-semibold text-muted mb-1">NGÀY ĐIỂM DANH</label>
-            <input type="date" name="ngay" value="@ViewBag.NgayChon" class="gv-form-control" onchange="this.form.submit()" />
+            <input type="date" id="inputNgayDiemDanh" name="ngay" value="@ViewBag.NgayChon" class="gv-form-control" onchange="this.form.submit()" />
         </div>
     </form>
 </div>
@@ -48,20 +70,28 @@
     <div class="student-panel-heading p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
             <p class="student-eyebrow mb-1">
-                LỚP HỌC PHẦN: <strong class="text-primary font-monospace">@(selectedLhp?.MaLopHocPhan ?? "CHƯA CHỌN")</strong>
+                LỚP HỌC PHẦN: <strong class="text-primary font-monospace">@(selectedLhp?.MaLopHocPhan ?? Model.MaLopHocPhan ?? "CHƯA CHỌN")</strong>
+                &bull; <span>Lịch: @(selectedLhp?.Thu ?? Model.Thu), @Model.KhungGio (Phòng: @(selectedLhp?.PhongHoc ?? Model.PhongHoc))</span>
             </p>
             <h2 style="font-size: 1rem;">
-                @(selectedLhp?.TenLopHocPhan ?? "Vui lòng chọn lớp học phần") — Sĩ số đã đăng ký: <span class="badge bg-primary">@Model.DanhSachSinhVien.Count SV</span>
+                @(selectedLhp?.TenLopHocPhan ?? Model.TenLopHocPhan ?? "Vui lòng chọn lớp học phần") — Sĩ số đã đăng ký: <span class="badge bg-primary">@Model.DanhSachSinhVien.Count SV</span>
             </h2>
         </div>
-        <div class="d-flex gap-2">
-            <button type="button" class="gv-btn gv-btn-secondary gv-btn-sm" onclick="setAll('Có mặt')">
-                <i class="bi bi-check-all text-success"></i> Chọn tất cả Có mặt
-            </button>
-            <button type="button" class="gv-btn gv-btn-secondary gv-btn-sm" onclick="setAll('Vắng')">
-                <i class="bi bi-x-circle text-danger"></i> Chọn tất cả Vắng
-            </button>
-        </div>
+        @if (Model.CanEdit)
+        {
+            <div class="d-flex gap-2">
+                <button type="button" class="gv-btn gv-btn-secondary gv-btn-sm" onclick="setAll('@AttendanceStatus.Present')">
+                    <i class="bi bi-check-all text-success"></i> Chọn tất cả Có mặt
+                </button>
+                <button type="button" class="gv-btn gv-btn-secondary gv-btn-sm" onclick="setAll('@AttendanceStatus.Absent')">
+                    <i class="bi bi-x-circle text-danger"></i> Chọn tất cả Vắng
+                </button>
+            </div>
+        }
+        else
+        {
+            <span class="badge bg-secondary p-2"><i class="bi bi-lock me-1"></i>Đã khóa chỉnh sửa</span>
+        }
     </div>
 
     @if (Model.DanhSachSinhVien.Any())
@@ -79,7 +109,7 @@
                             <th>MÃ SV</th>
                             <th>HỌ VÀ TÊN</th>
                             <th>LỚP HÀNH CHÍNH</th>
-                            <th style="text-align: center;">TRẠNG THÁI ĐIỂM DANH</th>
+                            <th style="text-align: center;">TRẠNG THÁI ĐIỂM DANH <span class="text-danger">*</span></th>
                             <th>GHI CHÚ</th>
                         </tr>
                     </thead>
@@ -107,23 +137,23 @@
                                 <td style="text-align: center;">
                                     <div class="d-inline-flex gap-2 align-items-center">
                                         <label class="gv-status-radio gv-status-comat">
-                                            <input type="radio" name="DanhSachSinhVien[@i].TrangThai" value="Có mặt" @(sv.TrangThai == "Có mặt" ? "checked" : "") />
+                                            <input type="radio" name="DanhSachSinhVien[@i].TrangThai" value="@AttendanceStatus.Present" @(sv.TrangThai == AttendanceStatus.Present ? "checked" : "") @(!Model.CanEdit ? "disabled" : "") required />
                                             <span>✓ Có mặt</span>
                                         </label>
 
                                         <label class="gv-status-radio gv-status-vang">
-                                            <input type="radio" name="DanhSachSinhVien[@i].TrangThai" value="Vắng" @(sv.TrangThai == "Vắng" ? "checked" : "") />
+                                            <input type="radio" name="DanhSachSinhVien[@i].TrangThai" value="@AttendanceStatus.Absent" @(sv.TrangThai == AttendanceStatus.Absent ? "checked" : "") @(!Model.CanEdit ? "disabled" : "") required />
                                             <span>✗ Vắng</span>
                                         </label>
 
                                         <label class="gv-status-radio gv-status-phep">
-                                            <input type="radio" name="DanhSachSinhVien[@i].TrangThai" value="Có phép" @(sv.TrangThai == "Có phép" ? "checked" : "") />
+                                            <input type="radio" name="DanhSachSinhVien[@i].TrangThai" value="@AttendanceStatus.Excused" @(sv.TrangThai == AttendanceStatus.Excused ? "checked" : "") @(!Model.CanEdit ? "disabled" : "") required />
                                             <span>△ Có phép</span>
                                         </label>
                                     </div>
                                 </td>
                                 <td>
-                                    <input type="text" name="DanhSachSinhVien[@i].GhiChu" value="@sv.GhiChu" class="form-control form-control-sm" placeholder="Ghi chú (nếu có)..." style="font-size:.8rem;" />
+                                    <input type="text" name="DanhSachSinhVien[@i].GhiChu" value="@sv.GhiChu" class="form-control form-control-sm" placeholder="Ghi chú (nếu có)..." style="font-size:.8rem;" @(!Model.CanEdit ? "disabled" : "") />
                                 </td>
                             </tr>
                         }
@@ -133,11 +163,20 @@
 
             <div class="p-3 border-top bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span class="text-muted small">
-                    <i class="bi bi-info-circle"></i> Điểm danh được lưu trực tiếp vào Lớp học phần tín chỉ.
+                    <i class="bi bi-info-circle"></i> Điểm danh được lưu trực tiếp vào Lớp học phần tín chỉ. Mọi sinh viên phải được chọn trạng thái.
                 </span>
-                <button type="submit" class="gv-btn gv-btn-primary px-4">
-                    <i class="bi bi-check-circle-fill"></i> Lưu kết quả điểm danh
-                </button>
+                @if (Model.CanEdit)
+                {
+                    <button type="submit" class="gv-btn gv-btn-primary px-4">
+                        <i class="bi bi-check-circle-fill"></i> Lưu kết quả điểm danh
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="gv-btn gv-btn-secondary px-4" disabled>
+                        <i class="bi bi-lock-fill"></i> Đã quá hạn sửa
+                    </button>
+                }
             </div>
         </form>
     }
@@ -154,7 +193,7 @@
     <script>
         function setAll(status) {
             document.querySelectorAll('input[type="radio"]').forEach(function(radio) {
-                if (radio.value === status) {
+                if (radio.value === status && !radio.disabled) {
                     radio.checked = true;
                 }
             });

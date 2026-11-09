@@ -1,5 +1,6 @@
 using BTL_StudentMGMT.Data;
 using BTL_StudentMGMT.Models;
+using BTL_StudentMGMT.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,10 +12,17 @@ namespace BTL_StudentMGMT.Controllers;
 public class QuanLyLopHocPhanController : Controller
 {
     private readonly ApplicationDbContext _db;
+    private readonly IAttendanceService _attendanceService;
+    private readonly IEnrollmentService _enrollmentService;
 
-    public QuanLyLopHocPhanController(ApplicationDbContext db)
+    public QuanLyLopHocPhanController(
+        ApplicationDbContext db,
+        IAttendanceService attendanceService,
+        IEnrollmentService enrollmentService)
     {
         _db = db;
+        _attendanceService = attendanceService;
+        _enrollmentService = enrollmentService;
     }
 
     // 1. Danh sách lớp học phần
@@ -73,7 +81,7 @@ public class QuanLyLopHocPhanController : Controller
             TenHocKy = l.HocKy?.TenHocKy,
             Nhom = l.Nhom,
             SiSoToiDa = l.SiSoToiDa,
-            SiSoHienTai = l.DangKyHocPhans.Count(dk => dk.TrangThai == "ENROLLED"),
+            SiSoHienTai = l.DangKyHocPhans.Count(dk => dk.TrangThai == EnrollmentStatus.Enrolled),
             TrangThai = l.TrangThai,
             LichHoc = $"{l.Thu}, Tiết {l.TietBatDau} - {l.TietBatDau + l.SoTiet - 1}",
             PhongHoc = l.PhongHoc
@@ -256,7 +264,9 @@ public class QuanLyLopHocPhanController : Controller
 
         if (lhp == null) return NotFound();
 
-        var danhSach = lhp.DangKyHocPhans.Select(dk =>
+        var danhSach = lhp.DangKyHocPhans
+            .Where(dk => dk.TrangThai == EnrollmentStatus.Enrolled)
+            .Select(dk =>
         {
             var diem = lhp.Diems.FirstOrDefault(d => d.SinhVienId == dk.SinhVienId);
             return new DangKyHocPhanItemViewModel
@@ -275,8 +285,11 @@ public class QuanLyLopHocPhanController : Controller
             };
         }).OrderBy(s => s.HoTen).ToList();
 
-        // Nạp danh sách sinh viên toàn trường để phục vụ thêm sinh viên vào lớp
-        var registeredIds = lhp.DangKyHocPhans.Select(dk => dk.SinhVienId).ToList();
+        // Nạp danh sách sinh viên toàn trường để phục vụ thêm sinh viên vào lớp (chỉ trừ sinh viên đang ENROLLED)
+        var registeredIds = lhp.DangKyHocPhans
+            .Where(dk => dk.TrangThai == EnrollmentStatus.Enrolled)
+            .Select(dk => dk.SinhVienId)
+            .ToList();
         var eligibleStudents = await _db.SinhViens
             .Include(s => s.Lop)
             .Where(s => !registeredIds.Contains(s.Id))
@@ -304,38 +317,15 @@ public class QuanLyLopHocPhanController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ThemSinhVien(int lopHocPhanId, int sinhVienId)
     {
-        var lhp = await _db.LopHocPhans
-            .Include(l => l.DangKyHocPhans)
-            .FirstOrDefaultAsync(l => l.Id == lopHocPhanId);
-
-        if (lhp == null) return NotFound();
-
-        var count = lhp.DangKyHocPhans.Count(dk => dk.TrangThai == "ENROLLED");
-        if (count >= lhp.SiSoToiDa)
+        var result = await _enrollmentService.EnrollAsync(sinhVienId, lopHocPhanId, EnrollmentActor.Admin);
+        if (result.Success)
         {
-            TempData["Error"] = "Lớp học phần đã đạt sĩ số tối đa.";
-            return RedirectToAction(nameof(SinhVien), new { id = lopHocPhanId });
+            TempData["Msg"] = result.Message;
         }
-
-        var exists = await _db.DangKyHocPhans.AnyAsync(dk => dk.LopHocPhanId == lopHocPhanId && dk.SinhVienId == sinhVienId);
-        if (exists)
+        else
         {
-            TempData["Error"] = "Sinh viên này đã có trong danh sách đăng ký của lớp học phần.";
-            return RedirectToAction(nameof(SinhVien), new { id = lopHocPhanId });
+            TempData["Error"] = result.Message;
         }
-
-        var dkMoi = new DangKyHocPhan
-        {
-            LopHocPhanId = lopHocPhanId,
-            SinhVienId = sinhVienId,
-            NgayDangKy = DateTime.UtcNow,
-            TrangThai = "ENROLLED"
-        };
-
-        _db.DangKyHocPhans.Add(dkMoi);
-        await _db.SaveChangesAsync();
-
-        TempData["Msg"] = "Đã thêm sinh viên vào lớp học phần thành công.";
         return RedirectToAction(nameof(SinhVien), new { id = lopHocPhanId });
     }
 
@@ -344,21 +334,15 @@ public class QuanLyLopHocPhanController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> XoaSinhVien(int lopHocPhanId, int sinhVienId)
     {
-        var dk = await _db.DangKyHocPhans.FirstOrDefaultAsync(d => d.LopHocPhanId == lopHocPhanId && d.SinhVienId == sinhVienId);
-        if (dk == null) return NotFound();
-
-        // Kiểm tra xem đã có điểm thi chưa
-        var coDiem = await _db.Diems.AnyAsync(d => d.LopHocPhanId == lopHocPhanId && d.SinhVienId == sinhVienId);
-        if (coDiem)
+        var result = await _enrollmentService.DropAsync(sinhVienId, lopHocPhanId, EnrollmentActor.Admin);
+        if (result.Success)
         {
-            TempData["Error"] = "Không thể hủy sinh viên đã có điểm tổng kết trong lớp học phần này.";
-            return RedirectToAction(nameof(SinhVien), new { id = lopHocPhanId });
+            TempData["Msg"] = result.Message;
         }
-
-        _db.DangKyHocPhans.Remove(dk);
-        await _db.SaveChangesAsync();
-
-        TempData["Msg"] = "Đã xóa sinh viên khỏi lớp học phần.";
+        else
+        {
+            TempData["Error"] = result.Message;
+        }
         return RedirectToAction(nameof(SinhVien), new { id = lopHocPhanId });
     }
 
@@ -374,7 +358,7 @@ public class QuanLyLopHocPhanController : Controller
 
         if (lhp == null) return NotFound();
 
-        if (lhp.DangKyHocPhans.Count > 0)
+        if (lhp.DangKyHocPhans.Any(dk => dk.TrangThai == EnrollmentStatus.Enrolled))
         {
             TempData["Error"] = "Không thể xóa lớp học phần đang có sinh viên đăng ký. Hãy xóa sinh viên trước.";
             return RedirectToAction(nameof(Index));
@@ -384,6 +368,11 @@ public class QuanLyLopHocPhanController : Controller
         {
             TempData["Error"] = "Không thể xóa lớp học phần đã có bảng điểm học phần.";
             return RedirectToAction(nameof(Index));
+        }
+
+        if (lhp.DangKyHocPhans.Count > 0)
+        {
+            _db.DangKyHocPhans.RemoveRange(lhp.DangKyHocPhans);
         }
 
         _db.LopHocPhans.Remove(lhp);

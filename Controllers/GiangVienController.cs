@@ -224,7 +224,7 @@ public class GiangVienController : Controller
                 model.MonHocId = lhp.MonHocId;
 
                 var enrolledStudents = lhp.DangKyHocPhans
-                    .Where(dk => dk.TrangThai == "ENROLLED")
+                    .Where(dk => dk.TrangThai == EnrollmentStatus.Enrolled)
                     .Select(dk => dk.SinhVien)
                     .OrderBy(sv => sv.MaSinhVien)
                     .ToList();

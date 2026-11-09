@@ -1,0 +1,183 @@
+﻿@model BTL_StudentMGMT.Models.StudentAttendanceReportViewModel
+@{
+    ViewData["Title"] = "Chuyên cần của tôi";
+    Layout = "_SinhVienLayout";
+}
+
+<div class="portal-card mb-4">
+    <div class="portal-card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <h2 class="portal-card-title mb-1">
+                <i class="bi bi-calendar-check text-primary me-2"></i>Chuyên cần của tôi
+            </h2>
+            <p class="portal-card-subtitle mb-0">Theo dõi chi tiết số buổi học, tỷ lệ vắng và tình trạng chuyên cần theo từng học phần.</p>
+        </div>
+        <form method="get" asp-action="ChuyenCan" class="d-flex align-items-center gap-2">
+            <label for="selectHocKy" class="fw-bold text-nowrap small text-muted">Học kỳ:</label>
+            <select id="selectHocKy" name="hocKyId" class="form-select form-select-sm" onchange="this.form.submit()" style="min-width: 220px;">
+                @foreach (var hk in Model.DanhSachHocKy)
+                {
+                    <option value="@hk.Value" selected="@hk.Selected">@hk.Text</option>
+                }
+            </select>
+        </form>
+    </div>
+</div>
+
+<!-- Quy chế chuyên cần -->
+<div class="alert alert-info border-0 shadow-sm rounded-3 mb-4 d-flex align-items-start gap-3">
+    <i class="bi bi-info-circle-fill fs-4 text-info mt-1"></i>
+    <div class="small">
+        <strong class="d-block mb-1 text-dark">Quy định về đánh giá điểm chuyên cần & cấm thi (ĐH Giao thông Vận tải):</strong>
+        <span class="d-block mb-1">&bull; Sinh viên vắng từ <strong>20%</strong> tổng số buổi đã điểm danh của lớp học phần trở lên sẽ thuộc diện <strong>Nguy cơ cấm thi</strong>.</span>
+        <span class="d-block mb-1">&bull; Sinh viên vắng từ <strong>14%</strong> đến dưới 20% sẽ nhận mức <strong>Cảnh báo vắng</strong> để kịp thời chấn chỉnh.</span>
+        <span class="d-block">&bull; Đi muộn được tính là có mặt khi lên lớp. Điểm chuyên cần đề xuất được tính trên thang điểm 10 theo tỷ lệ có mặt thực tế.</span>
+    </div>
+</div>
+
+@if (Model.DanhSachLop.Count == 0)
+{
+    <div class="portal-card text-center py-5">
+        <i class="bi bi-inbox text-muted display-4 d-block mb-3"></i>
+        <h5 class="text-muted">Chưa có dữ liệu học phần</h5>
+        <p class="text-muted small">Bạn chưa đăng ký lớp học phần nào trong học kỳ này hoặc học kỳ chưa bắt đầu điểm danh.</p>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @for (int i = 0; i < Model.DanhSachLop.Count; i++)
+        {
+            var item = Model.DanhSachLop[i];
+            var collapseId = $"collapseBuoiHoc_{i}";
+
+            <div class="col-12">
+                <div class="portal-card border shadow-sm">
+                    <div class="p-3 border-bottom bg-light d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div>
+                            <span class="badge bg-primary me-2">@item.MaLopHocPhan</span>
+                            <strong class="text-dark fs-6">@item.TenMon</strong>
+                            <span class="text-muted small ms-2">(@item.SoTinChi tín chỉ &bull; GV: @item.TenGiangVien)</span>
+                        </div>
+                        <div>
+                            @if (item.MucCanhBao == BTL_StudentMGMT.Models.AttendanceWarningLevel.NguyCo)
+                            {
+                                <span class="badge bg-danger text-white px-3 py-2"><i class="bi bi-exclamation-triangle-fill me-1"></i>@item.TenMucCanhBao</span>
+                            }
+                            else if (item.MucCanhBao == BTL_StudentMGMT.Models.AttendanceWarningLevel.CanhBao)
+                            {
+                                <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-exclamation-circle-fill me-1"></i>@item.TenMucCanhBao</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success text-white px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i>@item.TenMucCanhBao</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="p-3">
+                        <!-- Metrics Row -->
+                        <div class="row g-2 text-center mb-3">
+                            <div class="col-6 col-md-2">
+                                <div class="p-2 rounded bg-light border">
+                                    <span class="text-muted small d-block">Số buổi của lớp</span>
+                                    <strong class="fs-5 text-dark">@item.TongBuoi</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <div class="p-2 rounded bg-light border">
+                                    <span class="text-success small d-block"><i class="bi bi-check2"></i> Có mặt</span>
+                                    <strong class="fs-5 text-success">@item.Present</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <div class="p-2 rounded bg-light border">
+                                    <span class="text-info small d-block"><i class="bi bi-clock-history"></i> Đi muộn</span>
+                                    <strong class="fs-5 text-info">@item.Late</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <div class="p-2 rounded bg-light border">
+                                    <span class="text-warning small d-block"><i class="bi bi-file-earmark-medical"></i> Có phép</span>
+                                    <strong class="fs-5 text-warning">@item.Excused</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <div class="p-2 rounded bg-light border">
+                                    <span class="text-danger small d-block"><i class="bi bi-x-lg"></i> Vắng mặt</span>
+                                    <strong class="fs-5 text-danger">@item.Absent</strong>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <div class="p-2 rounded @(item.MucCanhBao == BTL_StudentMGMT.Models.AttendanceWarningLevel.NguyCo ? "bg-danger text-white" : item.MucCanhBao == BTL_StudentMGMT.Models.AttendanceWarningLevel.CanhBao ? "bg-warning text-dark" : "bg-light border")">
+                                    <span class="small d-block @(item.MucCanhBao == BTL_StudentMGMT.Models.AttendanceWarningLevel.NguyCo ? "text-white" : "text-muted")">Tỷ lệ vắng</span>
+                                    <strong class="fs-5">@item.PhanTramVang%</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gợi ý điểm & Toggle chi tiết -->
+                        <div class="d-flex flex-wrap justify-content-between align-items-center pt-2 border-top">
+                            <div>
+                                @if (item.DiemGoiY.HasValue)
+                                {
+                                    <span class="text-muted small">
+                                        <i class="bi bi-award text-primary me-1"></i>Gợi ý điểm chuyên cần:
+                                        <strong class="text-primary fs-6">@item.DiemGoiY.Value.ToString("0.0")</strong>
+                                        <span class="text-muted">(@item.DienGiaiGoiY)</span>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small"><i class="bi bi-info-circle me-1"></i>Chưa đủ dữ liệu buổi học để gợi ý điểm chuyên cần.</span>
+                                }
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false">
+                                <i class="bi bi-list-ul me-1"></i>Chi tiết từng buổi học (@item.DanhSachBuoiHoc.Count)
+                            </button>
+                        </div>
+
+                        <!-- Bảng chi tiết từng buổi học (Collapsible) -->
+                        <div class="collapse mt-3" id="@collapseId">
+                            @if (item.DanhSachBuoiHoc.Count == 0)
+                            {
+                                <div class="alert alert-light text-muted small mb-0">Chưa có buổi học nào được ghi nhận điểm danh.</div>
+                            }
+                            else
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 60px;">STT</th>
+                                                <th>Ngày học</th>
+                                                <th>Thứ</th>
+                                                <th>Trạng thái</th>
+                                                <th>Ghi chú</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @for (int j = 0; j < item.DanhSachBuoiHoc.Count; j++)
+                                            {
+                                                var b = item.DanhSachBuoiHoc[j];
+                                                <tr>
+                                                    <td>@(j + 1)</td>
+                                                    <td><strong>@b.NgayDiemDanh.ToString("dd/MM/yyyy")</strong></td>
+                                                    <td>@b.Thu</td>
+                                                    <td>
+                                                        <span class="badge @b.BadgeClass">@b.TenTrangThai</span>
+                                                    </td>
+                                                    <td class="text-muted small">@(string.IsNullOrWhiteSpace(b.GhiChu) ? "—" : b.GhiChu)</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

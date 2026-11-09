@@ -151,15 +151,15 @@ public class TimetableService : ITimetableService
             TenGiangVien = giangVien.HoTen,
             PhongHoc = l.PhongHoc ?? "Chưa xếp phòng",
             ThoiGianHoc = !string.IsNullOrWhiteSpace(l.Thu) ? $"{l.Thu}, Tiết {l.TietBatDau}–{l.TietBatDau + l.SoTiet - 1}" : "Chưa xếp lịch",
-            LopPhuTrach = l.DangKyHocPhans.Select(dk => dk.SinhVien?.Lop?.TenLop).Where(s => !string.IsNullOrEmpty(s)).Distinct().FirstOrDefault() ?? "Đại trà",
-            SiSo = l.DangKyHocPhans.Count(dk => dk.TrangThai == "ENROLLED")
+            LopPhuTrach = l.DangKyHocPhans.Where(dk => dk.TrangThai == EnrollmentStatus.Enrolled).Select(dk => dk.SinhVien?.Lop?.TenLop).Where(s => !string.IsNullOrEmpty(s)).Distinct().FirstOrDefault() ?? "Đại trà",
+            SiSo = l.DangKyHocPhans.Count(dk => dk.TrangThai == EnrollmentStatus.Enrolled)
         }).ToList();
 
         // 7. Thống kê số liệu
         var tongMonPhuTrach = rawLhpList.Select(l => l.MonHocId).Distinct().Count();
         var tongLopPhuTrach = rawLhpList.Count;
         var tongBuoiDayTrongTuan = tatCaCards.Count;
-        var tongSinhVien = rawLhpList.SelectMany(l => l.DangKyHocPhans.Where(dk => dk.TrangThai == "ENROLLED")).Select(dk => dk.SinhVienId).Distinct().Count();
+        var tongSinhVien = rawLhpList.SelectMany(l => l.DangKyHocPhans.Where(dk => dk.TrangThai == EnrollmentStatus.Enrolled)).Select(dk => dk.SinhVienId).Distinct().Count();
 
         return new GiangVienLichGiangDayViewModel
         {
@@ -235,7 +235,7 @@ public class TimetableService : ITimetableService
             .Include(dk => dk.LopHocPhan).ThenInclude(l => l.MonHoc)
             .Include(dk => dk.LopHocPhan).ThenInclude(l => l.GiangVien)
             .Include(dk => dk.LopHocPhan).ThenInclude(l => l.HocKy).ThenInclude(h => h!.NamHoc)
-            .Where(dk => dk.SinhVienId == sinhVienId && dk.TrangThai == "ENROLLED")
+            .Where(dk => dk.SinhVienId == sinhVienId && dk.TrangThai == EnrollmentStatus.Enrolled)
             .AsQueryable();
 
         if (selectedHocKy != null)
@@ -322,7 +322,7 @@ public class TimetableService : ITimetableService
             TenGiangVien = dk.LopHocPhan.GiangVien?.HoTen ?? "Chưa phân công",
             PhongHoc = dk.LopHocPhan.PhongHoc ?? "Chưa xếp phòng",
             ThoiGianHoc = !string.IsNullOrWhiteSpace(dk.LopHocPhan.Thu) ? $"{dk.LopHocPhan.Thu}, Tiết {dk.LopHocPhan.TietBatDau}–{dk.LopHocPhan.TietBatDau + dk.LopHocPhan.SoTiet - 1}" : "Chưa xếp lịch",
-            SiSo = dk.LopHocPhan.DangKyHocPhans?.Count ?? 0
+            SiSo = dk.LopHocPhan.DangKyHocPhans?.Count(d => d.TrangThai == EnrollmentStatus.Enrolled) ?? 0
         }).ToList();
 
         var tongLopHocPhan = registeredList.Count;
@@ -409,7 +409,7 @@ public class TimetableService : ITimetableService
             StatusText = text,
             BadgeClass = badge,
             ColorClass = CaHocHelper.GetCourseColorClass(lhp.MonHoc?.MaMon),
-            SiSo = lhp.DangKyHocPhans.Count(dk => dk.TrangThai == "ENROLLED"),
+            SiSo = lhp.DangKyHocPhans.Count(dk => dk.TrangThai == EnrollmentStatus.Enrolled),
             SiSoToiDa = lhp.SiSoToiDa,
             GhiChu = lhp.GhiChu
         };
@@ -427,11 +427,15 @@ public class TimetableService : ITimetableService
         if (currentSinhVienId.HasValue)
         {
             var myDd = dsDiemDanh.FirstOrDefault(d => d.SinhVienId == currentSinhVienId.Value);
-            card.TrangThaiDiemDanhCuaSinhVien = myDd?.TrangThai ?? (card.StatusCode == "DA_HOAN_THANH" ? "Chưa điểm danh" : "Chưa đến giờ");
+            card.TrangThaiDiemDanhCuaSinhVien = myDd != null
+                ? AttendanceStatus.ToDisplayName(myDd.TrangThai)
+                : (card.StatusCode == "DA_HOAN_THANH" ? "Chưa điểm danh" : "Chưa đến giờ");
         }
 
-        // Roster sinh viên
-        foreach (var dk in lhp.DangKyHocPhans.Where(d => d.TrangThai == "ENROLLED"))
+        else
+        {
+            // Roster sinh viên
+        foreach (var dk in lhp.DangKyHocPhans.Where(d => d.TrangThai == EnrollmentStatus.Enrolled))
         {
             var sv = dk.SinhVien;
             var dd = dsDiemDanh.FirstOrDefault(d => d.SinhVienId == sv.Id);
@@ -445,6 +449,8 @@ public class TimetableService : ITimetableService
                 SoDienThoai = sv.SoDienThoai,
                 TrangThaiDiemDanh = dd?.TrangThai ?? "Chưa điểm danh"
             });
+        }
+
         }
 
         return card;
@@ -711,7 +717,7 @@ public class TimetableService : ITimetableService
                 }
             }
 
-            var siSoHienTai = lhp.DangKyHocPhans.Count(dk => dk.TrangThai == "ENROLLED");
+            var siSoHienTai = lhp.DangKyHocPhans.Count(dk => dk.TrangThai == EnrollmentStatus.Enrolled);
 
             // Tạo đúng 1 card duy nhất cho buổi học này! Tuyệt đối không nhân bản thẻ
             var singleCard = new ThoiKhoaBieuCardViewModel

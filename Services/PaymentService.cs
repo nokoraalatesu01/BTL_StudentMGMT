@@ -1424,7 +1424,7 @@ public class PaymentService : IPaymentService
                 if (hocKy != null)
                 {
                     var tinChi = await _db.DangKyHocPhans
-                        .Where(dk => dk.SinhVienId == student.Id && dk.TrangThai == "ENROLLED")
+                        .Where(dk => dk.SinhVienId == student.Id && dk.TrangThai == EnrollmentStatus.Enrolled)
                         .SumAsync(dk => (int?)dk.LopHocPhan!.MonHoc!.SoTinChi) ?? 14;
 
                     if (tinChi == 0) tinChi = 14;

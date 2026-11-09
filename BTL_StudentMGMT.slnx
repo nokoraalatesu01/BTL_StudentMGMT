@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="BTL_StudentMGMT.csproj" />
+  <Project Path="BTL_StudentMGMT.Tests\BTL_StudentMGMT.Tests.csproj" />
 </Solution>
