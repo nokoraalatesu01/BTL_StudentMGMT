@@ -350,7 +350,10 @@ public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
         modelBuilder.Entity<LopHocPhan>(entity =>
         {
-            entity.ToTable("LopHocPhan");
+            entity.ToTable("LopHocPhan", tb =>
+            {
+                tb.HasCheckConstraint("CK_LopHocPhan_SingleCa", "[TietBatDau] IN (1, 3, 5, 7, 9) AND [SoTiet] = 2");
+            });
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.MaLopHocPhan).IsUnique();
             entity.Property(e => e.MaLopHocPhan).HasMaxLength(30);

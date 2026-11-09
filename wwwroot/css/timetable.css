@@ -1122,11 +1122,11 @@
     font-weight: 700;
 }
 
-/* Grid nội dung Timeline (670px tương ứng từ 7:00 đến 18:00, 50px mỗi tiếng) */
+/* Grid nội dung Timeline (720px tương ứng từ 7:00 đến 21:00, 50px mỗi tiếng) */
 .utc-timeline-grid {
     display: grid;
     grid-template-columns: 80px repeat(7, 1fr);
-    height: 670px;
+    height: 720px;
     position: relative;
 }
 
@@ -1135,7 +1135,7 @@
     background: #f8fafc;
     border-right: 1px solid var(--tkb-border);
     position: relative;
-    height: 670px;
+    height: 720px;
 }
 
 .utc-hour-marker {
@@ -1153,7 +1153,7 @@
 /* 7 Cột thứ */
 .utc-day-column {
     position: relative;
-    height: 670px;
+    height: 720px;
     border-right: 1px solid var(--tkb-border);
     background: #ffffff;
 }

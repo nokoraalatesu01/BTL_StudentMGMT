@@ -83,7 +83,7 @@ public class QuanLyLopHocPhanController : Controller
             SiSoToiDa = l.SiSoToiDa,
             SiSoHienTai = l.DangKyHocPhans.Count(dk => dk.TrangThai == EnrollmentStatus.Enrolled),
             TrangThai = l.TrangThai,
-            LichHoc = $"{l.Thu}, Tiết {l.TietBatDau} - {l.TietBatDau + l.SoTiet - 1}",
+            LichHoc = $"{l.Thu}, {CaHocHelper.GetTenCa(CaHocHelper.GetCaTuTiet(l.TietBatDau))} ({CaHocHelper.GetKhungGio(l.TietBatDau, l.SoTiet)})",
             PhongHoc = l.PhongHoc
         }).ToList();
 
@@ -112,8 +112,9 @@ public class QuanLyLopHocPhanController : Controller
             TrangThai = "OPEN",
             SiSoToiDa = 60,
             Thu = "Thứ 2",
+            Ca = 1,
             TietBatDau = 1,
-            SoTiet = 3,
+            SoTiet = 2,
             PhongHoc = "P.302-A1"
         });
     }
@@ -123,28 +124,68 @@ public class QuanLyLopHocPhanController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(LopHocPhanFormViewModel model)
     {
-        model.MaLopHocPhan = model.MaLopHocPhan.Trim();
-        model.TenLopHocPhan = model.TenLopHocPhan.Trim();
+        model.MaLopHocPhan = model.MaLopHocPhan?.Trim() ?? string.Empty;
+        model.TenLopHocPhan = model.TenLopHocPhan?.Trim() ?? string.Empty;
+        model.PhongHoc = model.PhongHoc?.Trim() ?? string.Empty;
 
         if (await _db.LopHocPhans.AnyAsync(l => l.MaLopHocPhan == model.MaLopHocPhan))
         {
             ModelState.AddModelError(nameof(model.MaLopHocPhan), "Mã lớp học phần này đã tồn tại.");
         }
 
-        // Kiểm tra giảng viên bị trùng lịch
+        // Ánh xạ Ca -> (TietBatDau, SoTiet) từ CaHocHelper
+        if (!model.Ca.HasValue || !CaHocHelper.IsValidCa(model.Ca.Value))
+        {
+            ModelState.AddModelError(nameof(model.Ca), "Ca học không hợp lệ. Vui lòng chọn ca từ Ca 1 đến Ca 5.");
+        }
+        else
+        {
+            var (start, count) = CaHocHelper.GetTietTuCa(model.Ca.Value);
+            model.TietBatDau = start;
+            model.SoTiet = count;
+        }
+
+        var tietKetThuc = model.TietBatDau + model.SoTiet - 1;
+
+        // Kiểm tra giảng viên bị trùng lịch: a.Start <= b.End && b.Start <= a.End
         if (model.GiangVienId.HasValue && model.GiangVienId > 0)
         {
-            var tietKetThuc = model.TietBatDau + model.SoTiet - 1;
-            var trungLich = await _db.LopHocPhans.AnyAsync(l =>
-                l.GiangVienId == model.GiangVienId &&
-                l.Thu == model.Thu &&
-                l.TrangThai == "OPEN" &&
-                ((model.TietBatDau >= l.TietBatDau && model.TietBatDau < l.TietBatDau + l.SoTiet) ||
-                 (tietKetThuc > l.TietBatDau && tietKetThuc <= l.TietBatDau + l.SoTiet)));
+            var trungLichGV = await _db.LopHocPhans
+                .Where(l => l.GiangVienId == model.GiangVienId &&
+                            l.Thu == model.Thu &&
+                            l.TrangThai == "OPEN" &&
+                            model.TietBatDau <= (l.TietBatDau + l.SoTiet - 1) &&
+                            l.TietBatDau <= tietKetThuc)
+                .Select(l => new { l.MaLopHocPhan, l.Thu, l.TietBatDau, l.SoTiet })
+                .FirstOrDefaultAsync();
 
-            if (trungLich)
+            if (trungLichGV != null)
             {
-                ModelState.AddModelError(nameof(model.GiangVienId), "Giảng viên này đã có lịch giảng dạy lớp khác vào khung giờ này.");
+                var caTen = CaHocHelper.GetTenCa(CaHocHelper.GetCaTuTiet(trungLichGV.TietBatDau));
+                ModelState.AddModelError(nameof(model.GiangVienId),
+                    $"Giảng viên này đã có lịch giảng dạy lớp '{trungLichGV.MaLopHocPhan}' vào {trungLichGV.Thu}, {caTen} ({CaHocHelper.GetKhungGio(trungLichGV.TietBatDau, trungLichGV.SoTiet)}).");
+            }
+        }
+
+        // Kiểm tra trùng PHÒNG HỌC: cùng PhongHoc, cùng Thu, cùng Ca, cùng HocKyId, trạng thái OPEN, khác lớp
+        if (!string.IsNullOrWhiteSpace(model.PhongHoc) && model.HocKyId.HasValue)
+        {
+            var phongNormalized = model.PhongHoc.Trim();
+            var trungPhong = await _db.LopHocPhans
+                .Where(l => l.PhongHoc != null && l.PhongHoc.Trim() == phongNormalized &&
+                            l.Thu == model.Thu &&
+                            l.HocKyId == model.HocKyId &&
+                            l.TrangThai == "OPEN" &&
+                            model.TietBatDau <= (l.TietBatDau + l.SoTiet - 1) &&
+                            l.TietBatDau <= tietKetThuc)
+                .Select(l => new { l.MaLopHocPhan, l.Thu, l.TietBatDau, l.SoTiet })
+                .FirstOrDefaultAsync();
+
+            if (trungPhong != null)
+            {
+                var caTen = CaHocHelper.GetTenCa(CaHocHelper.GetCaTuTiet(trungPhong.TietBatDau));
+                ModelState.AddModelError(nameof(model.PhongHoc),
+                    $"Phòng học '{phongNormalized}' đã được xếp cho lớp '{trungPhong.MaLopHocPhan}' vào {trungPhong.Thu}, {caTen} ({CaHocHelper.GetKhungGio(trungPhong.TietBatDau, trungPhong.SoTiet)}).");
             }
         }
 
@@ -186,6 +227,9 @@ public class QuanLyLopHocPhanController : Controller
         if (lhp == null) return NotFound();
 
         await LoadFormDropdownsAsync(lhp.MonHocId, lhp.HocKyId, lhp.GiangVienId);
+
+        int? caValue = CaHocHelper.GetCaChuan(lhp.TietBatDau, lhp.SoTiet);
+
         return View("Form", new LopHocPhanFormViewModel
         {
             Id = lhp.Id,
@@ -198,6 +242,7 @@ public class QuanLyLopHocPhanController : Controller
             SiSoToiDa = lhp.SiSoToiDa,
             TrangThai = lhp.TrangThai,
             Thu = lhp.Thu,
+            Ca = caValue, // null nếu dữ liệu cũ không khớp 1 ca chuẩn
             TietBatDau = lhp.TietBatDau,
             SoTiet = lhp.SoTiet,
             PhongHoc = lhp.PhongHoc,
@@ -215,12 +260,71 @@ public class QuanLyLopHocPhanController : Controller
         var lhp = await _db.LopHocPhans.FindAsync(id);
         if (lhp == null) return NotFound();
 
-        model.MaLopHocPhan = model.MaLopHocPhan.Trim();
-        model.TenLopHocPhan = model.TenLopHocPhan.Trim();
+        model.MaLopHocPhan = model.MaLopHocPhan?.Trim() ?? string.Empty;
+        model.TenLopHocPhan = model.TenLopHocPhan?.Trim() ?? string.Empty;
+        model.PhongHoc = model.PhongHoc?.Trim() ?? string.Empty;
 
         if (await _db.LopHocPhans.AnyAsync(l => l.MaLopHocPhan == model.MaLopHocPhan && l.Id != id))
         {
             ModelState.AddModelError(nameof(model.MaLopHocPhan), "Mã lớp học phần này đã tồn tại.");
+        }
+
+        // Ánh xạ Ca -> (TietBatDau, SoTiet) từ CaHocHelper
+        if (!model.Ca.HasValue || !CaHocHelper.IsValidCa(model.Ca.Value))
+        {
+            ModelState.AddModelError(nameof(model.Ca), "Ca học không hợp lệ. Vui lòng chọn ca từ Ca 1 đến Ca 5.");
+        }
+        else
+        {
+            var (start, count) = CaHocHelper.GetTietTuCa(model.Ca.Value);
+            model.TietBatDau = start;
+            model.SoTiet = count;
+        }
+
+        var tietKetThuc = model.TietBatDau + model.SoTiet - 1;
+
+        // Kiểm tra giảng viên bị trùng lịch (loại trừ chính lớp đang sửa)
+        if (model.GiangVienId.HasValue && model.GiangVienId > 0)
+        {
+            var trungLichGV = await _db.LopHocPhans
+                .Where(l => l.Id != id &&
+                            l.GiangVienId == model.GiangVienId &&
+                            l.Thu == model.Thu &&
+                            l.TrangThai == "OPEN" &&
+                            model.TietBatDau <= (l.TietBatDau + l.SoTiet - 1) &&
+                            l.TietBatDau <= tietKetThuc)
+                .Select(l => new { l.MaLopHocPhan, l.Thu, l.TietBatDau, l.SoTiet })
+                .FirstOrDefaultAsync();
+
+            if (trungLichGV != null)
+            {
+                var caTen = CaHocHelper.GetTenCa(CaHocHelper.GetCaTuTiet(trungLichGV.TietBatDau));
+                ModelState.AddModelError(nameof(model.GiangVienId),
+                    $"Giảng viên này đã có lịch giảng dạy lớp '{trungLichGV.MaLopHocPhan}' vào {trungLichGV.Thu}, {caTen} ({CaHocHelper.GetKhungGio(trungLichGV.TietBatDau, trungLichGV.SoTiet)}).");
+            }
+        }
+
+        // Kiểm tra trùng PHÒNG HỌC: cùng PhongHoc, cùng Thu, cùng Ca, cùng HocKyId, trạng thái OPEN, khác lớp
+        if (!string.IsNullOrWhiteSpace(model.PhongHoc) && model.HocKyId.HasValue)
+        {
+            var phongNormalized = model.PhongHoc.Trim();
+            var trungPhong = await _db.LopHocPhans
+                .Where(l => l.Id != id &&
+                            l.PhongHoc != null && l.PhongHoc.Trim() == phongNormalized &&
+                            l.Thu == model.Thu &&
+                            l.HocKyId == model.HocKyId &&
+                            l.TrangThai == "OPEN" &&
+                            model.TietBatDau <= (l.TietBatDau + l.SoTiet - 1) &&
+                            l.TietBatDau <= tietKetThuc)
+                .Select(l => new { l.MaLopHocPhan, l.Thu, l.TietBatDau, l.SoTiet })
+                .FirstOrDefaultAsync();
+
+            if (trungPhong != null)
+            {
+                var caTen = CaHocHelper.GetTenCa(CaHocHelper.GetCaTuTiet(trungPhong.TietBatDau));
+                ModelState.AddModelError(nameof(model.PhongHoc),
+                    $"Phòng học '{phongNormalized}' đã được xếp cho lớp '{trungPhong.MaLopHocPhan}' vào {trungPhong.Thu}, {caTen} ({CaHocHelper.GetKhungGio(trungPhong.TietBatDau, trungPhong.SoTiet)}).");
+            }
         }
 
         if (!ModelState.IsValid)

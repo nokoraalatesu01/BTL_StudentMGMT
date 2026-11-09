@@ -4,7 +4,7 @@
     Layout = "_SinhVienLayout";
     var sv = Model.SinhVien;
     var displayName = string.IsNullOrWhiteSpace(sv?.HoTen) ? "Sinh viên" : sv.HoTen.Trim();
-    var hours = new[] { "7:00", "8:00", "9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00" };
+    var hours = new[] { "7:00", "8:00", "9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00" };
 }
 
 <link rel="stylesheet" href="~/css/timetable.css" asp-append-version="true" />
@@ -332,7 +332,7 @@
                     }
                 </div>
 
-                <!-- Lưới Timeline 550px (từ 7:00 đến 18:00) -->
+                <!-- Lưới Timeline 700px (từ 7:00 đến 21:00, 50px mỗi tiếng) -->
                 <div class="utc-timeline-grid">
                     <!-- Cột mốc giờ bên trái -->
                     <div class="utc-time-axis-col">

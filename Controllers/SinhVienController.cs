@@ -1,4 +1,4 @@
-﻿using BTL_StudentMGMT.Data;
+using BTL_StudentMGMT.Data;
 using BTL_StudentMGMT.Models;
 using BTL_StudentMGMT.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -167,7 +167,7 @@ public class SinhVienController : Controller
                 TenMon = l.MonHoc?.TenMon ?? "",
                 SoTinChi = l.MonHoc?.SoTinChi ?? 0,
                 TenGiangVien = l.GiangVien?.HoTen,
-                LichHoc = $"{l.Thu}, Tiết {l.TietBatDau} - {l.TietBatDau + l.SoTiet - 1}",
+                LichHoc = $"{l.Thu}, {CaHocHelper.GetTenCa(CaHocHelper.GetCaTuTiet(l.TietBatDau))} ({CaHocHelper.GetKhungGio(l.TietBatDau, l.SoTiet)})",
                 PhongHoc = l.PhongHoc,
                 SiSoHienTai = l.DangKyHocPhans.Count(dk => dk.TrangThai == EnrollmentStatus.Enrolled),
                 SiSoToiDa = l.SiSoToiDa,
@@ -182,7 +182,7 @@ public class SinhVienController : Controller
                 TenMon = dk.LopHocPhan.MonHoc?.TenMon ?? "",
                 SoTinChi = dk.LopHocPhan.MonHoc?.SoTinChi ?? 0,
                 TenGiangVien = dk.LopHocPhan.GiangVien?.HoTen,
-                LichHoc = $"{dk.LopHocPhan.Thu}, Tiết {dk.LopHocPhan.TietBatDau} - {dk.LopHocPhan.TietBatDau + dk.LopHocPhan.SoTiet - 1}",
+                LichHoc = $"{dk.LopHocPhan.Thu}, {CaHocHelper.GetTenCa(CaHocHelper.GetCaTuTiet(dk.LopHocPhan.TietBatDau))} ({CaHocHelper.GetKhungGio(dk.LopHocPhan.TietBatDau, dk.LopHocPhan.SoTiet)})",
                 PhongHoc = dk.LopHocPhan.PhongHoc,
                 SiSoHienTai = 0,
                 SiSoToiDa = dk.LopHocPhan.SiSoToiDa,
