@@ -1,0 +1,116 @@
+@model List<BTL_StudentMGMT.Models.TaiKhoanHangLoatItem>
+@{
+    ViewData["Title"] = "Tạo tài khoản hàng loạt";
+}
+
+<!-- ===== TIÊU ĐỀ TRANG ===== -->
+<div class="page-header">
+    <div>
+        <p class="page-breadcrumb">
+            <span style="color:#94a3b8;">Quản trị</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-cur">Tài khoản</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-cur">Tạo tài khoản hàng loạt</span>
+        </p>
+        <h3 class="page-title">Tạo tài khoản hàng loạt</h3>
+        <p class="page-subtitle">Chọn các hồ sơ sinh viên/giảng viên chưa có tài khoản. Tên đăng nhập = mã hồ sơ, mật khẩu mặc định = 12345678.</p>
+    </div>
+    <div class="page-header-actions">
+        <a asp-action="Index" class="btn-action-secondary">
+            <i class="bi bi-arrow-left"></i> Về danh sách tài khoản
+        </a>
+    </div>
+</div>
+
+@if (TempData["Msg"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show rounded-3 mb-3" role="alert">
+        <i class="bi bi-check-circle-fill text-success"></i>
+        <div>@TempData["Msg"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-3" role="alert">
+        <i class="bi bi-exclamation-circle-fill text-danger"></i>
+        <div>@TempData["Error"]</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (Model == null || !Model.Any())
+{
+    <div class="content-card p-4 text-center">
+        <i class="bi bi-check-circle text-success fs-1 d-block mb-3"></i>
+        <h4>Không có hồ sơ nào cần tạo tài khoản</h4>
+        <p class="text-muted">Tất cả sinh viên và giảng viên trong hệ thống đã có tài khoản đăng nhập.</p>
+        <a asp-action="Index" class="btn btn-primary">Về danh sách tài khoản</a>
+    </div>
+}
+else
+{
+    <div class="content-card p-3 mb-3">
+        <form method="post" asp-action="TaoTaiKhoanHangLoat">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width:30px;" class="text-center"><input type="checkbox" id="selectAll"></th>
+                            <th style="min-width:180px;">Họ tên</th>
+                            <th style="white-space:nowrap;">Mã</th>
+                            <th style="white-space:nowrap;">Loại hồ sơ</th>
+                            <th style="white-space:nowrap;">Tên đăng nhập</th>
+                            <th style="white-space:nowrap;">Mật khẩu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" name="ids" value="@item.Id">
+                                </td>
+                                <td>
+                                    <div style="font-weight:700; color:#0f172a; font-size:.9rem;">@item.HoTen</div>
+                                </td>
+                                <td style="white-space:nowrap;"><span style="font-weight:700; color:#2563eb; font-family:monospace;">@item.Ma</span></td>
+                                <td style="white-space:nowrap;">
+                                    <span class="badge" style="background:@(item.Loai == "SinhVien" ? "#e0f2fe" : "#fce7f3"); color:@(item.Loai == "SinhVien" ? "#0284c7" : "#be185d");">
+                                        @(item.Loai == "SinhVien" ? "Sinh viên" : "Giảng viên")
+                                    </span>
+                                </td>
+                                <td style="white-space:nowrap; font-family:monospace;"><strong>@item.Ma</strong></td>
+                                <td style="white-space:nowrap; color:#16a34a; font-weight:600;">12345678</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <button type="button" id="selectAllBtn" class="btn btn-outline-secondary btn-sm">Chọn tất cả / Bỏ chọn tất cả</button>
+                <div>
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Hủy</a>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-people-fill"></i> Tạo tài khoản cho các hồ sơ đã chọn
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+}
+
+@section Scripts {
+<script>
+    document.getElementById('selectAllBtn').addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('input[name="ids"]');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        checkboxes.forEach(cb => cb.checked = !allChecked);
+    });
+    document.getElementById('selectAll').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('input[name="ids"]');
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+</script>
+}

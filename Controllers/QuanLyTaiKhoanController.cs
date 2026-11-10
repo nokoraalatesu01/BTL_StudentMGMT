@@ -143,6 +143,123 @@ public class QuanLyTaiKhoanController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> TaoTaiKhoanHangLoat()
+    {
+        var students = await _db.SinhViens.AsNoTracking()
+            .Where(s => s.UserId == null)
+            .OrderBy(s => s.MaSinhVien)
+            .Select(s => new TaiKhoanHangLoatItem { Id = s.Id, Ma = s.MaSinhVien, HoTen = s.HoTen, Loai = "SinhVien" })
+            .ToListAsync();
+
+        var teachers = await _db.GiangViens.AsNoTracking()
+            .Where(g => g.UserId == null)
+            .OrderBy(g => g.MaGiangVien)
+            .Select(g => new TaiKhoanHangLoatItem { Id = g.Id, Ma = g.MaGiangVien, HoTen = g.HoTen, Loai = "GiangVien" })
+            .ToListAsync();
+
+        var model = students.Concat(teachers).OrderBy(x => x.Ma).ToList();
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> TaoTaiKhoanHangLoat(List<int> ids)
+    {
+        if (ids == null || !ids.Any())
+        {
+            TempData["Error"] = "Vui lòng chọn ít nhất một hồ sơ.";
+            return RedirectToAction(nameof(TaoTaiKhoanHangLoat));
+        }
+
+        var created = 0;
+        var skipped = 0;
+        var errors = new List<string>();
+
+        foreach (var id in ids)
+        {
+            var student = await _db.SinhViens.FirstOrDefaultAsync(s => s.Id == id && s.UserId == null);
+            if (student != null)
+            {
+                var userName = student.MaSinhVien;
+                if (await _userManager.FindByNameAsync(userName) != null)
+                {
+                    errors.Add($"{student.MaSinhVien} - {student.HoTen}: tên đăng nhập đã tồn tại");
+                    skipped++;
+                    continue;
+                }
+
+                var user = new ApplicationUser
+                {
+                    UserName = userName,
+                    HoTen = student.HoTen,
+                    Email = student.Email,
+                    EmailConfirmed = true,
+                    LockoutEnabled = false
+                };
+
+                var result = await _userManager.CreateAsync(user, "12345678");
+                if (!result.Succeeded)
+                {
+                    errors.Add($"{student.MaSinhVien} - {student.HoTen}: {string.Join("; ", result.Errors.Select(e => e.Description))}");
+                    skipped++;
+                    continue;
+                }
+
+                await _userManager.AddToRoleAsync(user, "SinhVien");
+                student.UserId = user.Id;
+                created++;
+                continue;
+            }
+
+            var teacher = await _db.GiangViens.FirstOrDefaultAsync(g => g.Id == id && g.UserId == null);
+            if (teacher != null)
+            {
+                var userName = teacher.MaGiangVien;
+                if (await _userManager.FindByNameAsync(userName) != null)
+                {
+                    errors.Add($"{teacher.MaGiangVien} - {teacher.HoTen}: tên đăng nhập đã tồn tại");
+                    skipped++;
+                    continue;
+                }
+
+                var user = new ApplicationUser
+                {
+                    UserName = userName,
+                    HoTen = teacher.HoTen,
+                    Email = teacher.Email,
+                    EmailConfirmed = true,
+                    LockoutEnabled = false
+                };
+
+                var result = await _userManager.CreateAsync(user, "12345678");
+                if (!result.Succeeded)
+                {
+                    errors.Add($"{teacher.MaGiangVien} - {teacher.HoTen}: {string.Join("; ", result.Errors.Select(e => e.Description))}");
+                    skipped++;
+                    continue;
+                }
+
+                await _userManager.AddToRoleAsync(user, "GiangVien");
+                teacher.UserId = user.Id;
+                created++;
+                continue;
+            }
+
+            skipped++;
+        }
+
+        await _db.SaveChangesAsync();
+
+        TempData["Msg"] = $"Đã tạo tài khoản cho {created} hồ sơ." + (skipped > 0 ? $" Bỏ qua {skipped} hồ sơ." : "");
+        if (errors.Any())
+        {
+            TempData["Error"] = string.Join("; ", errors);
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
     public async Task<IActionResult> Profiles(string loaiHoSo)
     {
         if (loaiHoSo == "SinhVien")

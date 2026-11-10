@@ -18,8 +18,15 @@
         <p class="page-subtitle">Danh sách sinh viên toàn trường, thêm mới, phân lớp và quản lý học tập.</p>
     </div>
     <div class="page-header-actions">
-        <button type="button" class="btn-action-secondary">
+        <a asp-action="ExportExcel" asp-route-tuKhoa="@ViewBag.TuKhoa" asp-route-lopId="@ViewBag.LopId" asp-route-trangThai="@ViewBag.TrangThai"
+           class="btn-action-secondary">
             <i class="bi bi-download"></i> Xuất Excel
+        </a>
+        <a asp-action="ExportSample" class="btn-action-secondary">
+            <i class="bi bi-file-earmark-excel"></i> Xuất mẫu
+        </a>
+        <button type="button" class="btn-action-secondary" data-bs-toggle="modal" data-bs-target="#importExcelModal">
+            <i class="bi bi-upload"></i> Nhập từ Excel
         </button>
         <a asp-action="Create" class="btn-action-primary">
             <i class="bi bi-plus-lg"></i> Thêm sinh viên
@@ -46,7 +53,7 @@
             <p style="font-size:.72rem; font-weight:700; letter-spacing:.07em; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">ĐANG HỌC</p>
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@(ViewBag.SoDangHoc ?? Model.Items.Count(s => s.TrangThai == "Đang học" || s.TrangThai == null))</div>
+                    <div style="font-size:1.9rem; font-weight:800; color:#0f172a; line-height:1.1;">@(ViewBag.SoDangHoc ?? Model.Items.Count(s => s.TrangThai == "Đang học"))</div>
                     <div style="font-size:.78rem; color:#16a34a; margin-top:2px; font-weight:600;">Đang theo học</div>
                 </div>
                 <div class="stat-icon-wrap green"><i class="bi bi-mortarboard"></i></div>
@@ -186,7 +193,7 @@
                         : (gpa >= 8.5 ? "badge-rank-gioi"
                           : (gpa >= 7.0 ? "badge-rank-kha" : "badge-rank-trungbinh"));
 
-                    string status = s.TrangThai ?? "Đang học";
+                    string status = string.IsNullOrEmpty(s.TrangThai) ? "-" : s.TrangThai;
                     string statusClass = status switch
                     {
                         "Đang học"   => "badge-status-danghoc",
@@ -519,4 +526,30 @@
     /* Đảm bảo font admin dùng Plus Jakarta Sans */
     .admin-content { font-family: 'Plus Jakarta Sans', "Segoe UI", sans-serif; }
 </style>
+
+<!-- Modal nhập Excel -->
+<div class="modal fade" id="importExcelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-white">
+                <h5 class="modal-title fw-bold" style="color:#0f172a;">Nhập sinh viên từ Excel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" asp-action="ImportFromExcel" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <p class="text-muted small mb-3">Chọn file Excel (.xlsx, .xls) có các cột: Mã SV, Họ tên, Ngày sinh, Giới tính, Email, Số điện thoại, Địa chỉ, Tên lớp, Niên khóa, Trạng thái.</p>
+                    <div class="mb-3">
+                        <label class="form-label">Chọn file Excel</label>
+                        <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required />
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Nhập dữ liệu</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 }

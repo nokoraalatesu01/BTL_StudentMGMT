@@ -57,3 +57,11 @@ public class DatLaiMatKhauViewModel
     [Display(Name = "Mật khẩu mới")]
     public string NewPassword { get; set; } = "";
 }
+
+public class TaiKhoanHangLoatItem
+{
+    public int Id { get; set; }
+    public string Ma { get; set; } = "";
+    public string HoTen { get; set; } = "";
+    public string Loai { get; set; } = ""; // "SinhVien" | "GiangVien"
+}

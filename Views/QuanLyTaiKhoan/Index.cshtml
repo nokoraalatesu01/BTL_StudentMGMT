@@ -27,6 +27,11 @@
        style="background:#2563eb; border:none; font-size:.875rem; font-weight:600; height:40px; border-radius:8px; padding:0 20px;">
         <i class="bi bi-plus-lg" style="font-size:.9rem;"></i> Tạo tài khoản hồ sơ
     </a>
+    <a asp-action="TaoTaiKhoanHangLoat"
+       class="btn d-inline-flex align-items-center gap-2 text-white flex-shrink-0"
+       style="background:#0f172a; border:none; font-size:.875rem; font-weight:600; height:40px; border-radius:8px; padding:0 20px;">
+        <i class="bi bi-people-fill" style="font-size:.9rem;"></i> Tạo tài khoản hàng loạt
+    </a>
 </div>
 
 @if (TempData["Msg"] is string message)

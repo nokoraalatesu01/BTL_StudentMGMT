@@ -1,3 +1,4 @@
+using System.Linq;
 using BTL_StudentMGMT.Data;
 using BTL_StudentMGMT.Models;
 using BTL_StudentMGMT.Services;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using ClosedXML.Excel;
 
 namespace BTL_StudentMGMT.Controllers;
 
@@ -49,7 +51,8 @@ public class QuanLySinhVienController : Controller
 
         if (!string.IsNullOrWhiteSpace(trangThai))
         {
-            query = query.Where(s => s.TrangThai == trangThai);
+            var trangThaiTrim = trangThai.Trim();
+            query = query.Where(s => s.TrangThai.Trim() == trangThaiTrim);
         }
 
         var totalItems = await query.CountAsync();
@@ -160,6 +163,200 @@ public class QuanLySinhVienController : Controller
         await _db.SaveChangesAsync();
 
         TempData["Msg"] = "Đã thêm sinh viên";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportExcel(string? tuKhoa, int? lopId, string? trangThai)
+    {
+        var query = _db.SinhViens
+            .AsNoTracking()
+            .Include(s => s.Lop)
+                .ThenInclude(l => l!.Nganh)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(tuKhoa))
+        {
+            var keyword = tuKhoa.Trim();
+            query = query.Where(s => s.MaSinhVien.Contains(keyword) || s.HoTen.Contains(keyword));
+        }
+        if (lopId.HasValue)
+            query = query.Where(s => s.LopId == lopId.Value);
+        if (!string.IsNullOrWhiteSpace(trangThai))
+            query = query.Where(s => s.TrangThai == trangThai);
+
+        var items = await query.OrderBy(s => s.MaSinhVien).ToListAsync();
+
+        using var wb = new XLWorkbook();
+        var ws = wb.Worksheets.Add("DanhSachSinhVien");
+        ws.Cell(1, 1).Value = "Mã SV";
+        ws.Cell(1, 2).Value = "Họ tên";
+        ws.Cell(1, 3).Value = "Ngày sinh";
+        ws.Cell(1, 4).Value = "Giới tính";
+        ws.Cell(1, 5).Value = "Email";
+        ws.Cell(1, 6).Value = "Số điện thoại";
+        ws.Cell(1, 7).Value = "Địa chỉ";
+        ws.Cell(1, 8).Value = "Lớp";
+        ws.Cell(1, 9).Value = "Ngành";
+        ws.Cell(1, 10).Value = "Niên khóa";
+        ws.Cell(1, 11).Value = "Trạng thái";
+
+        int r = 2;
+        foreach (var s in items)
+        {
+            ws.Cell(r, 1).Value = s.MaSinhVien;
+            ws.Cell(r, 2).Value = s.HoTen;
+            ws.Cell(r, 3).Value = s.NgaySinh?.ToString("dd/MM/yyyy") ?? "";
+            ws.Cell(r, 4).Value = s.GioiTinh ?? "";
+            ws.Cell(r, 5).Value = s.Email ?? "";
+            ws.Cell(r, 6).Value = s.SoDienThoai ?? "";
+            ws.Cell(r, 7).Value = s.DiaChi ?? "";
+            ws.Cell(r, 8).Value = s.Lop?.TenLop ?? "";
+            ws.Cell(r, 9).Value = s.Lop?.Nganh?.TenNganh ?? "";
+            ws.Cell(r, 10).Value = s.NienKhoa ?? "";
+            ws.Cell(r, 11).Value = s.TrangThai ?? "";
+            r++;
+        }
+        ws.Columns().AdjustToContents();
+
+        using var ms = new MemoryStream();
+        wb.SaveAs(ms);
+        return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"DanhSachSinhVien_{DateTime.Now:yyyyMMdd_HHmm}.xlsx");
+    }
+
+    [HttpGet]
+    public IActionResult ExportSample()
+    {
+        using var wb = new XLWorkbook();
+        var ws = wb.Worksheets.Add("MauSinhVien");
+        ws.Cell(1, 1).Value = "Mã SV";
+        ws.Cell(1, 2).Value = "Họ tên";
+        ws.Cell(1, 3).Value = "Ngày sinh";
+        ws.Cell(1, 4).Value = "Giới tính";
+        ws.Cell(1, 5).Value = "Email";
+        ws.Cell(1, 6).Value = "Số điện thoại";
+        ws.Cell(1, 7).Value = "Địa chỉ";
+        ws.Cell(1, 8).Value = "Tên lớp";
+        ws.Cell(1, 9).Value = "Niên khóa";
+        ws.Cell(1, 10).Value = "Trạng thái";
+
+        ws.Cell(2, 1).Value = "SV20240001";
+        ws.Cell(2, 2).Value = "Nguyễn Văn A";
+        ws.Cell(2, 3).Value = "01/01/2005";
+        ws.Cell(2, 4).Value = "Nam";
+        ws.Cell(2, 5).Value = "nguyenvana@utc.edu.vn";
+        ws.Cell(2, 6).Value = "0912345678";
+        ws.Cell(2, 7).Value = "Hà Nội";
+        ws.Cell(2, 8).Value = "CT123";
+        ws.Cell(2, 9).Value = "K2024";
+        ws.Cell(2, 10).Value = "Đang học";
+
+        ws.Cell(3, 1).Value = "SV20240002";
+        ws.Cell(3, 2).Value = "Trần Thị B";
+        ws.Cell(3, 3).Value = "15/03/2005";
+        ws.Cell(3, 4).Value = "Nữ";
+        ws.Cell(3, 5).Value = "tranthib@utc.edu.vn";
+        ws.Cell(3, 6).Value = "0987654321";
+        ws.Cell(3, 7).Value = "TP Hồ Chí Minh";
+        ws.Cell(3, 8).Value = "CT124";
+        ws.Cell(3, 9).Value = "K2024";
+        ws.Cell(3, 10).Value = "Đang học";
+
+        ws.Columns().AdjustToContents();
+
+        using var ms = new MemoryStream();
+        wb.SaveAs(ms);
+        return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "MauSinhVien.xlsx");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ImportFromExcel(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            TempData["Error"] = "Vui lòng chọn file Excel.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase) &&
+            !file.FileName.EndsWith(".xls", StringComparison.OrdinalIgnoreCase))
+        {
+            TempData["Error"] = "Chỉ接受 file Excel (.xlsx, .xls).";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var created = 0;
+        var skipped = 0;
+        var errors = new List<string>();
+
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
+        using var wb = new XLWorkbook(ms);
+        var ws = wb.Worksheets.FirstOrDefault();
+        if (ws == null)
+        {
+            TempData["Error"] = "File Excel không có dữ liệu.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var rows = ws.RowsUsed().Skip(1);
+        foreach (var row in rows)
+        {
+            var ma = row.Cell(1).GetString().Trim();
+            var hoTen = row.Cell(2).GetString().Trim();
+            if (string.IsNullOrEmpty(ma) || string.IsNullOrEmpty(hoTen))
+            {
+                skipped++;
+                continue;
+            }
+
+            if (await _db.SinhViens.AnyAsync(s => s.MaSinhVien == ma))
+            {
+                errors.Add($"{ma} - {hoTen}: mã sinh viên đã tồn tại");
+                skipped++;
+                continue;
+            }
+
+            var lopId = default(int?);
+            var tenLop = row.Cell(8).GetString().Trim();
+            if (!string.IsNullOrEmpty(tenLop))
+            {
+                var lop = await _db.Lops.FirstOrDefaultAsync(l => l.TenLop == tenLop);
+                if (lop != null)
+                    lopId = lop.Id;
+            }
+
+            var ngaySinh = default(DateTime?);
+            var ngSinhStr = row.Cell(3).GetString().Trim();
+            if (!string.IsNullOrEmpty(ngSinhStr) && DateTime.TryParseExact(ngSinhStr, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out var ngSinh))
+                ngaySinh = ngSinh;
+
+            var sinhVien = new SinhVien
+            {
+                MaSinhVien = ma,
+                HoTen = hoTen,
+                NgaySinh = ngaySinh,
+                GioiTinh = row.Cell(4).GetString().Trim() ?? "",
+                Email = row.Cell(5).GetString().Trim() ?? "",
+                SoDienThoai = row.Cell(6).GetString().Trim() ?? "",
+                DiaChi = row.Cell(7).GetString().Trim() ?? "",
+                LopId = lopId,
+                NienKhoa = row.Cell(9).GetString().Trim() ?? "",
+                TrangThai = string.IsNullOrEmpty(row.Cell(10).GetString().Trim()) ? "Đang học" : row.Cell(10).GetString().Trim(),
+                HinhAnh = null
+            };
+
+            _db.SinhViens.Add(sinhVien);
+            created++;
+        }
+
+        await _db.SaveChangesAsync();
+
+        TempData["Msg"] = $"Đã nhập thành công {created} sinh viên từ Excel." + (skipped > 0 ? $" Bỏ qua {skipped} dòng." : "");
+        if (errors.Any())
+            TempData["Error"] = string.Join("; ", errors);
+
         return RedirectToAction(nameof(Index));
     }
 
